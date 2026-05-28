@@ -952,6 +952,14 @@
           <summary>Import aus Home Assistant</summary>
           <div class="grid">
             <div class="field">
+              <label for="haBaseUrl"><span class="label-main">HA Basis-URL</span> <button class="info-btn" type="button" data-info="Leer lassen, wenn der Simulator ueber /local in Home Assistant geoeffnet ist. Wenn du die Datei lokal oeffnest, trage z.B. http://192.168.178.20:8123 ein.">i</button></label>
+              <input id="haBaseUrl" type="url" placeholder="auto oder http://192.168.178.20:8123">
+            </div>
+            <div class="field">
+              <label for="haToken"><span class="label-main">HA Token optional</span> <button class="info-btn" type="button" data-info="Nur noetig, wenn Home Assistant den Import mit 401 ablehnt oder du die HTML-Datei nicht direkt ueber /local oeffnest. Der Token wird nicht exportiert.">i</button></label>
+              <input id="haToken" type="password" autocomplete="off" placeholder="Long-lived access token">
+            </div>
+            <div class="field">
               <label for="haSourceSelect"><span class="label-main">Vorhandenes Fenster</span> <button class="info-btn" type="button" data-info="Die Liste wird aus den Solar-Shading-Positionssensoren geladen. Importiert werden Standardwerte, Geometrie, Horizonprofil, Forecast-Toggles und Policy-Gewichte, soweit sie als Attribute verfuegbar sind.">i</button></label>
               <select id="haSourceSelect">
                 <option value="">Bitte laden ...</option>
@@ -970,6 +978,26 @@
             <button class="action-btn primary" type="button" id="importSourceBtn">Werte uebernehmen</button>
           </div>
           <div class="status" id="sourceStatus">Noch keine HA-Fenster geladen.</div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Simulator Import / Export</summary>
+          <p class="subtle">Exportiert nur Simulatorwerte. HA-Token und Live-Sensorwerte werden nicht gespeichert.</p>
+          <div class="field">
+            <label for="simConfigText">JSON</label>
+            <textarea id="simConfigText" placeholder="Export erscheint hier, oder JSON zum Import einfuegen."></textarea>
+          </div>
+          <input id="simConfigFile" type="file" accept="application/json,.json" hidden>
+          <div class="cta-row">
+            <button class="action-btn primary" type="button" id="exportConfigBtn">Export JSON</button>
+            <button class="action-btn" type="button" id="copyConfigBtn">Kopieren</button>
+            <button class="action-btn" type="button" id="downloadConfigBtn">Download</button>
+            <button class="action-btn" type="button" id="selectConfigFileBtn">Datei laden</button>
+            <button class="action-btn secondary" type="button" id="importConfigBtn">JSON importieren</button>
+          </div>
+          <div class="status" id="simConfigStatus">Noch kein Simulator-JSON geladen.</div>
         </details>
       </section>
 
@@ -1236,9 +1264,19 @@
     const customGlassFields = document.getElementById("customGlassFields");
     const glassPresetInfo = document.getElementById("glassPresetInfo");
     const haSourceSelect = document.getElementById("haSourceSelect");
+    const haBaseUrlInput = document.getElementById("haBaseUrl");
+    const haTokenInput = document.getElementById("haToken");
     const applyDevicePresetBtn = document.getElementById("applyDevicePresetBtn");
     const refreshSourcesBtn = document.getElementById("refreshSourcesBtn");
     const importSourceBtn = document.getElementById("importSourceBtn");
+    const simConfigText = document.getElementById("simConfigText");
+    const simConfigFile = document.getElementById("simConfigFile");
+    const simConfigStatus = document.getElementById("simConfigStatus");
+    const exportConfigBtn = document.getElementById("exportConfigBtn");
+    const copyConfigBtn = document.getElementById("copyConfigBtn");
+    const downloadConfigBtn = document.getElementById("downloadConfigBtn");
+    const selectConfigFileBtn = document.getElementById("selectConfigFileBtn");
+    const importConfigBtn = document.getElementById("importConfigBtn");
     const horizonProfileInput = document.getElementById("horizonProfile");
     const horizonEditorSvg = document.getElementById("horizonEditorSvg");
     const horizonEditorStatus = document.getElementById("horizonEditorStatus");
@@ -1425,6 +1463,81 @@
 
     function parseBool(id) {
       return Boolean(document.getElementById(id).checked);
+    }
+
+    function syncRangeFor(id) {
+      const range = document.getElementById(`${id}Range`);
+      const element = document.getElementById(id);
+      if (range && element) {
+        range.value = element.value;
+      }
+    }
+
+    function setControlValue(id, value, { overlay = false } = {}) {
+      if (value === undefined || value === null) {
+        return false;
+      }
+      const element = document.getElementById(id);
+      if (!element || element === haTokenInput) {
+        return false;
+      }
+      if (overlay && element.type !== "checkbox" && `${element.value}` !== "" && `${element.value}` !== "0") {
+        return false;
+      }
+      if (element.type === "checkbox") {
+        element.checked = value === true || value === "true" || value === 1 || value === "1";
+      } else if (typeof value === "object") {
+        element.value = JSON.stringify(value, null, 2);
+      } else {
+        element.value = value;
+      }
+      syncRangeFor(id);
+      return true;
+    }
+
+    function simulatorConfigValues() {
+      const values = {};
+      inputIds.forEach((id) => {
+        const element = document.getElementById(id);
+        if (!element) {
+          return;
+        }
+        if (element.type === "checkbox") {
+          values[id] = element.checked;
+        } else if (element.tagName === "SELECT" || element.type === "time" || id === "horizonProfile") {
+          values[id] = element.value;
+        } else {
+          const number = Number(element.value);
+          values[id] = Number.isFinite(number) && element.value !== "" ? number : element.value;
+        }
+      });
+      return values;
+    }
+
+    function simulatorConfigJson() {
+      return JSON.stringify({
+        type: "solar_shading_simulator_config",
+        version: 1,
+        exported_at: new Date().toISOString(),
+        values: simulatorConfigValues()
+      }, null, 2);
+    }
+
+    function applySimulatorValues(values, mode = "replace") {
+      if (!values || typeof values !== "object") {
+        throw new Error("Kein gueltiges values-Objekt gefunden.");
+      }
+      let changed = 0;
+      Object.entries(values).forEach(([id, value]) => {
+        if (inputIds.includes(id) && setControlValue(id, value, { overlay: mode === "overlay" })) {
+          changed += 1;
+        }
+      });
+      updateGlassInfo();
+      updateExpertWeightsVisibility();
+      syncDateTimeReadouts();
+      render();
+      return changed;
     }
 
     function formatTime(minutesValue) {
@@ -1641,12 +1754,31 @@
       );
     }
 
+    function haApiBaseUrl() {
+      const configured = haBaseUrlInput.value.trim();
+      if (configured) {
+        return configured.replace(/\/+$/, "");
+      }
+      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+        return window.location.origin;
+      }
+      return "http://homeassistant.local:8123";
+    }
+
     async function refreshHASources() {
       sourceStatus.textContent = "Lade Solar-Shading-Fenster aus Home Assistant ...";
       haSourceSelect.innerHTML = '<option value="">Bitte waehlen ...</option>';
       try {
-        const response = await fetch("/api/states");
+        const headers = { Accept: "application/json" };
+        const token = haTokenInput.value.trim();
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(`${haApiBaseUrl()}/api/states`, { headers });
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("HA API antwortet mit 401. Token eintragen oder Simulator ueber /local in HA oeffnen.");
+          }
           throw new Error(`HA API antwortet mit ${response.status}`);
         }
         const states = await response.json();
@@ -1685,23 +1817,7 @@
         if (value === undefined || value === null || value === "") {
           return;
         }
-        const element = document.getElementById(id);
-        if (!element) {
-          return;
-        }
-        if (mode === "overlay" && `${element.value}` !== "" && `${element.value}` !== "0") {
-          // keep existing non-empty user value in overlay mode
-        } else {
-          if (element.type === "checkbox") {
-            element.checked = Boolean(value);
-          } else {
-            element.value = value;
-          }
-        }
-        const range = document.getElementById(`${id}Range`);
-        if (range && value !== undefined && value !== null && value !== "") {
-          range.value = value;
-        }
+        setControlValue(id, value, { overlay: mode === "overlay" });
       };
 
       overwrite("windowAzimuth", attrs.azimuth_window);
@@ -1784,6 +1900,95 @@
       const payload = JSON.parse(option.dataset.payload);
       applyImportedState(payload, document.getElementById("haImportMode").value);
       sourceStatus.textContent = `${payload.attributes?.friendly_name || payload.entity_id} wurde in den Simulator uebernommen.`;
+    }
+
+    function parseSimulatorImportPayload(text) {
+      const payload = JSON.parse(text);
+      if (payload && payload.type === "solar_shading_simulator_config" && payload.values) {
+        return { kind: "simulator", values: payload.values };
+      }
+      if (payload && payload.values && typeof payload.values === "object") {
+        return { kind: "simulator", values: payload.values };
+      }
+      if (payload && payload.entity_id && payload.attributes) {
+        return { kind: "ha_state", entry: payload };
+      }
+      if (
+        payload
+        && typeof payload === "object"
+        && (
+          Object.prototype.hasOwnProperty.call(payload, "heat_gain_policy_weight_direct_exposure")
+          || Object.prototype.hasOwnProperty.call(payload, "azimuth_window")
+          || Object.prototype.hasOwnProperty.call(payload, "horizon_profile")
+        )
+      ) {
+        return { kind: "ha_state", entry: { entity_id: "imported_attributes", attributes: payload } };
+      }
+      if (payload && typeof payload === "object") {
+        return { kind: "simulator", values: payload };
+      }
+      throw new Error("JSON-Format nicht erkannt.");
+    }
+
+    function exportSimulatorConfig() {
+      const json = simulatorConfigJson();
+      simConfigText.value = json;
+      simConfigStatus.textContent = "Simulator-JSON exportiert.";
+      return json;
+    }
+
+    async function copySimulatorConfig() {
+      const json = simConfigText.value.trim() || exportSimulatorConfig();
+      try {
+        await navigator.clipboard.writeText(json);
+        simConfigStatus.textContent = "JSON in die Zwischenablage kopiert.";
+      } catch (error) {
+        simConfigStatus.textContent = "Kopieren im Browser blockiert. JSON ist im Textfeld markierbar.";
+      }
+    }
+
+    function downloadSimulatorConfig() {
+      const json = simConfigText.value.trim() || exportSimulatorConfig();
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      link.href = url;
+      link.download = `solar-shading-simulator-${stamp}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      simConfigStatus.textContent = "JSON-Datei wurde heruntergeladen.";
+    }
+
+    function importSimulatorConfigText() {
+      try {
+        const parsed = parseSimulatorImportPayload(simConfigText.value.trim());
+        if (parsed.kind === "ha_state") {
+          applyImportedState(parsed.entry, document.getElementById("haImportMode").value);
+          simConfigStatus.textContent = "HA-Attribute aus JSON importiert.";
+          return;
+        }
+        const changed = applySimulatorValues(parsed.values, document.getElementById("haImportMode").value);
+        simConfigStatus.textContent = `${changed} Simulatorwerte importiert.`;
+      } catch (error) {
+        simConfigStatus.textContent = `Import fehlgeschlagen: ${error.message}`;
+      }
+    }
+
+    async function importSimulatorConfigFile(file) {
+      if (!file) {
+        return;
+      }
+      try {
+        simConfigText.value = await file.text();
+        importSimulatorConfigText();
+      } catch (error) {
+        simConfigStatus.textContent = `Datei konnte nicht gelesen werden: ${error.message}`;
+      } finally {
+        simConfigFile.value = "";
+      }
     }
 
     function readState() {
@@ -3030,6 +3235,12 @@
     applyDevicePresetBtn.addEventListener("click", applyDevicePreset);
     refreshSourcesBtn.addEventListener("click", refreshHASources);
     importSourceBtn.addEventListener("click", importSelectedHASource);
+    exportConfigBtn.addEventListener("click", exportSimulatorConfig);
+    copyConfigBtn.addEventListener("click", copySimulatorConfig);
+    downloadConfigBtn.addEventListener("click", downloadSimulatorConfig);
+    selectConfigFileBtn.addEventListener("click", () => simConfigFile.click());
+    importConfigBtn.addEventListener("click", importSimulatorConfigText);
+    simConfigFile.addEventListener("change", () => importSimulatorConfigFile(simConfigFile.files?.[0]));
     horizonExampleBtn.addEventListener("click", () => {
       horizonProfileInput.value = exampleHorizonJson();
       render();
