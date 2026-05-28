@@ -1,0 +1,7 @@
+{
+  "name": "Solar Shading",
+  "filename": "solar_shading.zip",
+  "homeassistant": "2024.5.0b1",
+  "render_readme": true,
+  "zip_release": true
+}

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solar Shading Horizon Preview</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --panel: #fffaf2;
+      --ink: #1e1a16;
+      --muted: #6f6255;
+      --line: #d8c8b4;
+      --accent: #b44b2a;
+      --accent-2: #2f6c73;
+      --sun: #f0a202;
+      --error: #9f2f2f;
+    }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, #ffe7b8 0%, transparent 28%),
+        linear-gradient(180deg, #f6f1e8 0%, #efe6d6 100%);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(320px, 430px) 1fr;
+    }
+    .panel {
+      background: rgba(255, 250, 242, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 16px 40px rgba(66, 45, 18, 0.08);
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    h1, h2 {
+      margin: 0 0 12px 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    p, li, label {
+      line-height: 1.45;
+    }
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      padding: 14px;
+      font: 14px/1.45 Consolas, "Courier New", monospace;
+      box-sizing: border-box;
+      background: #fffdf9;
+      color: var(--ink);
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+    }
+    button.secondary {
+      background: var(--accent-2);
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .error {
+      color: var(--error);
+      margin-top: 12px;
+      min-height: 1.3em;
+      font-weight: 600;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #eef7fa 0%, #fdf8ef 88%);
+      border: 1px solid var(--line);
+    }
+    .legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @media (max-width: 900px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <h1>Solar Shading Horizon Preview</h1>
+      <p>Lokales Winkelsystem aus Sicht des Fensters: <strong>0</strong> = ganz links, <strong>90</strong> = geradeaus, <strong>180</strong> = ganz rechts.</p>
+      <textarea id="profileInput">[
+  { "angle": 0, "lower_elevation": 18, "upper_elevation": 90 },
+  { "angle": 45, "lower_elevation": 12, "upper_elevation": 90 },
+  { "angle": 90, "lower_elevation": 8, "upper_elevation": 55 },
+  { "angle": 135, "lower_elevation": 14, "upper_elevation": 90 },
+  { "angle": 180, "lower_elevation": 20, "upper_elevation": 90 }
+]</textarea>
+      <div class="row">
+        <button id="renderBtn">Neu zeichnen</button>
+        <button id="copyBtn" class="secondary">JSON kopieren</button>
+      </div>
+      <div class="hint">Das gleiche JSON kannst du direkt in <code>horizon_profile</code> einfügen. Leer lassen deaktiviert den benutzerdefinierten Horizont.</div>
+      <div id="error" class="error"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Vorschau</h2>
+      <svg id="chart" viewBox="0 0 860 520" role="img" aria-label="Horizon preview chart"></svg>
+      <div class="legend">
+        <span><span class="dot" style="background:#b44b2a"></span>unterer Horizont</span>
+        <span><span class="dot" style="background:#2f6c73"></span>oberer Horizont</span>
+        <span><span class="dot" style="background:#f0a202"></span>sichtbares Himmelsband</span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const input = document.getElementById("profileInput");
+    const error = document.getElementById("error");
+    const chart = document.getElementById("chart");
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function parseProfile(text) {
+      const data = JSON.parse(text);
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error("Bitte eine nicht-leere JSON-Liste angeben.");
+      }
+      const sorted = data.map((item) => {
+        if (typeof item !== "object" || item === null) {
+          throw new Error("Jeder Punkt muss ein Objekt sein.");
+        }
+        const angle = Number(item.angle);
+        const lower = Number(item.lower_elevation ?? 0);
+        const upper = Number(item.upper_elevation ?? 90);
+        if (!Number.isFinite(angle) || angle < 0 || angle > 180) {
+          throw new Error("angle muss zwischen 0 und 180 liegen.");
+        }
+        if (!Number.isFinite(lower) || lower < 0 || lower > 90) {
+          throw new Error("lower_elevation muss zwischen 0 und 90 liegen.");
+        }
+        if (!Number.isFinite(upper) || upper < 0 || upper > 90) {
+          throw new Error("upper_elevation muss zwischen 0 und 90 liegen.");
+        }
+        if (upper < lower) {
+          throw new Error("upper_elevation muss größer oder gleich lower_elevation sein.");
+        }
+        return { angle, lower, upper };
+      }).sort((a, b) => a.angle - b.angle);
+
+      for (let i = 1; i < sorted.length; i += 1) {
+        if (sorted[i].angle < sorted[i - 1].angle) {
+          throw new Error("Die Winkel müssen aufsteigend sortiert sein.");
+        }
+      }
+      return sorted;
+    }
+
+    function linePath(points, x, y, key) {
+      return points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point[key])}`).join(" ");
+    }
+
+    function bandPath(points, x, y) {
+      const lower = points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point.lower)}`).join(" ");
+      const upper = [...points].reverse().map((point) => `L ${x(point.angle)} ${y(point.upper)}`).join(" ");
+      return `${lower} ${upper} Z`;
+    }
+
+    function render() {
+      try {
+        const points = parseProfile(input.value);
+        error.textContent = "";
+
+        const width = 860;
+        const height = 520;
+        const margin = { top: 24, right: 24, bottom: 52, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+        const x = (angle) => margin.left + (angle / 180) * innerWidth;
+        const y = (elevation) => margin.top + innerHeight - (clamp(elevation, 0, 90) / 90) * innerHeight;
+
+        const gridAngles = [0, 30, 60, 90, 120, 150, 180];
+        const gridElev = [0, 15, 30, 45, 60, 75, 90];
+
+        chart.innerHTML = `
+          <defs>
+            <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f7d56f" stop-opacity="0.28"></stop>
+              <stop offset="100%" stop-color="#f7d56f" stop-opacity="0.08"></stop>
+            </linearGradient>
+          </defs>
+          ${gridAngles.map((angle) => `<line x1="${x(angle)}" y1="${margin.top}" x2="${x(angle)}" y2="${margin.top + innerHeight}" stroke="#d8c8b4" stroke-dasharray="4 6"></line>`).join("")}
+          ${gridElev.map((elevation) => `<line x1="${margin.left}" y1="${y(elevation)}" x2="${margin.left + innerWidth}" y2="${y(elevation)}" stroke="#d8c8b4" stroke-dasharray="4 6"></line>`).join("")}
+          <path d="${bandPath(points, x, y)}" fill="url(#bandFill)"></path>
+          <path d="${linePath(points, x, y, "lower")}" fill="none" stroke="#b44b2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="${linePath(points, x, y, "upper")}" fill="none" stroke="#2f6c73" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+          ${points.map((point) => `
+            <circle cx="${x(point.angle)}" cy="${y(point.lower)}" r="4.5" fill="#b44b2a"></circle>
+            <circle cx="${x(point.angle)}" cy="${y(point.upper)}" r="4.5" fill="#2f6c73"></circle>
+          `).join("")}
+          <line x1="${margin.left}" y1="${margin.top + innerHeight}" x2="${margin.left + innerWidth}" y2="${margin.top + innerHeight}" stroke="#6f6255" stroke-width="1.5"></line>
+          <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + innerHeight}" stroke="#6f6255" stroke-width="1.5"></line>
+          ${gridAngles.map((angle) => `<text x="${x(angle)}" y="${height - 18}" fill="#6f6255" font-size="13" text-anchor="middle">${angle}°</text>`).join("")}
+          ${gridElev.map((elevation) => `<text x="${margin.left - 10}" y="${y(elevation) + 4}" fill="#6f6255" font-size="13" text-anchor="end">${elevation}°</text>`).join("")}
+          <text x="${margin.left + innerWidth / 2}" y="${height - 2}" fill="#1e1a16" font-size="14" text-anchor="middle">lokaler Fensterwinkel</text>
+          <text x="16" y="${margin.top + innerHeight / 2}" fill="#1e1a16" font-size="14" text-anchor="middle" transform="rotate(-90 16 ${margin.top + innerHeight / 2})">Elevation</text>
+        `;
+      } catch (err) {
+        error.textContent = err.message || String(err);
+      }
+    }
+
+    document.getElementById("renderBtn").addEventListener("click", render);
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      await navigator.clipboard.writeText(input.value);
+    });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,3055 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solar Shading Simulator</title>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --panel: rgba(255, 250, 242, 0.95);
+      --panel-soft: rgba(255, 253, 249, 0.78);
+      --ink: #1f1a17;
+      --muted: #6d6155;
+      --line: #d9cab8;
+      --accent: #b44b2a;
+      --accent-2: #2f6c73;
+      --accent-3: #d88b11;
+      --good: #2e7d32;
+      --warn: #a56f00;
+      --bad: #9f2f2f;
+      --shadow: 0 16px 40px rgba(66, 45, 18, 0.08);
+      --sticky-top: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top right, #ffe2ad 0%, transparent 24%),
+        linear-gradient(180deg, #f6f1e8 0%, #efe6d6 100%);
+    }
+
+    .app {
+      max-width: 1780px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(360px, 470px) minmax(340px, 460px) minmax(360px, 520px);
+      align-items: start;
+    }
+
+    .column {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .sticky-panel {
+      position: sticky;
+      top: var(--sticky-top);
+      align-self: start;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 12px 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: clamp(28px, 3vw, 52px);
+    }
+
+    p, label, li, td, th, summary {
+      line-height: 1.45;
+    }
+
+    p {
+      margin: 0 0 12px 0;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: space-between;
+    }
+
+    .label-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf9;
+      color: var(--ink);
+      padding: 10px 12px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--accent);
+      background: transparent;
+    }
+
+    textarea {
+      min-height: 170px;
+      resize: vertical;
+      font: 13px/1.45 Consolas, "Courier New", monospace;
+    }
+
+    .range-row {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 92px;
+      align-items: center;
+    }
+
+    .single-range {
+      display: grid;
+      gap: 8px;
+    }
+
+    .range-readout {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .time-scale {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-top: -2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fffdf9;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      transform: scale(1.15);
+      margin: 0;
+    }
+
+    .checkbox-row label {
+      color: var(--ink);
+      flex: 1;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .info-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff7ec;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+      padding: 0;
+    }
+
+    .info-btn:hover {
+      border-color: var(--accent-2);
+      background: #f3fbfc;
+    }
+
+    .info-tooltip {
+      position: fixed;
+      z-index: 20;
+      max-width: min(360px, calc(100vw - 32px));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: #1f1a17;
+      color: #fffaf2;
+      box-shadow: 0 14px 34px rgba(31, 26, 23, 0.22);
+      font-size: 13px;
+      line-height: 1.45;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .info-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    details {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    details:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .kpi .value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .kpi .suffix {
+      font-size: 15px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .viz-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(260px, 340px) 1fr;
+      align-items: start;
+    }
+
+    .window-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .horizon-mini-title {
+      margin: 12px 0 6px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .horizon-editor {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .horizon-editor svg {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #eef7fa 0%, #fdf8ef 92%);
+      touch-action: none;
+    }
+
+    .horizon-editor .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 5px;
+    }
+
+    .horizon-point {
+      cursor: grab;
+      stroke: #fffaf2;
+      stroke-width: 2;
+    }
+
+    .horizon-point:active {
+      cursor: grabbing;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 600;
+      width: 46%;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .pill.none {
+      background: #efe6d6;
+      color: #6c5a47;
+    }
+
+    .pill.partial {
+      background: #fde5b3;
+      color: #8a5b00;
+    }
+
+    .pill.full,
+    .pill.hotday,
+    .pill.veryhotday,
+    .pill.heatpower {
+      background: #f5c7c7;
+      color: #8a2929;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .action-btn {
+      border: 1px solid var(--line);
+      background: #fffaf2;
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .action-btn.primary {
+      background: #f0f8f8;
+      border-color: #b7d3d6;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .status {
+      min-height: 1.2em;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .error {
+      min-height: 1.2em;
+      color: var(--bad);
+      font-weight: 700;
+    }
+
+    .soft-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .policy-explain {
+      white-space: pre-line;
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .inline-values {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .metrics-grid {
+      display: grid;
+      gap: 6px 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metrics-grid .metric {
+      border-bottom: 1px solid var(--line);
+      padding: 7px 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .metrics-grid .metric .name {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .metrics-grid .metric .val {
+      font-size: 14px;
+    }
+
+    @media (max-width: 1400px) {
+      .app {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .column.output-column {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-panel {
+        position: static;
+      }
+
+      .kpi-grid,
+      .grid-3,
+      .viz-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .grid,
+      .grid-3,
+      .kpi-grid,
+      .viz-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="column settings-column">
+      <section class="panel">
+        <details open>
+          <summary>Info</summary>
+          <h1>Solar Shading Simulator</h1>
+          <p>Der Simulator ist jetzt fuer echtes Feintuning gedacht: links die <strong>Einstellungen</strong>, in der Mitte <strong>Datum, Zeit, Wetter und Forecast</strong>, rechts die <strong>Ausgabe mit Piktogramm</strong>. Das Fenster bleibt beim Scrollen sichtbar.</p>
+          <p class="subtle">Wichtig: Die neue Tageslicht-Heuristik ist hier abgebildet. Innenraumtemperatur ist weiterhin noch nicht als eigener Score-Faktor drin. Import aus Home Assistant liest vorhandene <code>Solar Shading</code>-Fenster direkt aus den Sensor-Attributen.</p>
+        </details>
+      </section>
+
+      <section class="panel">
+        <h2>System und Geometrie</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="devicePreset"><span class="label-main">Beschattungssystem</span> <button class="info-btn" type="button" data-info="Diese Presets setzen sinnvolle Default-Werte fuer Innenrollo, Aussenrollo und Jalousien. Du kannst danach alle Felder weiter manuell feinjustieren.">i</button></label>
+            <select id="devicePreset">
+              <option value="custom">custom</option>
+              <option value="indoor_roller" selected>Innenrollo</option>
+              <option value="outdoor_roller">Aussenrollo</option>
+              <option value="indoor_venetian">Innenjalousie</option>
+              <option value="outdoor_venetian">Aussenjalousie</option>
+            </select>
+          </div>
+            <div class="field">
+              <label for="defaultPosition"><span class="label-main">Default-Position (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert, wenn keine wirksame direkte Sonne relevant ist. 100 Prozent offen bedeutet ganz offen, 0 Prozent offen bedeutet geschlossen.">i</button></label>
+              <input id="defaultPosition" type="number" min="0" max="100" step="1" value="100">
+            </div>
+            <div class="field">
+              <label for="sunsetPosition"><span class="label-main">Nacht-/Sunset-Position (% offen)</span> <button class="info-btn" type="button" data-info="Position, die im Nachtmodus verwendet wird. In der echten Integration gelten Sonnenuntergang/Sonnenaufgang plus Offset; der Simulator nutzt dafuer den berechneten Sonnenstand.">i</button></label>
+              <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
+            </div>
+          </div>
+        <div class="cta-row">
+          <button class="action-btn" type="button" id="applyDevicePresetBtn">System-Preset anwenden</button>
+        </div>
+
+        <details open>
+          <summary>Fenster</summary>
+          <div class="grid">
+            <div class="field">
+              <label for="windowAzimuth">Fenster-Azimut</label>
+              <input id="windowAzimuth" type="number" min="0" max="359" step="1" value="90">
+            </div>
+            <div class="field">
+              <label for="windowHeight">Fensterhoehe in m</label>
+              <input id="windowHeight" type="number" min="0.1" step="0.01" value="2.10">
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="windowWidth"><span class="label-main">Fensterbreite in m</span> <button class="info-btn" type="button" data-info="Die seitliche Laibungsverschattung wird auf die sichtbare Glasbreite bezogen. Je kleiner die Breite und je tiefer die Laibung, desto staerker faellt der seitliche Schattenanteil aus.">i</button></label>
+              <input id="windowWidth" type="number" min="0.1" step="0.01" value="1.60">
+            </div>
+            <div class="field">
+              <label for="distance">Legacy Schutz-/Blendtiefe in m</label>
+              <input id="distance" type="number" min="0" step="0.01" value="0.50">
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label>Sichtfeld links</label>
+              <div class="range-row">
+                <input id="fovLeftRange" type="range" min="0" max="90" step="1" value="90">
+                <input id="fovLeft" type="number" min="0" max="90" step="1" value="90">
+              </div>
+            </div>
+            <div class="field">
+              <label>Sichtfeld rechts</label>
+              <div class="range-row">
+                <input id="fovRightRange" type="range" min="0" max="90" step="1" value="90">
+                <input id="fovRight" type="number" min="0" max="90" step="1" value="90">
+              </div>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="minElevation">Minimale Sonnenhoehe</label>
+              <input id="minElevation" type="number" min="0" max="90" step="1" value="0">
+            </div>
+            <div class="field">
+              <label for="maxElevation">Maximale Sonnenhoehe</label>
+              <input id="maxElevation" type="number" min="0" max="90" step="1" value="90">
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Horizont und Laibung</summary>
+          <div class="grid">
+            <div class="field">
+              <label for="revealLeft"><span class="label-main">Laibung links in m</span> <button class="info-btn" type="button" data-info="Die linke Laibung wirkt vor allem bei schraeger Sonne von links. Bei fast frontaler Sonne bleibt der Effekt bewusst klein, weil seitliche Laibungen den mittigen Blick zum Himmel kaum abschneiden.">i</button></label>
+              <input id="revealLeft" type="number" min="0" step="0.01" value="0.00">
+            </div>
+            <div class="field">
+              <label for="revealRight"><span class="label-main">Laibung rechts in m</span> <button class="info-btn" type="button" data-info="Die rechte Laibung wirkt spiegelbildlich zur linken. Sehr grosse Werte veraendern den Output daher nur deutlich, wenn die Sonne auch wirklich schraeg von rechts kommt.">i</button></label>
+              <input id="revealRight" type="number" min="0" step="0.01" value="0.00">
+            </div>
+          </div>
+          <div class="field">
+            <label for="revealTop"><span class="label-main">Laibung oben in m</span> <button class="info-btn" type="button" data-info="Die obere Laibung wird bei hoher Sonne wichtig und kann auch dann stark verschatten, wenn links und rechts nur wenig beitragen.">i</button></label>
+            <input id="revealTop" type="number" min="0" step="0.01" value="0.00">
+          </div>
+          <div class="field">
+            <label for="horizonProfile"><span class="label-main">Lokales Horizontprofil</span> <button class="info-btn" type="button" data-info="Das Profil ist lokal zum Fenster gedacht: 0 Grad links, 90 Grad geradeaus, 180 Grad rechts. lower_elevation beschreibt die untere sichtbare Himmelskante, upper_elevation die obere.">i</button></label>
+            <textarea id="horizonProfile">[
+  {"angle": 43, "lower_elevation": 6, "upper_elevation": 90},
+  {"angle": 51, "lower_elevation": 17, "upper_elevation": 90},
+  {"angle": 74, "lower_elevation": 23, "upper_elevation": 90},
+  {"angle": 90, "lower_elevation": 20, "upper_elevation": 90},
+  {"angle": 91, "lower_elevation": 14, "upper_elevation": 90},
+  {"angle": 100, "lower_elevation": 7, "upper_elevation": 90},
+  {"angle": 112, "lower_elevation": 5, "upper_elevation": 90},
+  {"angle": 120, "lower_elevation": 10, "upper_elevation": 90},
+  {"angle": 180, "lower_elevation": 17, "upper_elevation": 90}
+]</textarea>
+            <div class="horizon-editor" aria-label="Horizont-Zeichner">
+              <div class="row">
+                <div>
+                  <strong>Horizont-Zeichner</strong>
+                  <div class="tiny">Punkte ziehen: links/rechts = lokaler Winkel, hoch/runter = Elevation. 0° links, 90° geradeaus, 180° rechts.</div>
+                </div>
+                <div class="cta-row">
+                  <button class="action-btn" type="button" id="horizonExampleBtn">Beispiel laden</button>
+                  <button class="action-btn secondary" type="button" id="openHorizonToolBtn">Grosses Tool oeffnen</button>
+                </div>
+              </div>
+              <svg id="horizonEditorSvg" viewBox="0 0 680 330" role="img" aria-label="Interaktiver Horizont-Zeichner"></svg>
+              <div class="legend">
+                <span><span class="legend-dot" style="background:#b44b2a"></span>unterer Horizont</span>
+                <span><span class="legend-dot" style="background:#2f6c73"></span>oberer Horizont</span>
+                <span><span class="legend-dot" style="background:#f0a202"></span>aktueller Sonnenpunkt</span>
+              </div>
+              <div class="tiny" id="horizonEditorStatus">JSON bearbeiten oder Punkte ziehen.</div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Glas</summary>
+          <div class="grid">
+            <div class="field">
+              <label for="glassType"><span class="label-main">Glasart</span> <button class="info-btn" type="button" data-info="Die Werte zeigen die ungefaehre solare Transmission und Reflexion bei senkrechtem Einfall. Fuer Sonderverglasungen kannst du unten auf custom umstellen.">i</button></label>
+              <select id="glassType">
+                <option value="single_clear">single_clear (Tsol 0.86 / Rsol 0.08)</option>
+                <option value="double_clear" selected>double_clear (Tsol 0.70 / Rsol 0.14)</option>
+                <option value="double_low_e">double_low_e (Tsol 0.52 / Rsol 0.28)</option>
+                <option value="triple_clear">triple_clear (Tsol 0.60 / Rsol 0.20)</option>
+                <option value="triple_low_e">triple_low_e (Tsol 0.42 / Rsol 0.32)</option>
+                <option value="solar_control">solar_control (Tsol 0.30 / Rsol 0.36)</option>
+                <option value="custom">custom</option>
+              </select>
+            </div>
+            <div class="soft-card inline-values" id="glassPresetInfo">
+              Tvis 0.80, Tsol 0.70, Rvis 0.14, Rsol 0.14
+            </div>
+          </div>
+          <div id="customGlassFields" class="grid hidden">
+            <div class="field">
+              <label for="customVisibleT">Custom Tvis</label>
+              <input id="customVisibleT" type="number" min="0" max="1" step="0.01" value="0.80">
+            </div>
+            <div class="field">
+              <label for="customSolarT">Custom Tsol</label>
+              <input id="customSolarT" type="number" min="0" max="1" step="0.01" value="0.70">
+            </div>
+            <div class="field">
+              <label for="customVisibleR">Custom Rvis</label>
+              <input id="customVisibleR" type="number" min="0" max="1" step="0.01" value="0.14">
+            </div>
+            <div class="field">
+              <label for="customSolarR">Custom Rsol</label>
+              <input id="customSolarR" type="number" min="0" max="1" step="0.01" value="0.14">
+            </div>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Policy und Gewichte</summary>
+          <div class="soft-card tiny">
+            Policy-Ablauf: Physik-Gain berechnen -> Forecast-Temperatur als harten Waermeschutz-Gate pruefen -> Very-Hot als sichtbaren Gain-Boost und strengere Policy addieren -> Heat-Gain-Response bilden -> gewichteten Risiko-Score berechnen -> Score durch echte Physik deckeln -> mit Schwellen in ein Ziel "% offen" uebersetzen. Unterhalb der Hot-Day-Schwelle bleibt Waermeschutz offen, auch wenn direkte Sonne sichtbar ist.
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="policyPreset"><span class="label-main">Policy-Preset</span> <button class="info-btn" type="button" data-info="Die Presets verschieben Score, Schwellen und Zielpositionen in Richtung mehr Tageslicht oder mehr Hitzeschutz. Alle einzelnen Gewichte bleiben darunter trotzdem manuell anpassbar.">i</button></label>
+              <select id="policyPreset">
+                <option value="daylight_first_single_aspect" selected>daylight_first_single_aspect</option>
+                <option value="daylight_first_multi_aspect">daylight_first_multi_aspect</option>
+                <option value="balanced">balanced</option>
+                <option value="cooling_first">cooling_first</option>
+                <option value="custom">custom</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="weatherEntityHint">Wetter-Quelle</label>
+              <input id="weatherEntityHint" type="text" value="met weather entity / manuell" readonly>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input id="enableHeatGainPolicy" type="checkbox">
+            <label for="enableHeatGainPolicy"><span class="label-main">Waermeeintrags-Policy aktiv</span><button class="info-btn" type="button" data-info="Wenn aus, zeigt der Simulator nur die Basic-Position mit unserer physikalischen Daempfung. Wenn an, werden die Gewichte, Schwellen und Zielpositionen als zusaetzliche strengere Schicht angewendet.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="additionalWindows" type="checkbox">
+            <label for="additionalWindows"><span class="label-main">Weitere Tageslichtfenster vorhanden</span><button class="info-btn" type="button" data-info="Wenn noch andere Fenster Tageslicht liefern, darf dieses Fenster aggressiver beschattet werden, ohne den Raum komplett dunkel zu machen.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="awayActive" type="checkbox">
+            <label for="awayActive"><span class="label-main">Away from home aktiv</span><button class="info-btn" type="button" data-info="Abwesenheit faehrt die Policy strenger: Score rauf, Schwellen runter und Zielpositionen weiter zu.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="hotDayCloseEnabled" type="checkbox">
+            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt, wird eine maximale Offenposition erzwungen, unabhaengig von den feineren Gewichten.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="heatPowerLimitEnabled" type="checkbox">
+            <label for="heatPowerLimitEnabled"><span class="label-main">Watt-Limit pro Fenster aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2 und W pro Fenster. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal die eingestellten Watt durch dieses Fenster kommen.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="enableLegacyBasicShading" type="checkbox">
+            <label for="enableLegacyBasicShading"><span class="label-main">Legacy Schreibtisch-/Blendschutz aktiv</span><button class="info-btn" type="button" data-info="Aktiviert die alte Adaptive-Cover-Geometrie: Wenn direkte Sonne weit in den Raum faellt, kann leicht geschlossen werden, auch wenn die Waermeschutz-Policy nichts fordert. Fuer reinen Waermeschutz eher aus lassen.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="showExpertWeights" type="checkbox">
+            <label for="showExpertWeights"><span class="label-main">Expert-Gewichte anzeigen</span><button class="info-btn" type="button" data-info="Wenn aus, setzt das Preset die Gewichte automatisch. Wenn an, kannst du jeden Risiko-Faktor einzeln gewichten.">i</button></label>
+          </div>
+
+          <div class="grid hidden" id="expertWeightsPanel">
+            <div class="field">
+              <label>Weight: direct exposure</label>
+              <div class="range-row">
+                <input id="weightDirectRange" type="range" min="0" max="3" step="0.05" value="1.20">
+                <input id="weightDirect" type="number" min="0" max="3" step="0.05" value="1.20">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: incidence</label>
+              <div class="range-row">
+                <input id="weightIncidenceRange" type="range" min="0" max="3" step="0.05" value="0.90">
+                <input id="weightIncidence" type="number" min="0" max="3" step="0.05" value="0.90">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: glazing</label>
+              <div class="range-row">
+                <input id="weightGlazingRange" type="range" min="0" max="3" step="0.05" value="0.80">
+                <input id="weightGlazing" type="number" min="0" max="3" step="0.05" value="0.80">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: current weather</label>
+              <div class="range-row">
+                <input id="weightWeatherRange" type="range" min="0" max="3" step="0.05" value="1.00">
+                <input id="weightWeather" type="number" min="0" max="3" step="0.05" value="1.00">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: solar radiation</label>
+              <div class="range-row">
+                <input id="weightSolarRadiationRange" type="range" min="0" max="3" step="0.05" value="1.00">
+                <input id="weightSolarRadiation" type="number" min="0" max="3" step="0.05" value="1.00">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: forecast temp</label>
+              <div class="range-row">
+                <input id="weightForecastTempRange" type="range" min="0" max="3" step="0.05" value="1.00">
+                <input id="weightForecastTemp" type="number" min="0" max="3" step="0.05" value="1.00">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: forecast UV</label>
+              <div class="range-row">
+                <input id="weightForecastUvRange" type="range" min="0" max="3" step="0.05" value="0.60">
+                <input id="weightForecastUv" type="number" min="0" max="3" step="0.05" value="0.60">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: forecast clouds</label>
+              <div class="range-row">
+                <input id="weightForecastCloudsRange" type="range" min="0" max="3" step="0.05" value="0.50">
+                <input id="weightForecastClouds" type="number" min="0" max="3" step="0.05" value="0.50">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: forecast rain probability</label>
+              <div class="range-row">
+                <input id="weightForecastRainProbRange" type="range" min="0" max="3" step="0.05" value="0.40">
+                <input id="weightForecastRainProb" type="number" min="0" max="3" step="0.05" value="0.40">
+              </div>
+            </div>
+            <div class="field">
+              <label>Weight: forecast rain amount</label>
+              <div class="range-row">
+                <input id="weightForecastRainAmountRange" type="range" min="0" max="3" step="0.05" value="0.40">
+                <input id="weightForecastRainAmount" type="number" min="0" max="3" step="0.05" value="0.40">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Partial close threshold</label>
+              <div class="range-row">
+                <input id="partialThresholdRange" type="range" min="0" max="1" step="0.01" value="0.35">
+                <input id="partialThreshold" type="number" min="0" max="1" step="0.01" value="0.35">
+              </div>
+            </div>
+            <div class="field">
+              <label>Full close threshold</label>
+              <div class="range-row">
+                <input id="fullThresholdRange" type="range" min="0" max="1" step="0.01" value="0.65">
+                <input id="fullThreshold" type="number" min="0" max="1" step="0.01" value="0.65">
+              </div>
+            </div>
+            <div class="field">
+              <label>Teilziel (% offen)</label>
+              <div class="range-row">
+                <input id="partialPositionRange" type="range" min="0" max="100" step="1" value="70">
+                <input id="partialPosition" type="number" min="0" max="100" step="1" value="70">
+              </div>
+            </div>
+            <div class="field">
+              <label>Max. normale Schliessung (min. % offen)</label>
+              <div class="range-row">
+                <input id="fullPositionRange" type="range" min="0" max="100" step="1" value="30">
+                <input id="fullPosition" type="number" min="0" max="100" step="1" value="30">
+              </div>
+            </div>
+            <div class="field">
+              <label>Away score multiplier</label>
+              <div class="range-row">
+                <input id="awayScoreMultiplierRange" type="range" min="1" max="2.5" step="0.05" value="1.25">
+                <input id="awayScoreMultiplier" type="number" min="1" max="2.5" step="0.05" value="1.25">
+              </div>
+            </div>
+            <div class="field">
+              <label>Away threshold reduction</label>
+              <div class="range-row">
+                <input id="awayThresholdReductionRange" type="range" min="0" max="0.5" step="0.01" value="0.10">
+                <input id="awayThresholdReduction" type="number" min="0" max="0.5" step="0.01" value="0.10">
+              </div>
+            </div>
+            <div class="field">
+              <label>Away zusaetzlich schliessen</label>
+              <div class="range-row">
+                <input id="awayPositionOffsetRange" type="range" min="0" max="30" step="1" value="10">
+                <input id="awayPositionOffset" type="number" min="0" max="30" step="1" value="10">
+              </div>
+            </div>
+            <div class="field">
+              <label>Hot day close threshold</label>
+              <div class="range-row">
+                <input id="hotDayCloseThresholdRange" type="range" min="20" max="40" step="0.5" value="28">
+                <input id="hotDayCloseThreshold" type="number" min="20" max="40" step="0.5" value="28">
+              </div>
+            </div>
+            <div class="field">
+              <label>Heiss-Tag-Ziel (% offen)</label>
+              <div class="range-row">
+                <input id="hotDayClosePositionRange" type="range" min="0" max="100" step="1" value="20">
+                <input id="hotDayClosePosition" type="number" min="0" max="100" step="1" value="20">
+              </div>
+            </div>
+            <div class="field">
+              <label>Sehr-heiss-Ziel (% offen)</label>
+              <div class="range-row">
+                <input id="veryHotDayClosePositionRange" type="range" min="0" max="100" step="1" value="10">
+                <input id="veryHotDayClosePosition" type="number" min="0" max="100" step="1" value="10">
+              </div>
+            </div>
+            <div class="field">
+              <label>Watt-Limit ab Aussentemperatur</label>
+              <div class="range-row">
+                <input id="heatPowerTempThresholdRange" type="range" min="-10" max="45" step="0.5" value="24">
+                <input id="heatPowerTempThreshold" type="number" min="-20" max="50" step="0.5" value="24">
+              </div>
+            </div>
+            <div class="field">
+              <label>Unter dieser Aussentemperatur ist Waermeschutz deaktiviert</label>
+              <div class="range-row">
+                <input id="heatProtectionMinOutsideTempRange" type="range" min="-20" max="30" step="0.5" value="14">
+                <input id="heatProtectionMinOutsideTemp" type="number" min="-30" max="40" step="0.5" value="14">
+              </div>
+            </div>
+            <div class="field">
+              <label>Max. Waermeeintrag pro Fenster in W</label>
+              <div class="range-row">
+                <input id="heatPowerMaxWattsRange" type="range" min="50" max="1500" step="25" value="250">
+                <input id="heatPowerMaxWatts" type="number" min="0" max="3000" step="25" value="250">
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </section>
+
+    <section class="column conditions-column">
+      <section class="panel">
+        <details>
+          <summary>Import aus Home Assistant</summary>
+          <div class="grid">
+            <div class="field">
+              <label for="haSourceSelect"><span class="label-main">Vorhandenes Fenster</span> <button class="info-btn" type="button" data-info="Die Liste wird aus den Solar-Shading-Positionssensoren geladen. Importiert werden Standardwerte, Geometrie, Horizonprofil, Forecast-Toggles und Policy-Gewichte, soweit sie als Attribute verfuegbar sind.">i</button></label>
+              <select id="haSourceSelect">
+                <option value="">Bitte laden ...</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="haImportMode">Import-Modus</label>
+              <select id="haImportMode">
+                <option value="replace" selected>Werte ersetzen</option>
+                <option value="overlay">Nur bekannte Werte uebernehmen</option>
+              </select>
+            </div>
+          </div>
+          <div class="cta-row">
+            <button class="action-btn" type="button" id="refreshSourcesBtn">Liste aktualisieren</button>
+            <button class="action-btn primary" type="button" id="importSourceBtn">Werte uebernehmen</button>
+          </div>
+          <div class="status" id="sourceStatus">Noch keine HA-Fenster geladen.</div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <h2>Datum und Zeit</h2>
+        <div class="single-range">
+          <label for="dayOfYearRange"><span class="label-main">Datum als Jahrestag</span> <button class="info-btn" type="button" data-info="Mit dem Datums-Schieber kannst du schnell durch das Jahr scrubben. Die Anzeige darunter zeigt das konkrete Datum.">i</button></label>
+          <input id="dayOfYearRange" type="range" min="1" max="365" step="1" value="129">
+          <div class="range-readout">
+            <span id="dateLabel">09.05.</span>
+            <span id="dayOfYearLabel">Tag 129</span>
+          </div>
+        </div>
+        <div class="single-range">
+          <label for="timeRange"><span class="label-main">Uhrzeit</span> <button class="info-btn" type="button" data-info="Die Uhrzeit wird in lokalen Minuten ueber den Tag verschoben. Damit siehst du sehr schnell, wann Sonne, Forecast und Heuristik umklappen.">i</button></label>
+          <input id="timeRange" type="range" min="0" max="1435" step="5" value="810">
+          <div class="time-scale" aria-hidden="true">
+            <span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span><span>24</span>
+          </div>
+          <div class="range-readout">
+            <span id="timeLabel">13:30</span>
+            <span id="solarStatus"></span>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="latitude">Breitengrad</label>
+            <input id="latitude" type="number" min="-90" max="90" step="0.0001" value="48.1372">
+          </div>
+          <div class="field">
+            <label for="longitude">Laengengrad</label>
+            <input id="longitude" type="number" min="-180" max="180" step="0.0001" value="11.5756">
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <details open>
+          <summary>Aktuelles Wetter</summary>
+          <div class="grid">
+            <div class="field">
+              <label><span class="label-main">Wolken jetzt in %</span> <button class="info-btn" type="button" data-info="0 Prozent bedeutet klarer Himmel und maximalen solaren Druck. 100 Prozent bedeutet starke Daempfung. Mehr Wolken sollen hier also zu weniger Schliessdruck fuehren, nicht zu mehr.">i</button></label>
+              <div class="range-row">
+                <input id="cloudCoverageRange" type="range" min="0" max="100" step="1" value="20">
+                <input id="cloudCoverage" type="number" min="0" max="100" step="1" value="20">
+              </div>
+            </div>
+            <div class="field">
+              <label>Niederschlag jetzt in mm</label>
+              <div class="range-row">
+                <input id="precipitationRange" type="range" min="0" max="10" step="0.1" value="0">
+                <input id="precipitation" type="number" min="0" max="10" step="0.1" value="0">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Solarleistung jetzt in W/m²</span> <button class="info-btn" type="button" data-info="Direkte Solarstrahlung als Open-Data- oder lokaler Sensorwert. Wenn aktiv, ersetzt dieser Wert die Wolken-Proxies fuer den physikalischen Waermeeintrag.">i</button></label>
+              <div class="range-row">
+                <input id="solarRadiationRange" type="range" min="0" max="1000" step="10" value="700">
+                <input id="solarRadiation" type="number" min="0" max="1200" step="10" value="700">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Solarleistung Vollskala in W/m²</span> <button class="info-btn" type="button" data-info="Dieser Wert ist die einfache Prozent-Skalierung: aktuelle Solarleistung geteilt durch diese Referenz ergibt den Solarleistungs-Prozentwert.">i</button></label>
+              <div class="range-row">
+                <input id="solarReferenceRange" type="range" min="300" max="1600" step="50" value="900">
+                <input id="solarReference" type="number" min="300" max="2000" step="50" value="900">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Aussentemperatur jetzt in C</span> <button class="info-btn" type="button" data-info="Wird fuer das Watt-Limit genutzt: unterhalb der Schwelle bleibt der harte Watt-Deckel aus, auch wenn Sonne sichtbar ist.">i</button></label>
+              <div class="range-row">
+                <input id="outsideTempRange" type="range" min="-10" max="45" step="0.5" value="25">
+                <input id="outsideTemp" type="number" min="-20" max="50" step="0.5" value="25">
+              </div>
+            </div>
+          </div>
+          <div class="checkbox-row">
+            <input id="useOpenDataSolarRadiation" type="checkbox">
+            <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Data-Solarleistung nutzen</span><button class="info-btn" type="button" data-info="Simuliert die neue Open-Meteo-Strahlungsoption. Aktiv bedeutet: Solarleistung in W/m² ersetzt Wolken als direkter physikalischer Daempfungsfaktor.">i</button></label>
+          </div>
+          <p class="tiny">Mehr Wolken bedeutet hier weniger solaren Gewinn, also normalerweise weniger Schliessdruck.</p>
+        </details>
+
+        <details open>
+          <summary>Forecast</summary>
+          <div class="checkbox-row">
+            <input id="useTodayMax" type="checkbox" checked>
+            <label for="useTodayMax"><span class="label-main">Heutiges Tmax nutzen</span><button class="info-btn" type="button" data-info="Aktiviert die Tagesmaximum-Temperatur von heute als Hot-Day-Signal fuer praeventive Beschattung.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="useTomorrowMax" type="checkbox">
+            <label for="useTomorrowMax"><span class="label-main">Morgiges Tmax nutzen</span><button class="info-btn" type="button" data-info="Kann helfen, wenn du schon abends oder frueh morgens fuer den naechsten Tag konservativ denken willst.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="useForecastClouds" type="checkbox" checked>
+            <label for="useForecastClouds"><span class="label-main">Forecast-Wolken nutzen</span><button class="info-btn" type="button" data-info="Viele Forecast-Wolken daempfen den praeventiven Forecast-Risikowert, weniger Wolken lassen ihn steigen.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="useForecastUv" type="checkbox" checked>
+            <label for="useForecastUv"><span class="label-main">Forecast-UV nutzen</span><button class="info-btn" type="button" data-info="UV ist ein nuetzlicher Proxy fuer starke solare Last an klaren Tagen.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="useForecastRainProb" type="checkbox">
+            <label for="useForecastRainProb"><span class="label-main">Regenwahrscheinlichkeit nutzen</span><button class="info-btn" type="button" data-info="Wenn die Regenwahrscheinlichkeit hoch ist, wird der praeventive Forecast-Risikowert gedaempft.">i</button></label>
+          </div>
+          <div class="checkbox-row">
+            <input id="useForecastRainAmount" type="checkbox">
+            <label for="useForecastRainAmount"><span class="label-main">Regenmenge nutzen</span><button class="info-btn" type="button" data-info="Erwartete Niederschlagsmenge daempft den Forecast-Risikowert noch staerker.">i</button></label>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="forecastTodayMax">Forecast Tmax heute</label>
+              <input id="forecastTodayMax" type="number" min="-20" max="50" step="0.1" value="26">
+            </div>
+            <div class="field">
+              <label for="forecastTomorrowMax">Forecast Tmax morgen</label>
+              <input id="forecastTomorrowMax" type="number" min="-20" max="50" step="0.1" value="21">
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label><span class="label-main">Forecast-Wolken in %</span> <button class="info-btn" type="button" data-info="Forecast-Wolken daempfen den praeventiven Heiss-Tag-Risikowert. Ein hoher Prozentwert sollte die Beschattung also weicher machen, nicht haerter.">i</button></label>
+              <div class="range-row">
+                <input id="forecastCloudCoverageRange" type="range" min="0" max="100" step="1" value="25">
+                <input id="forecastCloudCoverage" type="number" min="0" max="100" step="1" value="25">
+              </div>
+            </div>
+            <div class="field">
+              <label>Forecast-UV</label>
+              <div class="range-row">
+                <input id="forecastUvRange" type="range" min="0" max="12" step="0.1" value="5.9">
+                <input id="forecastUv" type="number" min="0" max="12" step="0.1" value="5.9">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Forecast Solar max in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarleistung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
+              <div class="range-row">
+                <input id="forecastSolarMaxRange" type="range" min="0" max="1000" step="10" value="850">
+                <input id="forecastSolarMax" type="number" min="0" max="1200" step="10" value="850">
+              </div>
+            </div>
+            <div class="field">
+              <label>Forecast Regenwahr. in %</label>
+              <div class="range-row">
+                <input id="forecastRainProbRange" type="range" min="0" max="100" step="1" value="0">
+                <input id="forecastRainProb" type="number" min="0" max="100" step="1" value="0">
+              </div>
+            </div>
+            <div class="field">
+              <label>Forecast Regenmenge in mm</label>
+              <div class="range-row">
+                <input id="forecastRainAmountRange" type="range" min="0" max="20" step="0.1" value="0.8">
+                <input id="forecastRainAmount" type="number" min="0" max="20" step="0.1" value="0.8">
+              </div>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="hotDayThreshold">Hot-Day-Schwelle</label>
+              <input id="hotDayThreshold" type="number" min="0" max="50" step="0.5" value="26">
+            </div>
+            <div class="field">
+              <label for="veryHotThreshold">Very-Hot-Schwelle</label>
+              <input id="veryHotThreshold" type="number" min="0" max="50" step="0.5" value="30">
+            </div>
+            <div class="field">
+              <label for="preemptiveStart">Forecast-Startzeit</label>
+              <input id="preemptiveStart" type="time" value="09:00">
+            </div>
+            <div class="field">
+              <label>Forecast-Einfluss</label>
+              <div class="range-row">
+                <input id="forecastInfluenceRange" type="range" min="0" max="1" step="0.05" value="0.50">
+                <input id="forecastInfluence" type="number" min="0" max="1" step="0.05" value="0.50">
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </section>
+
+    <section class="column output-column">
+      <section class="panel sticky-panel">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="label">Offenposition</div>
+            <div class="value"><span id="openingValue">0</span><span class="suffix">%</span></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Geschlossen</div>
+            <div class="value"><span id="closureValue">0</span><span class="suffix">%</span></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Policy-Score</div>
+            <div class="value" id="policyScoreValue">0.00</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Policy-Stufe</div>
+            <div><span class="pill none" id="policyLevelPill">none</span></div>
+          </div>
+        </div>
+
+        <div class="viz-grid">
+          <div class="window-card">
+            <h2>Oeffnungs-Piktogramm</h2>
+            <svg id="windowSvg" viewBox="0 0 280 340" role="img" aria-label="Window opening visualization"></svg>
+            <h3 class="horizon-mini-title">Horizont & Sonnenbahn</h3>
+            <svg id="windowHorizonSvg" viewBox="0 0 280 180" role="img" aria-label="Horizont mit Sonnenstand"></svg>
+            <div class="status" id="windowStatus"></div>
+          </div>
+
+          <div>
+            <h2>Berechnete Zwischenwerte</h2>
+            <div class="metrics-grid">
+              <div class="metric"><div class="name">Berechnetes Datum</div><div class="val" id="dateCell"></div></div>
+              <div class="metric"><div class="name">Nachtmodus</div><div class="val" id="nightModeCell"></div></div>
+              <div class="metric"><div class="name">Sonnen-Azimut</div><div class="val" id="solarAzimuthCell"></div></div>
+              <div class="metric"><div class="name">Sonnen-Elevation</div><div class="val" id="solarElevationCell"></div></div>
+              <div class="metric"><div class="name">Gamma</div><div class="val" id="gammaCell"></div></div>
+              <div class="metric"><div class="name">Lokaler Fensterwinkel</div><div class="val" id="localAngleCell"></div></div>
+              <div class="metric"><div class="name">Horizontfenster</div><div class="val" id="horizonCell"></div></div>
+              <div class="metric"><div class="name">Laibungsverschattung</div><div class="val" id="revealCell"></div></div>
+              <div class="metric"><div class="name">Direkte Exposition</div><div class="val" id="directExposureCell"></div></div>
+              <div class="metric"><div class="name">Sonne wirksam am Fenster</div><div class="val" id="effectiveSunCell"></div></div>
+              <div class="metric"><div class="name">Einfallswinkel / cos</div><div class="val" id="incidenceCell"></div></div>
+              <div class="metric"><div class="name">Solar-Transmission</div><div class="val" id="transmissionCell"></div></div>
+              <div class="metric"><div class="name">Wetter jetzt</div><div class="val" id="weatherNowCell"></div></div>
+              <div class="metric"><div class="name">Wetterfaktor</div><div class="val" id="weatherFactorCell"></div></div>
+              <div class="metric"><div class="name">Solarleistung</div><div class="val" id="solarRadiationCell"></div></div>
+              <div class="metric"><div class="name">Strahlungs-/Wetterfaktor</div><div class="val" id="radiationOrWeatherCell"></div></div>
+              <div class="metric"><div class="name">Effektiver Solar-Gain</div><div class="val" id="effectiveGainCell"></div></div>
+              <div class="metric"><div class="name">Waermeleistung</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Watt-Limit</div><div class="val" id="heatPowerLimitCell"></div></div>
+              <div class="metric"><div class="name">Forecast heute</div><div class="val" id="forecastTodayCell"></div></div>
+              <div class="metric"><div class="name">Forecast-Risiko</div><div class="val" id="forecastRiskCell"></div></div>
+              <div class="metric"><div class="name">Forecast-adjusted gain</div><div class="val" id="forecastAdjustedGainCell"></div></div>
+              <div class="metric"><div class="name">Weighted score</div><div class="val" id="weightedScoreCell"></div></div>
+              <div class="metric"><div class="name">Raw score</div><div class="val" id="rawScoreCell"></div></div>
+              <div class="metric"><div class="name">Basisposition offen</div><div class="val" id="basePositionCell"></div></div>
+              <div class="metric"><div class="name">Policy-Ziel offen</div><div class="val" id="policyTargetCell"></div></div>
+              <div class="metric"><div class="name">Hot-day override</div><div class="val" id="hotDayOverrideCell"></div></div>
+              <div class="metric"><div class="name">Finale Offenposition</div><div class="val" id="finalPositionCell"></div></div>
+            </div>
+            <h2 style="margin-top: 18px;">Policy-Entscheidung</h2>
+            <div class="soft-card policy-explain" id="policyExplanationCell"></div>
+            <div class="error" id="errorBox"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const sourceStatus = document.getElementById("sourceStatus");
+    const monthlessDateLabel = document.getElementById("dateLabel");
+    const dayOfYearLabel = document.getElementById("dayOfYearLabel");
+    const timeLabel = document.getElementById("timeLabel");
+    const solarStatus = document.getElementById("solarStatus");
+    const errorBox = document.getElementById("errorBox");
+    const dayOfYearRange = document.getElementById("dayOfYearRange");
+    const timeRange = document.getElementById("timeRange");
+    const glassTypeSelect = document.getElementById("glassType");
+    const customGlassFields = document.getElementById("customGlassFields");
+    const glassPresetInfo = document.getElementById("glassPresetInfo");
+    const haSourceSelect = document.getElementById("haSourceSelect");
+    const applyDevicePresetBtn = document.getElementById("applyDevicePresetBtn");
+    const refreshSourcesBtn = document.getElementById("refreshSourcesBtn");
+    const importSourceBtn = document.getElementById("importSourceBtn");
+    const horizonProfileInput = document.getElementById("horizonProfile");
+    const horizonEditorSvg = document.getElementById("horizonEditorSvg");
+    const horizonEditorStatus = document.getElementById("horizonEditorStatus");
+    const horizonExampleBtn = document.getElementById("horizonExampleBtn");
+    const openHorizonToolBtn = document.getElementById("openHorizonToolBtn");
+
+    const GLASS_PROFILES = {
+      single_clear: { visibleT: 0.90, solarT: 0.86, visibleR: 0.08, solarR: 0.08 },
+      double_clear: { visibleT: 0.80, solarT: 0.70, visibleR: 0.14, solarR: 0.14 },
+      double_low_e: { visibleT: 0.72, solarT: 0.52, visibleR: 0.13, solarR: 0.28 },
+      triple_clear: { visibleT: 0.70, solarT: 0.60, visibleR: 0.19, solarR: 0.20 },
+      triple_low_e: { visibleT: 0.62, solarT: 0.42, visibleR: 0.18, solarR: 0.32 },
+      solar_control: { visibleT: 0.50, solarT: 0.30, visibleR: 0.22, solarR: 0.36 }
+    };
+    const HEAT_GAIN_RESPONSE_START = 0.06;
+    const HEAT_GAIN_RESPONSE_FULL = 0.32;
+
+    const POLICY_PRESETS = {
+      custom: { scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0, weights: null },
+      daylight_first_single_aspect: {
+        scoreMultiplier: 0.92, thresholdShift: 0.06, positionOffset: 5,
+        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7, forecast_uv: 0.35, forecast_clouds: 0.8, forecast_precipitation_probability: 0.5, forecast_precipitation_amount: 0.5 }
+      },
+      daylight_first_multi_aspect: {
+        scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0,
+        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85, forecast_uv: 0.45, forecast_clouds: 0.75, forecast_precipitation_probability: 0.45, forecast_precipitation_amount: 0.45 }
+      },
+      balanced: {
+        scoreMultiplier: 1.08, thresholdShift: -0.02, positionOffset: 0,
+        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0, forecast_uv: 0.55, forecast_clouds: 0.65, forecast_precipitation_probability: 0.4, forecast_precipitation_amount: 0.4 }
+      },
+      cooling_first: {
+        scoreMultiplier: 1.16, thresholdShift: -0.06, positionOffset: -5,
+        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35, forecast_uv: 0.75, forecast_clouds: 0.45, forecast_precipitation_probability: 0.25, forecast_precipitation_amount: 0.25 }
+      }
+    };
+
+    const DEVICE_PRESETS = {
+      custom: {},
+      indoor_roller: {
+        defaultPosition: 100,
+        partialPosition: 70,
+        fullPosition: 30,
+        partialThreshold: 0.35,
+        fullThreshold: 0.65,
+        weightDirect: 1.2,
+        weightIncidence: 0.9,
+        weightGlazing: 0.8,
+        weightWeather: 1.0,
+        weightSolarRadiation: 1.0
+      },
+      outdoor_roller: {
+        defaultPosition: 100,
+        partialPosition: 55,
+        fullPosition: 20,
+        partialThreshold: 0.28,
+        fullThreshold: 0.55,
+        weightDirect: 1.35,
+        weightIncidence: 1.0,
+        weightGlazing: 0.7,
+        weightWeather: 1.1,
+        weightSolarRadiation: 1.2
+      },
+      indoor_venetian: {
+        defaultPosition: 100,
+        partialPosition: 75,
+        fullPosition: 45,
+        partialThreshold: 0.30,
+        fullThreshold: 0.58,
+        weightDirect: 1.0,
+        weightIncidence: 1.1,
+        weightGlazing: 0.7,
+        weightWeather: 0.9,
+        weightSolarRadiation: 0.9
+      },
+      outdoor_venetian: {
+        defaultPosition: 100,
+        partialPosition: 65,
+        fullPosition: 30,
+        partialThreshold: 0.24,
+        fullThreshold: 0.50,
+        weightDirect: 1.25,
+        weightIncidence: 1.1,
+        weightGlazing: 0.6,
+        weightWeather: 1.05,
+        weightSolarRadiation: 1.25
+      }
+    };
+
+    const rangePairs = [
+      ["fovLeftRange", "fovLeft"],
+      ["fovRightRange", "fovRight"],
+      ["cloudCoverageRange", "cloudCoverage"],
+      ["precipitationRange", "precipitation"],
+      ["solarRadiationRange", "solarRadiation"],
+      ["solarReferenceRange", "solarReference"],
+      ["outsideTempRange", "outsideTemp"],
+      ["forecastCloudCoverageRange", "forecastCloudCoverage"],
+      ["forecastUvRange", "forecastUv"],
+      ["forecastSolarMaxRange", "forecastSolarMax"],
+      ["forecastRainProbRange", "forecastRainProb"],
+      ["forecastRainAmountRange", "forecastRainAmount"],
+      ["forecastInfluenceRange", "forecastInfluence"],
+      ["weightDirectRange", "weightDirect"],
+      ["weightIncidenceRange", "weightIncidence"],
+      ["weightGlazingRange", "weightGlazing"],
+      ["weightWeatherRange", "weightWeather"],
+      ["weightSolarRadiationRange", "weightSolarRadiation"],
+      ["weightForecastTempRange", "weightForecastTemp"],
+      ["weightForecastUvRange", "weightForecastUv"],
+      ["weightForecastCloudsRange", "weightForecastClouds"],
+      ["weightForecastRainProbRange", "weightForecastRainProb"],
+      ["weightForecastRainAmountRange", "weightForecastRainAmount"],
+      ["partialThresholdRange", "partialThreshold"],
+      ["fullThresholdRange", "fullThreshold"],
+      ["partialPositionRange", "partialPosition"],
+      ["fullPositionRange", "fullPosition"],
+      ["awayScoreMultiplierRange", "awayScoreMultiplier"],
+      ["awayThresholdReductionRange", "awayThresholdReduction"],
+      ["awayPositionOffsetRange", "awayPositionOffset"],
+      ["hotDayCloseThresholdRange", "hotDayCloseThreshold"],
+      ["hotDayClosePositionRange", "hotDayClosePosition"],
+      ["veryHotDayClosePositionRange", "veryHotDayClosePosition"],
+      ["heatPowerTempThresholdRange", "heatPowerTempThreshold"],
+      ["heatProtectionMinOutsideTempRange", "heatProtectionMinOutsideTemp"],
+      ["heatPowerMaxWattsRange", "heatPowerMaxWatts"]
+    ];
+
+    const inputIds = [
+      "dayOfYearRange", "timeRange", "latitude", "longitude", "windowAzimuth",
+      "defaultPosition", "sunsetPosition", "fovLeft", "fovRight", "minElevation", "maxElevation",
+      "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
+      "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
+      "revealTop", "horizonProfile", "cloudCoverage", "precipitation",
+      "solarRadiation", "solarReference", "outsideTemp",
+      "forecastTodayMax", "forecastTomorrowMax", "forecastCloudCoverage",
+      "forecastUv", "forecastSolarMax", "forecastRainProb", "forecastRainAmount", "hotDayThreshold",
+      "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
+      "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
+      "weightSolarRadiation",
+      "weightForecastTemp", "weightForecastUv", "weightForecastClouds",
+      "weightForecastRainProb", "weightForecastRainAmount", "partialThreshold",
+      "fullThreshold", "partialPosition", "fullPosition", "awayScoreMultiplier",
+      "awayThresholdReduction", "awayPositionOffset", "useTodayMax",
+      "useTomorrowMax", "useForecastClouds", "useForecastUv", "useOpenDataSolarRadiation", "useForecastRainProb",
+      "useForecastRainAmount", "enableHeatGainPolicy", "additionalWindows", "awayActive", "devicePreset",
+      "enableLegacyBasicShading", "showExpertWeights",
+      "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
+      "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
+      "heatProtectionMinOutsideTemp", "heatPowerMaxWatts"
+    ];
+
+    const HORIZON_EXAMPLE_PROFILE = [
+      { angle: 43, lower_elevation: 6, upper_elevation: 90 },
+      { angle: 51, lower_elevation: 17, upper_elevation: 90 },
+      { angle: 74, lower_elevation: 23, upper_elevation: 90 },
+      { angle: 90, lower_elevation: 20, upper_elevation: 90 },
+      { angle: 91, lower_elevation: 14, upper_elevation: 90 },
+      { angle: 100, lower_elevation: 7, upper_elevation: 90 },
+      { angle: 112, lower_elevation: 5, upper_elevation: 90 },
+      { angle: 120, lower_elevation: 10, upper_elevation: 90 },
+      { angle: 180, lower_elevation: 17, upper_elevation: 90 }
+    ];
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function clamp01(value) {
+      return clamp(value, 0, 1);
+    }
+
+    function deg2rad(value) {
+      return value * Math.PI / 180;
+    }
+
+    function rad2deg(value) {
+      return value * 180 / Math.PI;
+    }
+
+    function parseNumber(id) {
+      return Number(document.getElementById(id).value);
+    }
+
+    function parseBool(id) {
+      return Boolean(document.getElementById(id).checked);
+    }
+
+    function formatTime(minutesValue) {
+      const safe = clamp(Math.round(minutesValue), 0, 1439);
+      const hours = String(Math.floor(safe / 60)).padStart(2, "0");
+      const minutes = String(safe % 60).padStart(2, "0");
+      return `${hours}:${minutes}`;
+    }
+
+    function dateFromDayOfYear(dayOfYear, year) {
+      const start = new Date(year, 0, 1);
+      start.setDate(clamp(Math.round(dayOfYear), 1, 366));
+      return start;
+    }
+
+    function syncDateTimeReadouts() {
+      const year = new Date().getFullYear();
+      const date = dateFromDayOfYear(parseNumber("dayOfYearRange"), year);
+      monthlessDateLabel.textContent = date.toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+      dayOfYearLabel.textContent = `Tag ${parseNumber("dayOfYearRange")}`;
+      timeLabel.textContent = formatTime(parseNumber("timeRange"));
+    }
+
+    function bindRangePairs() {
+      rangePairs.forEach(([rangeId, inputId]) => {
+        const range = document.getElementById(rangeId);
+        const input = document.getElementById(inputId);
+        range.addEventListener("input", () => {
+          input.value = range.value;
+          render();
+        });
+        input.addEventListener("input", () => {
+          range.value = input.value;
+          render();
+        });
+      });
+    }
+
+    const INFO_TEXT_BY_LABEL = {
+      "Fenster-Azimut": "Himmelsrichtung der Fensternormale: 90 Grad Ost, 180 Grad Sued, 270 Grad West. Daraus entsteht per Skalarprodukt der Einfallswinkel zur Sonne.",
+      "Fensterhoehe in m": "Sichtbare Glas- bzw. Fensterhoehe. Wird fuer obere Laibung und die Legacy-Basisposition verwendet.",
+      "Legacy Schutz-/Blendtiefe in m": "Alter Adaptive-Cover-Basiswert. Er wird nur noch physikalisch gedaempft und soll langfristig weniger wichtig werden.",
+      "Sichtfeld links": "Wie weit links vom Fenstermittelpunkt direkte Sonne ueberhaupt relevant sein darf.",
+      "Sichtfeld rechts": "Wie weit rechts vom Fenstermittelpunkt direkte Sonne ueberhaupt relevant sein darf.",
+      "Minimale Sonnenhoehe": "Unterhalb dieser Elevation wird direkte Sonne ignoriert.",
+      "Maximale Sonnenhoehe": "Oberhalb dieser Elevation wird direkte Sonne ignoriert.",
+      "Custom Tvis": "Sichtbare Lichttransmission deiner eigenen Glasart bei senkrechtem Einfall.",
+      "Custom Tsol": "Solare Gesamttransmission deiner eigenen Glasart bei senkrechtem Einfall.",
+      "Custom Rvis": "Sichtbare Reflexion deiner eigenen Glasart bei senkrechtem Einfall.",
+      "Custom Rsol": "Solare Reflexion deiner eigenen Glasart bei senkrechtem Einfall.",
+      "Wetter-Quelle": "Hinweisfeld, ob Werte manuell gesetzt oder aus Home Assistant importiert wurden.",
+      "Weight: direct exposure": "Expert: Gewicht der direkten Exposition aus Horizont, Sichtfeld und Laibung.",
+      "Weight: incidence": "Expert: Gewicht des Einfallswinkels. Flache Sonne auf die Scheibe reduziert den Waermeeintrag stark.",
+      "Weight: glazing": "Expert: Gewicht der Glas-Transmission inklusive Reflexion.",
+      "Weight: current weather": "Expert: Gewicht aktueller Wolken und Regen.",
+      "Weight: forecast temp": "Expert: Gewicht des Temperatur-Forecasts im Policy-Score.",
+      "Weight: forecast UV": "Expert: Gewicht des UV-Forecasts als Proxy fuer starke solare Last.",
+      "Weight: forecast clouds": "Expert: Gewicht der Forecast-Wolkendaempfung.",
+      "Weight: forecast rain probability": "Expert: Gewicht der Forecast-Regenwahrscheinlichkeit.",
+      "Weight: forecast rain amount": "Expert: Gewicht der Forecast-Regenmenge.",
+      "Partial close threshold": "Schwelle des multiplikativen Waermeeintrags-Scores, ab der die Policy teilweise strenger werden darf.",
+      "Full close threshold": "Schwelle des multiplikativen Waermeeintrags-Scores, ab der das strenge Ziel greifen darf.",
+      "Teilziel (% offen)": "Offenposition bei mittlerem Waermeeintrag. 100 Prozent offen ist ganz offen, 0 Prozent offen ist geschlossen.",
+      "Strenges Ziel (% offen)": "Offenposition bei hohem Waermeeintrag. Dieser Wert sollte kleiner oder gleich dem Teilziel sein.",
+      "Away score multiplier": "Expert: Multiplikator fuer den Policy-Score, wenn Away aktiv ist.",
+      "Away threshold reduction": "Expert: Senkt die Policy-Schwellen bei Abwesenheit.",
+      "Away zusaetzlich schliessen": "Expert: Reduziert die erlaubte Offenposition bei Abwesenheit.",
+      "Hot day close threshold": "Temperatur-Forecast, ab dem das Hot-Day-Offenlimit greifen darf. Es gilt erst ab Forecast-Startzeit und nicht nachts.",
+      "Heiss-Tag-Ziel (% offen)": "Maximale Offenposition an heissen Tagen, sofern Hot-Day aktiv ist.",
+      "Sehr-heiss-Ziel (% offen)": "Maximale Offenposition ab der Very-Hot-Schwelle. Niedriger als das Heiss-Tag-Ziel setzen, damit der Unterschied sichtbar wird.",
+      "Import-Modus": "Ersetzen uebernimmt die importierten Werte direkt. Overlay laesst unbekannte Simulatorwerte stehen.",
+      "Breitengrad": "Standort-Breitengrad fuer die Sonnenstandsberechnung.",
+      "Laengengrad": "Standort-Laengengrad fuer die Sonnenstandsberechnung.",
+      "Niederschlag jetzt in mm": "Aktueller Niederschlag daempft die direkte solare Last.",
+      "Solarleistung jetzt in W/m²": "Aktuelle Solarstrahlung in W/m². Mit Open-Data-Solarleistung aktiv ersetzt sie Wolken als physikalische Daempfung.",
+      "Solarleistung Vollskala in W/m²": "Einfache Prozent-Skalierung der Solarwerte: aktuelle W/m² geteilt durch diese Referenz ergibt den Solarleistungs-Prozentwert.",
+      "Forecast Tmax heute": "Vorhergesagtes Tagesmaximum fuer heute.",
+      "Forecast Tmax morgen": "Vorhergesagtes Tagesmaximum fuer morgen.",
+      "Forecast-UV": "Vorhergesagter UV-Index.",
+      "Forecast Solar max in W/m²": "Tagesmaximum der Solarstrahlung in W/m² aus Open Data oder Sensor-Simulation.",
+      "Forecast Regenwahr. in %": "Vorhergesagte Regenwahrscheinlichkeit. Hohe Werte daempfen Forecast-Risiko.",
+      "Forecast Regenmenge in mm": "Vorhergesagte Regenmenge. Hohe Werte daempfen Forecast-Risiko.",
+      "Hot-Day-Schwelle": "Temperatur, ab der Forecast-Risiko beginnt.",
+      "Very-Hot-Schwelle": "Temperatur, ab der Forecast-Risiko maximal ist.",
+      "Forecast-Startzeit": "Frueheste Uhrzeit, ab der Forecast-/Hot-Day-Logik aktiv werden darf.",
+      "Forecast-Einfluss": "Wie stark Forecast-Risiko den physikalischen Solar-Gain verstaerken darf."
+    };
+
+    function labelText(label) {
+      return (label.querySelector(".label-main")?.textContent || label.textContent || "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function addMissingInfoButtons() {
+      document.querySelectorAll(".field label, .checkbox-row label").forEach((label) => {
+        if (label.querySelector(".info-btn")) {
+          return;
+        }
+        const text = labelText(label);
+        const button = document.createElement("button");
+        button.className = "info-btn";
+        button.type = "button";
+        button.textContent = "i";
+        button.dataset.info = INFO_TEXT_BY_LABEL[text] || "Dieser Wert geht direkt in die Simulation ein. Wenn du unsicher bist, starte mit dem importierten Wert aus Home Assistant oder dem Preset.";
+        label.appendChild(button);
+      });
+    }
+
+    function bindInfoButtons() {
+      const tooltip = document.createElement("div");
+      tooltip.className = "info-tooltip";
+      document.body.appendChild(tooltip);
+
+      const showTooltip = (button) => {
+        tooltip.textContent = button.dataset.info || "Keine Hilfe hinterlegt.";
+        const rect = button.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - 380, Math.max(16, rect.left - 12));
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${Math.min(window.innerHeight - 120, rect.bottom + 8)}px`;
+        tooltip.classList.add("visible");
+      };
+      const hideTooltip = () => tooltip.classList.remove("visible");
+
+      document.querySelectorAll(".info-btn").forEach((button) => {
+        button.addEventListener("mouseenter", () => showTooltip(button));
+        button.addEventListener("focus", () => showTooltip(button));
+        button.addEventListener("mouseleave", hideTooltip);
+        button.addEventListener("blur", hideTooltip);
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          showTooltip(button);
+        });
+      });
+    }
+
+    function updateGlassInfo() {
+      const key = glassTypeSelect.value;
+      const custom = key === "custom";
+      customGlassFields.classList.toggle("hidden", !custom);
+      if (custom) {
+        glassPresetInfo.textContent = "Custom-Werte aktiv";
+        return;
+      }
+      const profile = GLASS_PROFILES[key] || GLASS_PROFILES.double_clear;
+      glassPresetInfo.textContent = `Tvis ${profile.visibleT.toFixed(2)}, Tsol ${profile.solarT.toFixed(2)}, Rvis ${profile.visibleR.toFixed(2)}, Rsol ${profile.solarR.toFixed(2)}`;
+    }
+
+    function glassProfileForState(state) {
+      if (state.glassType === "custom") {
+        return {
+          visibleT: clamp01(state.customVisibleT),
+          solarT: clamp01(state.customSolarT),
+          visibleR: clamp01(state.customVisibleR),
+          solarR: clamp01(state.customSolarR)
+        };
+      }
+      return GLASS_PROFILES[state.glassType] || GLASS_PROFILES.double_clear;
+    }
+
+    function applyDevicePreset() {
+      const preset = DEVICE_PRESETS[document.getElementById("devicePreset").value] || {};
+      Object.entries(preset).forEach(([key, value]) => {
+        const element = document.getElementById(key);
+        if (!element) {
+          return;
+        }
+        element.value = value;
+        const range = document.getElementById(`${key}Range`);
+        if (range) {
+          range.value = value;
+        }
+      });
+      render();
+    }
+
+    function setInputValue(id, value) {
+      const element = document.getElementById(id);
+      if (!element) {
+        return;
+      }
+      element.value = value;
+      const range = document.getElementById(`${id}Range`);
+      if (range) {
+        range.value = value;
+      }
+    }
+
+    function applyPolicyPresetWeights() {
+      const preset = POLICY_PRESETS[document.getElementById("policyPreset").value] || POLICY_PRESETS.custom;
+      if (!preset.weights || document.getElementById("showExpertWeights").checked) {
+        return;
+      }
+      setInputValue("weightDirect", preset.weights.direct_exposure);
+      setInputValue("weightIncidence", preset.weights.incidence);
+      setInputValue("weightGlazing", preset.weights.glazing);
+      setInputValue("weightWeather", preset.weights.weather);
+      setInputValue("weightSolarRadiation", preset.weights.solar_radiation);
+      setInputValue("weightForecastTemp", preset.weights.forecast_temperature);
+      setInputValue("weightForecastUv", preset.weights.forecast_uv);
+      setInputValue("weightForecastClouds", preset.weights.forecast_clouds);
+      setInputValue("weightForecastRainProb", preset.weights.forecast_precipitation_probability);
+      setInputValue("weightForecastRainAmount", preset.weights.forecast_precipitation_amount);
+    }
+
+    function updateExpertWeightsVisibility() {
+      document.getElementById("expertWeightsPanel").classList.toggle(
+        "hidden",
+        !document.getElementById("showExpertWeights").checked
+      );
+    }
+
+    async function refreshHASources() {
+      sourceStatus.textContent = "Lade Solar-Shading-Fenster aus Home Assistant ...";
+      haSourceSelect.innerHTML = '<option value="">Bitte waehlen ...</option>';
+      try {
+        const response = await fetch("/api/states");
+        if (!response.ok) {
+          throw new Error(`HA API antwortet mit ${response.status}`);
+        }
+        const states = await response.json();
+        const entries = states.filter((state) => {
+          const attrs = state.attributes || {};
+          return state.entity_id?.startsWith("sensor.") &&
+            attrs.friendly_name &&
+            Object.prototype.hasOwnProperty.call(attrs, "heat_gain_policy_weight_direct_exposure");
+        }).sort((a, b) => {
+          const aName = a.attributes?.friendly_name || a.entity_id;
+          const bName = b.attributes?.friendly_name || b.entity_id;
+          return aName.localeCompare(bName, "de");
+        });
+
+        if (!entries.length) {
+          sourceStatus.textContent = "Keine passenden Solar-Shading-Fenster gefunden.";
+          return;
+        }
+
+        entries.forEach((entry) => {
+          const option = document.createElement("option");
+          option.value = entry.entity_id;
+          option.textContent = `${entry.attributes.friendly_name} (${entry.entity_id})`;
+          option.dataset.payload = JSON.stringify(entry);
+          haSourceSelect.appendChild(option);
+        });
+        sourceStatus.textContent = `${entries.length} Fenster gefunden.`;
+      } catch (error) {
+        sourceStatus.textContent = `HA-Import nicht verfuegbar: ${error.message}`;
+      }
+    }
+
+    function applyImportedState(entry, mode = "replace") {
+      const attrs = entry.attributes || {};
+      const overwrite = (id, value) => {
+        if (value === undefined || value === null || value === "") {
+          return;
+        }
+        const element = document.getElementById(id);
+        if (!element) {
+          return;
+        }
+        if (mode === "overlay" && `${element.value}` !== "" && `${element.value}` !== "0") {
+          // keep existing non-empty user value in overlay mode
+        } else {
+          if (element.type === "checkbox") {
+            element.checked = Boolean(value);
+          } else {
+            element.value = value;
+          }
+        }
+        const range = document.getElementById(`${id}Range`);
+        if (range && value !== undefined && value !== null && value !== "") {
+          range.value = value;
+        }
+      };
+
+      overwrite("windowAzimuth", attrs.azimuth_window);
+      overwrite("defaultPosition", attrs.default);
+      overwrite("sunsetPosition", attrs.sunset_default);
+      overwrite("fovLeft", attrs.fov_left_deg ?? attrs.field_of_view?.[0]);
+      overwrite("fovRight", attrs.fov_right_deg ?? attrs.field_of_view?.[1]);
+      overwrite("minElevation", attrs.min_elevation_deg);
+      overwrite("maxElevation", attrs.max_elevation_deg);
+      overwrite("windowHeight", attrs.window_height_m);
+      overwrite("windowWidth", attrs.window_width_m);
+      overwrite("distance", attrs.legacy_distance_m);
+      overwrite("revealLeft", attrs.reveal_left_depth_m);
+      overwrite("revealRight", attrs.reveal_right_depth_m);
+      overwrite("revealTop", attrs.reveal_top_depth_m);
+      overwrite("glassType", attrs.glass_type ?? "double_clear");
+      overwrite("horizonProfile", typeof attrs.horizon_profile === "string" ? attrs.horizon_profile : JSON.stringify(attrs.horizon_profile || [], null, 2));
+      overwrite("forecastTodayMax", attrs.forecast_today_max_temp);
+      overwrite("forecastTomorrowMax", attrs.forecast_tomorrow_max_temp);
+      overwrite("forecastCloudCoverage", attrs.forecast_cloud_coverage_pct);
+      overwrite("forecastUv", attrs.forecast_uv_index);
+      overwrite("solarRadiation", attrs.solar_radiation_value_w_m2 ?? attrs.open_data_current_direct_normal_irradiance_w_m2 ?? attrs.open_data_current_shortwave_radiation_w_m2);
+      overwrite("solarReference", attrs.solar_radiation_reference_w_m2);
+      overwrite("outsideTemp", attrs.heat_power_outside_temperature ?? attrs.weather_temperature ?? attrs.forecast_today_max_temp);
+      overwrite("forecastSolarMax", attrs.open_data_today_max_direct_normal_irradiance_w_m2);
+      overwrite("forecastRainProb", attrs.forecast_precipitation_probability_pct);
+      overwrite("forecastRainAmount", attrs.forecast_precipitation_amount);
+      overwrite("hotDayThreshold", attrs.forecast_hot_day_threshold);
+      overwrite("veryHotThreshold", attrs.forecast_very_hot_day_threshold);
+      overwrite("forecastInfluence", attrs.forecast_influence_strength);
+      overwrite("preemptiveStart", attrs.forecast_preemptive_start_time ? String(attrs.forecast_preemptive_start_time).slice(0, 5) : "09:00");
+      overwrite("useTodayMax", attrs.use_forecast_max_temp_today);
+      overwrite("useTomorrowMax", attrs.use_forecast_max_temp_tomorrow);
+      overwrite("useForecastClouds", attrs.use_forecast_cloud_coverage);
+      overwrite("useForecastUv", attrs.use_forecast_uv_index);
+      overwrite("useOpenDataSolarRadiation", attrs.use_open_data_solar_radiation);
+      overwrite("useForecastRainProb", attrs.use_forecast_precipitation_probability);
+      overwrite("useForecastRainAmount", attrs.use_forecast_precipitation_amount);
+      overwrite("enableHeatGainPolicy", attrs.heat_gain_policy_enabled);
+      overwrite("enableLegacyBasicShading", attrs.legacy_basic_shading_enabled);
+      overwrite("showExpertWeights", attrs.heat_gain_policy_show_expert_weights);
+      overwrite("policyPreset", attrs.heat_gain_policy_preset);
+      overwrite("additionalWindows", attrs.heat_gain_policy_has_additional_daylight_windows);
+      overwrite("awayActive", attrs.heat_gain_policy_away_mode_active);
+      overwrite("awayScoreMultiplier", attrs.heat_gain_policy_away_score_multiplier);
+      overwrite("awayThresholdReduction", attrs.heat_gain_policy_away_threshold_reduction);
+      overwrite("awayPositionOffset", attrs.heat_gain_policy_away_position_offset);
+      overwrite("hotDayCloseEnabled", attrs.heat_gain_policy_hot_day_close_enabled);
+      overwrite("hotDayCloseThreshold", attrs.heat_gain_policy_hot_day_close_threshold);
+      overwrite("hotDayClosePosition", attrs.heat_gain_policy_hot_day_close_position);
+      overwrite("veryHotDayClosePosition", attrs.heat_gain_policy_very_hot_day_close_position);
+      overwrite("heatPowerLimitEnabled", attrs.heat_power_limit_enabled);
+      overwrite("heatPowerTempThreshold", attrs.heat_power_outside_temp_threshold);
+      overwrite("heatProtectionMinOutsideTemp", attrs.heat_protection_min_outside_temp);
+      overwrite("heatPowerMaxWatts", attrs.heat_power_max_watts);
+      overwrite("weightDirect", attrs.heat_gain_policy_weight_direct_exposure);
+      overwrite("weightIncidence", attrs.heat_gain_policy_weight_incidence);
+      overwrite("weightGlazing", attrs.heat_gain_policy_weight_glazing);
+      overwrite("weightWeather", attrs.heat_gain_policy_weight_weather);
+      overwrite("weightSolarRadiation", attrs.heat_gain_policy_weight_solar_radiation);
+      overwrite("weightForecastTemp", attrs.heat_gain_policy_weight_forecast_temperature);
+      overwrite("weightForecastUv", attrs.heat_gain_policy_weight_forecast_uv);
+      overwrite("weightForecastClouds", attrs.heat_gain_policy_weight_forecast_clouds);
+      overwrite("weightForecastRainProb", attrs.heat_gain_policy_weight_forecast_precipitation_probability);
+      overwrite("weightForecastRainAmount", attrs.heat_gain_policy_weight_forecast_precipitation_amount);
+      overwrite("partialThreshold", attrs.heat_gain_policy_base_partial_threshold ?? attrs.heat_gain_policy_partial_threshold);
+      overwrite("fullThreshold", attrs.heat_gain_policy_base_full_threshold ?? attrs.heat_gain_policy_full_threshold);
+      overwrite("partialPosition", attrs.heat_gain_policy_config_partial_position ?? attrs.heat_gain_policy_base_partial_position ?? attrs.heat_gain_policy_partial_position);
+      overwrite("fullPosition", attrs.heat_gain_policy_config_full_position ?? attrs.heat_gain_policy_base_full_position ?? attrs.heat_gain_policy_full_position);
+      updateGlassInfo();
+      render();
+    }
+
+    function importSelectedHASource() {
+      const option = haSourceSelect.selectedOptions[0];
+      if (!option || !option.dataset.payload) {
+        sourceStatus.textContent = "Bitte zuerst ein HA-Fenster auswaehlen.";
+        return;
+      }
+      const payload = JSON.parse(option.dataset.payload);
+      applyImportedState(payload, document.getElementById("haImportMode").value);
+      sourceStatus.textContent = `${payload.attributes?.friendly_name || payload.entity_id} wurde in den Simulator uebernommen.`;
+    }
+
+    function readState() {
+      const year = new Date().getFullYear();
+      const date = dateFromDayOfYear(parseNumber("dayOfYearRange"), year);
+      const profileText = document.getElementById("horizonProfile").value;
+      return {
+        year,
+        month: date.getMonth() + 1,
+        day: date.getDate(),
+        date,
+        time: formatTime(parseNumber("timeRange")),
+        latitude: parseNumber("latitude"),
+        longitude: parseNumber("longitude"),
+        windowAzimuth: parseNumber("windowAzimuth"),
+        defaultPosition: parseNumber("defaultPosition"),
+        sunsetPosition: parseNumber("sunsetPosition"),
+        fovLeft: parseNumber("fovLeft"),
+        fovRight: parseNumber("fovRight"),
+        minElevation: parseNumber("minElevation"),
+        maxElevation: parseNumber("maxElevation"),
+        windowHeight: parseNumber("windowHeight"),
+        windowWidth: parseNumber("windowWidth"),
+        distance: parseNumber("distance"),
+        glassType: glassTypeSelect.value,
+        customVisibleT: parseNumber("customVisibleT"),
+        customSolarT: parseNumber("customSolarT"),
+        customVisibleR: parseNumber("customVisibleR"),
+        customSolarR: parseNumber("customSolarR"),
+        revealLeft: parseNumber("revealLeft"),
+        revealRight: parseNumber("revealRight"),
+        revealTop: parseNumber("revealTop"),
+        horizonProfile: profileText,
+        cloudCoverage: parseNumber("cloudCoverage"),
+        precipitation: parseNumber("precipitation"),
+        solarRadiation: parseNumber("solarRadiation"),
+        solarReference: parseNumber("solarReference"),
+        outsideTemp: parseNumber("outsideTemp"),
+        forecastTodayMax: parseNumber("forecastTodayMax"),
+        forecastTomorrowMax: parseNumber("forecastTomorrowMax"),
+        forecastCloudCoverage: parseNumber("forecastCloudCoverage"),
+        forecastUv: parseNumber("forecastUv"),
+        forecastSolarMax: parseNumber("forecastSolarMax"),
+        forecastRainProb: parseNumber("forecastRainProb"),
+        forecastRainAmount: parseNumber("forecastRainAmount"),
+        hotDayThreshold: parseNumber("hotDayThreshold"),
+        veryHotThreshold: parseNumber("veryHotThreshold"),
+        forecastInfluence: parseNumber("forecastInfluence"),
+        policyPreset: document.getElementById("policyPreset").value,
+        preemptiveStart: document.getElementById("preemptiveStart").value || "00:00",
+        weightDirect: parseNumber("weightDirect"),
+        weightIncidence: parseNumber("weightIncidence"),
+        weightGlazing: parseNumber("weightGlazing"),
+        weightWeather: parseNumber("weightWeather"),
+        weightSolarRadiation: parseNumber("weightSolarRadiation"),
+        weightForecastTemp: parseNumber("weightForecastTemp"),
+        weightForecastUv: parseNumber("weightForecastUv"),
+        weightForecastClouds: parseNumber("weightForecastClouds"),
+        weightForecastRainProb: parseNumber("weightForecastRainProb"),
+        weightForecastRainAmount: parseNumber("weightForecastRainAmount"),
+        partialThreshold: parseNumber("partialThreshold"),
+        fullThreshold: parseNumber("fullThreshold"),
+        partialPosition: parseNumber("partialPosition"),
+        fullPosition: parseNumber("fullPosition"),
+        awayScoreMultiplier: parseNumber("awayScoreMultiplier"),
+        awayThresholdReduction: parseNumber("awayThresholdReduction"),
+        awayPositionOffset: parseNumber("awayPositionOffset"),
+        useTodayMax: parseBool("useTodayMax"),
+        useTomorrowMax: parseBool("useTomorrowMax"),
+        useForecastClouds: parseBool("useForecastClouds"),
+        useForecastUv: parseBool("useForecastUv"),
+        useOpenDataSolarRadiation: parseBool("useOpenDataSolarRadiation"),
+        useForecastRainProb: parseBool("useForecastRainProb"),
+        useForecastRainAmount: parseBool("useForecastRainAmount"),
+        enableHeatGainPolicy: parseBool("enableHeatGainPolicy"),
+        additionalWindows: parseBool("additionalWindows"),
+        awayActive: parseBool("awayActive"),
+        enableLegacyBasicShading: parseBool("enableLegacyBasicShading"),
+        showExpertWeights: parseBool("showExpertWeights"),
+        hotDayCloseEnabled: parseBool("hotDayCloseEnabled"),
+        hotDayCloseThreshold: parseNumber("hotDayCloseThreshold"),
+        hotDayClosePosition: parseNumber("hotDayClosePosition"),
+        veryHotDayClosePosition: parseNumber("veryHotDayClosePosition"),
+        heatPowerLimitEnabled: parseBool("heatPowerLimitEnabled"),
+        heatPowerTempThreshold: parseNumber("heatPowerTempThreshold"),
+        heatProtectionMinOutsideTemp: parseNumber("heatProtectionMinOutsideTemp"),
+        heatPowerMaxWatts: parseNumber("heatPowerMaxWatts")
+      };
+    }
+
+    function solarPosition(year, month, day, timeText, latitude, longitude) {
+      const [hoursRaw, minutesRaw] = timeText.split(":");
+      const hours = Number(hoursRaw || 12);
+      const minutes = Number(minutesRaw || 0);
+      const date = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      const startOfYear = new Date(year, 0, 0);
+      const diff = date - startOfYear;
+      const oneDay = 1000 * 60 * 60 * 24;
+      const dayOfYear = Math.floor(diff / oneDay);
+
+      const gamma = 2 * Math.PI / 365 * (dayOfYear - 1 + (hours - 12) / 24);
+      const decl = 0.006918
+        - 0.399912 * Math.cos(gamma)
+        + 0.070257 * Math.sin(gamma)
+        - 0.006758 * Math.cos(2 * gamma)
+        + 0.000907 * Math.sin(2 * gamma)
+        - 0.002697 * Math.cos(3 * gamma)
+        + 0.00148 * Math.sin(3 * gamma);
+      const eqTime = 229.18 * (
+        0.000075
+        + 0.001868 * Math.cos(gamma)
+        - 0.032077 * Math.sin(gamma)
+        - 0.014615 * Math.cos(2 * gamma)
+        - 0.040849 * Math.sin(2 * gamma)
+      );
+
+      const tzHours = -date.getTimezoneOffset() / 60;
+      const timeOffset = eqTime + 4 * longitude - 60 * tzHours;
+      let trueSolarTime = hours * 60 + minutes + timeOffset;
+      while (trueSolarTime < 0) trueSolarTime += 1440;
+      while (trueSolarTime >= 1440) trueSolarTime -= 1440;
+
+      const hourAngle = deg2rad(trueSolarTime / 4 - 180);
+      const latRad = deg2rad(latitude);
+      const cosZenith = clamp(
+        Math.sin(latRad) * Math.sin(decl)
+        + Math.cos(latRad) * Math.cos(decl) * Math.cos(hourAngle),
+        -1,
+        1
+      );
+      const zenith = Math.acos(cosZenith);
+      const elevation = 90 - rad2deg(zenith);
+      const azimuth = (rad2deg(Math.atan2(
+        Math.sin(hourAngle),
+        Math.cos(hourAngle) * Math.sin(latRad) - Math.tan(decl) * Math.cos(latRad)
+      )) + 180) % 360;
+
+      return { azimuth, elevation, date };
+    }
+
+    function localWindowAngle(gamma) {
+      return clamp(90 - gamma, 0, 180);
+    }
+
+    function sunPathForDay(year, month, day, latitude, longitude, windowAzimuth) {
+      const segments = [];
+      let current = [];
+      for (let minutes = 0; minutes < 1440; minutes += 10) {
+        const timeText = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+        const sun = solarPosition(year, month, day, timeText, latitude, longitude);
+        const gamma = ((windowAzimuth - sun.azimuth + 180) % 360) - 180;
+        const inFront = gamma >= -90 && gamma <= 90 && sun.elevation > 0;
+        if (!inFront) {
+          if (current.length) {
+            segments.push(current);
+            current = [];
+          }
+          continue;
+        }
+        current.push({
+          angle: localWindowAngle(gamma),
+          elevation: sun.elevation,
+        });
+      }
+      if (current.length) {
+        segments.push(current);
+      }
+      return segments;
+    }
+
+    function sunPathSvg(segments, x, y, attrs) {
+      return segments
+        .filter((segment) => segment.length > 1)
+        .map((segment) => {
+          const path = segment
+            .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle).toFixed(1)} ${y(point.elevation).toFixed(1)}`)
+            .join(" ");
+          return `<path d="${path}" fill="none" ${attrs}></path>`;
+        })
+        .join("");
+    }
+
+    function buildSunPaths(state) {
+      return {
+        selected: sunPathForDay(
+          state.year,
+          state.month,
+          state.day,
+          state.latitude,
+          state.longitude,
+          state.windowAzimuth
+        ),
+        longest: sunPathForDay(
+          state.year,
+          6,
+          21,
+          state.latitude,
+          state.longitude,
+          state.windowAzimuth
+        ),
+        shortest: sunPathForDay(
+          state.year,
+          12,
+          21,
+          state.latitude,
+          state.longitude,
+          state.windowAzimuth
+        ),
+      };
+    }
+
+    function parseHorizonProfile(text) {
+      if (!text.trim()) {
+        return [];
+      }
+      const parsed = JSON.parse(text);
+      return parsed
+        .map((item) => ({
+          angle: clamp(Number(item.angle), 0, 180),
+          lower: clamp(Number(item.lower_elevation ?? 0), 0, 90),
+          upper: clamp(Number(item.upper_elevation ?? 90), 0, 90)
+        }))
+        .sort((a, b) => a.angle - b.angle);
+    }
+
+    function interpolateHorizon(localAngle, profile) {
+      if (!profile.length) {
+        return { lower: 0, upper: 90 };
+      }
+      if (profile.length === 1) {
+        return { lower: profile[0].lower, upper: profile[0].upper };
+      }
+      const angle = clamp(localAngle, 0, 180);
+      if (angle <= profile[0].angle) {
+        return { lower: profile[0].lower, upper: profile[0].upper };
+      }
+      if (angle >= profile[profile.length - 1].angle) {
+        const point = profile[profile.length - 1];
+        return { lower: point.lower, upper: point.upper };
+      }
+      for (let index = 0; index < profile.length - 1; index += 1) {
+        const left = profile[index];
+        const right = profile[index + 1];
+        if (left.angle <= angle && angle <= right.angle) {
+          const ratio = (angle - left.angle) / Math.max(right.angle - left.angle, 1e-6);
+          return {
+            lower: left.lower + (right.lower - left.lower) * ratio,
+            upper: left.upper + (right.upper - left.upper) * ratio
+          };
+        }
+      }
+      return { lower: 0, upper: 90 };
+    }
+
+    function horizonJson(profile) {
+      return JSON.stringify(
+        profile
+          .map((point) => ({
+            angle: Math.round(clamp(point.angle, 0, 180)),
+            lower_elevation: Math.round(clamp(point.lower, 0, 90) * 10) / 10,
+            upper_elevation: Math.round(clamp(point.upper, 0, 90) * 10) / 10
+          }))
+          .sort((a, b) => a.angle - b.angle),
+        null,
+        2
+      );
+    }
+
+    function exampleHorizonJson() {
+      return JSON.stringify(HORIZON_EXAMPLE_PROFILE, null, 2);
+    }
+
+    function renderHorizonEditor(profile, localAngle = null, sunElevation = null, horizon = null, sunPaths = null) {
+      if (!horizonEditorSvg) {
+        return;
+      }
+      const points = profile.length ? profile : parseHorizonProfile(exampleHorizonJson());
+      const width = 680;
+      const height = 330;
+      const margin = { top: 22, right: 22, bottom: 42, left: 46 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      const x = (angle) => margin.left + (clamp(angle, 0, 180) / 180) * innerWidth;
+      const y = (elevation) => margin.top + innerHeight - (clamp(elevation, 0, 90) / 90) * innerHeight;
+      const linePath = (key) => points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point[key])}`).join(" ");
+      const lowerPath = points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point.lower)}`).join(" ");
+      const upperPath = [...points].reverse().map((point) => `L ${x(point.angle)} ${y(point.upper)}`).join(" ");
+      const bandPath = `${lowerPath} ${upperPath} Z`;
+      const grid = [0, 30, 60, 90].map((elev) => `
+        <line x1="${margin.left}" y1="${y(elev)}" x2="${width - margin.right}" y2="${y(elev)}" stroke="#d9cab8" stroke-width="1" opacity="0.8"></line>
+        <text x="${margin.left - 8}" y="${y(elev) + 4}" text-anchor="end" fill="#6d6155" font-size="11">${elev}°</text>
+      `).join("");
+      const ticks = [0, 45, 90, 135, 180].map((angle) => `
+        <line x1="${x(angle)}" y1="${height - margin.bottom}" x2="${x(angle)}" y2="${height - margin.bottom + 6}" stroke="#6d6155" stroke-width="1"></line>
+        <text x="${x(angle)}" y="${height - 16}" text-anchor="middle" fill="#6d6155" font-size="11">${angle}°</text>
+      `).join("");
+      const circles = points.map((point, index) => `
+        <circle class="horizon-point" data-index="${index}" data-key="lower" cx="${x(point.angle)}" cy="${y(point.lower)}" r="7" fill="#b44b2a"></circle>
+        <circle class="horizon-point" data-index="${index}" data-key="upper" cx="${x(point.angle)}" cy="${y(point.upper)}" r="7" fill="#2f6c73"></circle>
+      `).join("");
+      const sunMarker = Number.isFinite(localAngle) && Number.isFinite(sunElevation)
+        ? `
+          <line x1="${x(localAngle)}" y1="${margin.top}" x2="${x(localAngle)}" y2="${height - margin.bottom}" stroke="#f0a202" stroke-width="2" stroke-dasharray="6 5" opacity="0.75"></line>
+          <circle cx="${x(localAngle)}" cy="${y(sunElevation)}" r="8" fill="#f0a202" stroke="#fffaf2" stroke-width="2"></circle>
+        `
+        : "";
+      const pathLines = sunPaths
+        ? `
+          ${sunPathSvg(sunPaths.longest, x, y, 'stroke="#2f6c73" stroke-width="2.2" opacity="0.55" stroke-linecap="round" stroke-linejoin="round"')}
+          ${sunPathSvg(sunPaths.shortest, x, y, 'stroke="#6d6155" stroke-width="2.2" opacity="0.5" stroke-dasharray="5 5" stroke-linecap="round" stroke-linejoin="round"')}
+          ${sunPathSvg(sunPaths.selected, x, y, 'stroke="#f0a202" stroke-width="3.2" opacity="0.9" stroke-linecap="round" stroke-linejoin="round"')}
+          <g font-size="10" fill="#6d6155">
+            <line x1="${width - 198}" y1="13" x2="${width - 172}" y2="13" stroke="#f0a202" stroke-width="3"></line>
+            <text x="${width - 166}" y="16">gewaehlter Tag</text>
+            <line x1="${width - 198}" y1="29" x2="${width - 172}" y2="29" stroke="#2f6c73" stroke-width="2"></line>
+            <text x="${width - 166}" y="32">21.06.</text>
+            <line x1="${width - 104}" y1="29" x2="${width - 78}" y2="29" stroke="#6d6155" stroke-width="2" stroke-dasharray="5 5"></line>
+            <text x="${width - 72}" y="32">21.12.</text>
+          </g>
+        `
+        : "";
+      horizonEditorSvg.innerHTML = `
+        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+        ${grid}
+        ${ticks}
+        <path d="${bandPath}" fill="#f0a202" opacity="0.16"></path>
+        ${pathLines}
+        <path d="${linePath("lower")}" fill="none" stroke="#b44b2a" stroke-width="3"></path>
+        <path d="${linePath("upper")}" fill="none" stroke="#2f6c73" stroke-width="3"></path>
+        ${sunMarker}
+        ${circles}
+      `;
+      if (horizonEditorStatus) {
+        const status = horizon
+          ? `Aktuell: lower ${round(horizon.lower, 1)}° / upper ${round(horizon.upper, 1)}° bei lokal ${round(localAngle, 1)}°.`
+          : "Punkte ziehen oder JSON bearbeiten.";
+        horizonEditorStatus.textContent = status;
+      }
+    }
+
+    function bindHorizonEditor() {
+      let drag = null;
+      const toChartPoint = (event) => {
+        const rect = horizonEditorSvg.getBoundingClientRect();
+        const xRatio = clamp((event.clientX - rect.left) / Math.max(rect.width, 1), 0, 1);
+        const yRatio = clamp((event.clientY - rect.top) / Math.max(rect.height, 1), 0, 1);
+        const margin = { top: 22 / 330, right: 22 / 680, bottom: 42 / 330, left: 46 / 680 };
+        const innerX = clamp((xRatio - margin.left) / Math.max(1 - margin.left - margin.right, 1e-6), 0, 1);
+        const innerY = clamp((yRatio - margin.top) / Math.max(1 - margin.top - margin.bottom, 1e-6), 0, 1);
+        return {
+          angle: innerX * 180,
+          elevation: (1 - innerY) * 90
+        };
+      };
+      horizonEditorSvg.addEventListener("pointerdown", (event) => {
+        const target = event.target;
+        if (!target.classList.contains("horizon-point")) {
+          return;
+        }
+        drag = {
+          index: Number(target.dataset.index),
+          key: target.dataset.key
+        };
+        horizonEditorSvg.setPointerCapture(event.pointerId);
+      });
+      horizonEditorSvg.addEventListener("pointermove", (event) => {
+        if (!drag) {
+          return;
+        }
+        const profile = parseHorizonProfile(horizonProfileInput.value || exampleHorizonJson());
+        const point = profile[drag.index];
+        if (!point) {
+          return;
+        }
+        const chartPoint = toChartPoint(event);
+        point.angle = clamp(chartPoint.angle, 0, 180);
+        if (drag.key === "lower") {
+          point.lower = Math.min(clamp(chartPoint.elevation, 0, 90), point.upper);
+        } else {
+          point.upper = Math.max(clamp(chartPoint.elevation, 0, 90), point.lower);
+        }
+        horizonProfileInput.value = horizonJson(profile);
+        render();
+      });
+      const stopDrag = () => {
+        drag = null;
+      };
+      horizonEditorSvg.addEventListener("pointerup", stopDrag);
+      horizonEditorSvg.addEventListener("pointercancel", stopDrag);
+    }
+
+    function leftRevealShadow(gamma, width, depth) {
+      if (!(width > 0) || !(depth > 0) || gamma <= 0) {
+        return 0;
+      }
+      return clamp((depth * Math.tan(deg2rad(Math.min(Math.abs(gamma), 89.9)))) / width, 0, 1);
+    }
+
+    function rightRevealShadow(gamma, width, depth) {
+      if (!(width > 0) || !(depth > 0) || gamma >= 0) {
+        return 0;
+      }
+      return clamp((depth * Math.tan(deg2rad(Math.min(Math.abs(gamma), 89.9)))) / width, 0, 1);
+    }
+
+    function topRevealShadow(elevation, height, depth) {
+      if (!(height > 0) || !(depth > 0) || elevation <= 0) {
+        return 0;
+      }
+      return clamp((depth * Math.tan(deg2rad(Math.min(elevation, 89.9)))) / height, 0, 1);
+    }
+
+    function schlickReflectance(r0, incidenceAngle) {
+      const cosTheta = clamp(Math.cos(deg2rad(incidenceAngle)), 0, 1);
+      return clamp(r0 + (1 - r0) * ((1 - cosTheta) ** 5), 0, 1);
+    }
+
+    function angularTransmittance(t0, r0, incidenceAngle) {
+      const rTheta = schlickReflectance(r0, incidenceAngle);
+      const remainingNormal = Math.max(1 - r0, 1e-6);
+      return clamp(t0 * ((1 - rTheta) / remainingNormal), 0, 1);
+    }
+
+    function temperatureRisk(temp, hot, veryHot) {
+      if (!Number.isFinite(temp) || !Number.isFinite(hot)) {
+        return 0;
+      }
+      if (!Number.isFinite(veryHot) || veryHot <= hot) {
+        return temp >= hot ? 1 : 0;
+      }
+      return clamp((temp - hot) / (veryHot - hot), 0, 1);
+    }
+
+    function temperatureBoostSignal(risk) {
+      return 1 + clamp01(risk);
+    }
+
+    function clampComponent(value) {
+      return clamp(value, 0, 2);
+    }
+
+    function uvRisk(uv) {
+      if (!Number.isFinite(uv)) {
+        return 0;
+      }
+      return clamp(uv / 8, 0, 1);
+    }
+
+    function precipitationProbabilityDamping(probability) {
+      if (!Number.isFinite(probability)) {
+        return 1;
+      }
+      return clamp(1 - probability / 100, 0, 1);
+    }
+
+    function precipitationAmountDamping(amount) {
+      if (!Number.isFinite(amount)) {
+        return 1;
+      }
+      return clamp(1 - amount / 10, 0, 1);
+    }
+
+    function weatherFactor(cloudCoverage, precipitation) {
+      const cloud = clamp(1 - cloudCoverage / 100, 0, 1);
+      const rain = precipitation > 0 ? 0.1 : 1;
+      return clamp(cloud * rain, 0, 1);
+    }
+
+    function solarRadiationFactor(value, directNormal = true, referenceOverride = null) {
+      const reference = Number.isFinite(referenceOverride) && referenceOverride > 0
+        ? referenceOverride
+        : (directNormal ? 900 : 800);
+      return clamp(value / reference, 0, 1);
+    }
+
+    function heatGainResponseFactor(gain) {
+      const progress = clamp(
+        (gain - HEAT_GAIN_RESPONSE_START) / (HEAT_GAIN_RESPONSE_FULL - HEAT_GAIN_RESPONSE_START),
+        0,
+        1
+      );
+      return clamp(progress * progress * (3 - 2 * progress), 0, 1);
+    }
+
+    function weightedRiskScore(components, weights) {
+      const active = [];
+      let weightSum = 0;
+      Object.keys(components).forEach((key) => {
+        const value = components[key];
+        const weight = Math.max(Number(weights[key] ?? 0), 0);
+        if (value === null || value === undefined || !Number.isFinite(value) || weight <= 0) {
+          return;
+        }
+        active.push({ value: clampComponent(value), weight });
+        weightSum += weight;
+      });
+      if (weightSum <= 0) {
+        return 0;
+      }
+      return clamp01(active.reduce((score, item) => score * (item.value ** (item.weight / weightSum)), 1));
+    }
+
+    function gainLimitedPolicyScore(weightedScore, heatGainResponse) {
+      return Math.min(clamp01(weightedScore), clamp01(heatGainResponse));
+    }
+
+    function adjustedPolicyScore(rawScore, presetName, hasAdditionalWindows) {
+      const preset = POLICY_PRESETS[presetName] || POLICY_PRESETS.custom;
+      let multiplier = preset.scoreMultiplier;
+      if (hasAdditionalWindows) {
+        multiplier *= 1.08;
+      }
+      return clamp01(rawScore * multiplier);
+    }
+
+    function adjustedThresholds(partial, full, presetName, hasAdditionalWindows) {
+      const preset = POLICY_PRESETS[presetName] || POLICY_PRESETS.custom;
+      let shift = preset.thresholdShift;
+      if (hasAdditionalWindows) {
+        shift -= 0.04;
+      }
+      let p = clamp01(partial + shift);
+      let f = clamp01(full + shift);
+      if (f < p) {
+        f = p;
+      }
+      return { partial: p, full: f };
+    }
+
+    function normalizePolicyPositions(partial, full) {
+      let partialBase = Math.round(Number(partial));
+      let fullBase = Math.round(Number(full));
+      const legacy = fullBase > partialBase;
+      if (legacy) {
+        partialBase = 100 - partialBase;
+        fullBase = 100 - fullBase;
+      }
+      return {
+        partial: clamp(partialBase, 0, 100),
+        full: clamp(fullBase, 0, 100),
+        legacy
+      };
+    }
+
+    function adjustedPositions(partial, full, presetName, hasAdditionalWindows) {
+      const preset = POLICY_PRESETS[presetName] || POLICY_PRESETS.custom;
+      let offset = preset.positionOffset;
+      if (hasAdditionalWindows) {
+        offset -= 5;
+      }
+      const normalized = normalizePolicyPositions(partial, full);
+      let partialBase = normalized.partial;
+      let fullBase = normalized.full;
+      const f = clamp(Math.round(fullBase), 0, 100);
+      const p = clamp(Math.round(Math.max(partialBase + offset, f)), f, 100);
+      return { partial: p, full: f };
+    }
+
+    function awayAdjustments(score, thresholds, positions, awayActive, scoreMultiplier, thresholdReduction, positionOffset) {
+      let adjustedScore = clamp01(score);
+      let partialThreshold = thresholds.partial;
+      let fullThreshold = thresholds.full;
+      let partialPosition = positions.partial;
+      let fullPosition = positions.full;
+
+      if (awayActive) {
+        adjustedScore = clamp01(adjustedScore * scoreMultiplier);
+        partialThreshold = clamp01(partialThreshold - thresholdReduction);
+        fullThreshold = clamp01(Math.max(fullThreshold - thresholdReduction, partialThreshold));
+        partialPosition = clamp(Math.round(Math.max(partialPosition - positionOffset, fullPosition)), fullPosition, 100);
+      }
+
+      return {
+        score: adjustedScore,
+        thresholds: { partial: partialThreshold, full: fullThreshold },
+        positions: { partial: partialPosition, full: fullPosition }
+      };
+    }
+
+    function veryHotPolicyPressure(temperatureRiskValue, forecastStrength) {
+      return clamp01(temperatureRiskValue) * clamp01(forecastStrength * 2);
+    }
+
+    function temperaturePolicyAdjustments(thresholds, positions, pressure) {
+      const safePressure = clamp01(pressure);
+      const thresholdReduction = 0.20 * safePressure;
+      const positionOffset = Math.round(10 * safePressure);
+      const partialThreshold = clamp01(thresholds.partial - thresholdReduction);
+      const fullThreshold = clamp01(Math.max(thresholds.full - thresholdReduction, partialThreshold));
+      const fullPosition = clamp(Math.round(positions.full), 0, 100);
+      const partialPosition = clamp(Math.round(Math.max(positions.partial - positionOffset, fullPosition)), fullPosition, 100);
+      return {
+        thresholdReduction,
+        positionOffset,
+        thresholds: { partial: partialThreshold, full: fullThreshold },
+        positions: { partial: partialPosition, full: fullPosition }
+      };
+    }
+
+    function policyTargetPosition(score, partialThreshold, fullThreshold, partialPosition, fullPosition) {
+      const safeScore = clamp01(score);
+      const safePartial = clamp01(partialThreshold);
+      const safeFull = clamp01(fullThreshold);
+
+      if (safeScore < safePartial) {
+        return { level: "none", target: null };
+      }
+      if (safeFull <= safePartial) {
+        if (safeScore >= safeFull) {
+          return { level: "full", target: clamp(fullPosition, 0, 100) };
+        }
+        return { level: "partial", target: clamp(partialPosition, 0, 100) };
+      }
+      if (safeScore >= safeFull) {
+        return { level: "full", target: clamp(fullPosition, 0, 100) };
+      }
+      const progress = (safeScore - safePartial) / (safeFull - safePartial);
+      const target = Math.round(partialPosition + (fullPosition - partialPosition) * clamp01(progress));
+      return { level: "partial", target: clamp(target, 0, 100) };
+    }
+
+    function isAfterPreemptiveStart(nowDate, startTime) {
+      const [hoursRaw, minutesRaw] = (startTime || "00:00").split(":");
+      const startMinutes = Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
+      const currentMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
+      return currentMinutes >= startMinutes;
+    }
+
+    function round(value, digits = 3) {
+      if (value === null || value === undefined || Number.isNaN(value)) {
+        return "-";
+      }
+      return Number(value).toFixed(digits);
+    }
+
+    function percent(value, digits = 1) {
+      if (value === null || value === undefined || Number.isNaN(value)) {
+        return "-";
+      }
+      return `${Number(value).toFixed(digits)} %`;
+    }
+
+    function factorPercent(value, digits = 0) {
+      if (value === null || value === undefined || Number.isNaN(value)) {
+        return "-";
+      }
+      return percent(clamp(value, 0, 1) * 100, digits);
+    }
+
+    function activeHorizonPoints(profile) {
+      const points = (profile && profile.length
+        ? profile
+        : [
+          { angle: 0, lower: 0, upper: 90 },
+          { angle: 180, lower: 0, upper: 90 }
+        ])
+        .map((point) => ({
+          angle: clamp(Number(point.angle), 0, 180),
+          lower: clamp(Number(point.lower ?? point.lower_elevation ?? point.elevation ?? 0), 0, 90),
+          upper: clamp(Number(point.upper ?? point.upper_elevation ?? 90), 0, 90)
+        }))
+        .sort((a, b) => a.angle - b.angle);
+      if (points[0].angle > 0) {
+        points.unshift({ ...points[0], angle: 0 });
+      }
+      if (points[points.length - 1].angle < 180) {
+        points.push({ ...points[points.length - 1], angle: 180 });
+      }
+      return points;
+    }
+
+    function renderWindow(closingPercent, effectiveSun, policyLevel, profile, localAngle, sunElevation, horizon, sunPaths = null) {
+      const openingPercent = clamp(100 - closingPercent, 0, 100);
+      const blindHeight = 240 * (closingPercent / 100);
+      const sunColor = effectiveSun ? "#f0a202" : "#d8c8b4";
+      const levelColor = policyLevel === "full" || policyLevel === "hotday" || policyLevel === "veryhotday" || policyLevel === "heatpower"
+        ? "#9f2f2f"
+        : policyLevel === "partial"
+          ? "#d88b11"
+          : "#2f6c73";
+      const points = activeHorizonPoints(profile);
+      const glass = { x: 52, y: 54, width: 176, height: 216 };
+      const glassX = (angle) => glass.x + (clamp(angle, 0, 180) / 180) * glass.width;
+      const glassY = (elevation) => glass.y + glass.height - (clamp(elevation, 0, 90) / 90) * glass.height;
+      const horizonLine = (key) => points
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${glassX(point.angle).toFixed(1)} ${glassY(point[key]).toFixed(1)}`)
+        .join(" ");
+      const horizonBand = points.length
+        ? [
+            ...points.map((point, index) => `${index === 0 ? "M" : "L"} ${glassX(point.angle).toFixed(1)} ${glassY(point.upper).toFixed(1)}`),
+            ...points.slice().reverse().map((point) => `L ${glassX(point.angle).toFixed(1)} ${glassY(point.lower).toFixed(1)}`),
+            "Z"
+          ].join(" ")
+        : "";
+      const windowPathLines = sunPaths
+        ? [
+            sunPathSvg(sunPaths.longest, glassX, glassY, 'stroke="#d89b37" stroke-width="2" opacity="0.38" stroke-linecap="round"'),
+            sunPathSvg(sunPaths.shortest, glassX, glassY, 'stroke="#4b6f9f" stroke-width="2" opacity="0.42" stroke-linecap="round"'),
+            sunPathSvg(sunPaths.selected, glassX, glassY, 'stroke="#f0a202" stroke-width="3" opacity="0.75" stroke-linecap="round"')
+          ].join("")
+        : "";
+      const currentSunMarker = Number.isFinite(localAngle) && Number.isFinite(sunElevation)
+        ? `<circle cx="${glassX(localAngle).toFixed(1)}" cy="${glassY(sunElevation).toFixed(1)}" r="5.5" fill="${sunColor}" stroke="#fff7df" stroke-width="2"></circle>`
+        : "";
+      const horizonOverlay = points.length
+        ? `
+          <g clip-path="url(#windowGlassClip)" pointer-events="none">
+            <path d="${horizonBand}" fill="#f0a202" opacity="0.14"></path>
+            ${windowPathLines}
+            <path d="${horizonLine("lower")}" fill="none" stroke="#b44b2a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="${horizonLine("upper")}" fill="none" stroke="#2f6c73" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            ${currentSunMarker}
+          </g>`
+        : "";
+
+      document.getElementById("windowSvg").innerHTML = `
+        <defs>
+          <linearGradient id="glassFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#eef7fa"></stop>
+            <stop offset="100%" stop-color="#d9edf4"></stop>
+          </linearGradient>
+          <linearGradient id="blindFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c28b64"></stop>
+            <stop offset="100%" stop-color="#a86c43"></stop>
+          </linearGradient>
+          <clipPath id="windowGlassClip">
+            <rect x="52" y="54" width="176" height="216" rx="10"></rect>
+          </clipPath>
+        </defs>
+        <rect x="28" y="18" width="224" height="290" rx="18" fill="#f7efe5" stroke="#bfa890" stroke-width="6"></rect>
+        <rect x="52" y="54" width="176" height="216" rx="10" fill="url(#glassFill)" stroke="#9bbeca" stroke-width="3"></rect>
+        <rect x="52" y="54" width="176" height="${blindHeight}" rx="10" fill="url(#blindFill)"></rect>
+        <line x1="140" y1="54" x2="140" y2="270" stroke="#9bbeca" stroke-width="3"></line>
+        <line x1="52" y1="162" x2="228" y2="162" stroke="#9bbeca" stroke-width="3"></line>
+        ${horizonOverlay}
+        <circle cx="240" cy="42" r="18" fill="${sunColor}" opacity="0.9"></circle>
+        <g stroke="${sunColor}" stroke-width="3">
+          <line x1="240" y1="10" x2="240" y2="0"></line>
+          <line x1="271" y1="42" x2="280" y2="42"></line>
+          <line x1="262" y1="20" x2="270" y2="12"></line>
+          <line x1="262" y1="64" x2="270" y2="72"></line>
+          <line x1="240" y1="74" x2="240" y2="84"></line>
+        </g>
+        <text x="140" y="300" fill="${levelColor}" text-anchor="middle" font-size="14" font-weight="700">Oeffnung ${openingPercent.toFixed(0)} %</text>
+      `;
+    }
+
+    function renderWindowHorizonPreview(profile, localAngle = null, sunElevation = null, horizon = null, sunPaths = null) {
+      const target = document.getElementById("windowHorizonSvg");
+      if (!target) {
+        return;
+      }
+      const points = activeHorizonPoints(profile);
+      if (!points.length) {
+        target.innerHTML = "";
+        return;
+      }
+
+      const width = 280;
+      const height = 180;
+      const margin = { top: 28, right: 12, bottom: 30, left: 30 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+      const x = (angle) => margin.left + (clamp(angle, 0, 180) / 180) * innerWidth;
+      const y = (elevation) => margin.top + innerHeight - (clamp(elevation, 0, 90) / 90) * innerHeight;
+      const linePath = (key) => points
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle).toFixed(1)} ${y(point[key]).toFixed(1)}`)
+        .join(" ");
+      const lowerPath = linePath("lower");
+      const upperReversePath = [...points].reverse()
+        .map((point) => `L ${x(point.angle).toFixed(1)} ${y(point.upper).toFixed(1)}`)
+        .join(" ");
+      const bandPath = `${lowerPath} ${upperReversePath} Z`;
+      const grid = [0, 30, 60, 90].map((elev) => `
+        <line x1="${margin.left}" y1="${y(elev).toFixed(1)}" x2="${width - margin.right}" y2="${y(elev).toFixed(1)}" stroke="#d9cab8" stroke-width="1" opacity="0.85"></line>
+        <text x="${margin.left - 5}" y="${(y(elev) + 3).toFixed(1)}" text-anchor="end" fill="#6d6155" font-size="8">${elev}</text>
+      `).join("");
+      const ticks = [0, 45, 90, 135, 180].map((angle) => `
+        <line x1="${x(angle).toFixed(1)}" y1="${height - margin.bottom}" x2="${x(angle).toFixed(1)}" y2="${height - margin.bottom + 5}" stroke="#6d6155" stroke-width="1"></line>
+        <text x="${x(angle).toFixed(1)}" y="${height - 10}" text-anchor="middle" fill="#6d6155" font-size="8">${angle}</text>
+      `).join("");
+      const visibleSunMarker = Number.isFinite(localAngle) && Number.isFinite(sunElevation) && sunElevation > 0;
+      const sunMarker = visibleSunMarker
+        ? `
+          <line x1="${x(localAngle).toFixed(1)}" y1="${margin.top}" x2="${x(localAngle).toFixed(1)}" y2="${height - margin.bottom}" stroke="#f0a202" stroke-width="2" stroke-dasharray="5 4" opacity="0.8"></line>
+          <circle cx="${x(localAngle).toFixed(1)}" cy="${y(sunElevation).toFixed(1)}" r="6" fill="#f0a202" stroke="#fffaf2" stroke-width="2"></circle>
+        `
+        : "";
+      const pathLines = sunPaths
+        ? `
+          ${sunPathSvg(sunPaths.longest, x, y, 'stroke="#2f6c73" stroke-width="1.7" opacity="0.55" stroke-linecap="round" stroke-linejoin="round"')}
+          ${sunPathSvg(sunPaths.shortest, x, y, 'stroke="#6d6155" stroke-width="1.7" opacity="0.5" stroke-dasharray="4 4" stroke-linecap="round" stroke-linejoin="round"')}
+          ${sunPathSvg(sunPaths.selected, x, y, 'stroke="#f0a202" stroke-width="2.4" opacity="0.9" stroke-linecap="round" stroke-linejoin="round"')}
+        `
+        : "";
+      const horizonText = "sichtbarer Horizont";
+
+      target.innerHTML = `
+        <rect x="0" y="0" width="${width}" height="${height}" rx="12" fill="#fffaf2" opacity="0.95"></rect>
+        <rect x="${margin.left}" y="${margin.top}" width="${innerWidth}" height="${innerHeight}" fill="#eef7fa" opacity="0.55"></rect>
+        ${grid}
+        ${ticks}
+        <path d="${bandPath}" fill="#f0a202" opacity="0.16"></path>
+        ${pathLines}
+        <path d="${linePath("lower")}" fill="none" stroke="#b44b2a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="${linePath("upper")}" fill="none" stroke="#2f6c73" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+        ${sunMarker}
+        <text x="${width - margin.right}" y="13" text-anchor="end" fill="#6d6155" font-size="8">${horizonText}</text>
+        <g font-size="7" fill="#6d6155">
+          <line x1="36" y1="11" x2="50" y2="11" stroke="#f0a202" stroke-width="2"></line>
+          <text x="54" y="13">Tag</text>
+          <line x1="82" y1="11" x2="96" y2="11" stroke="#2f6c73" stroke-width="2"></line>
+          <text x="100" y="13">lang</text>
+          <line x1="134" y1="11" x2="148" y2="11" stroke="#6d6155" stroke-width="2" stroke-dasharray="4 4"></line>
+          <text x="152" y="13">kurz</text>
+        </g>
+      `;
+    }
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function render() {
+      syncDateTimeReadouts();
+      updateExpertWeightsVisibility();
+      applyPolicyPresetWeights();
+      errorBox.textContent = "";
+      try {
+        const state = readState();
+        const profile = parseHorizonProfile(state.horizonProfile);
+        const sunPaths = buildSunPaths(state);
+        const sun = solarPosition(
+          state.year,
+          state.month,
+          state.day,
+          state.time,
+          state.latitude,
+          state.longitude
+        );
+
+        const gamma = ((state.windowAzimuth - sun.azimuth + 180) % 360) - 180;
+        const localAngle = localWindowAngle(gamma);
+        const horizon = interpolateHorizon(localAngle, profile);
+        const sunWithinHorizon = sun.elevation >= horizon.lower && sun.elevation <= horizon.upper;
+        const validElevation = sun.elevation >= state.minElevation && sun.elevation <= state.maxElevation;
+        const valid = gamma < Math.min(state.fovLeft, 90) && gamma > -Math.min(state.fovRight, 90) && validElevation && sun.elevation > 0;
+        const directSunVisible = valid && sunWithinHorizon;
+
+        const leftShadow = leftRevealShadow(gamma, state.windowWidth, state.revealLeft);
+        const rightShadow = rightRevealShadow(gamma, state.windowWidth, state.revealRight);
+        const sideShadow = Math.max(leftShadow, rightShadow);
+        const topShadow = topRevealShadow(sun.elevation, state.windowHeight, state.revealTop);
+        const totalRevealShadow = clamp(1 - (1 - sideShadow) * (1 - topShadow), 0, 1);
+        const directExposure = directSunVisible ? clamp(1 - totalRevealShadow, 0, 1) : 0;
+        const effectiveSunOnWindow = directSunVisible && directExposure > 0.001;
+
+        const incidenceCosineRaw = Math.cos(deg2rad(sun.elevation)) * Math.cos(deg2rad(gamma));
+        const incidenceAngle = rad2deg(Math.acos(clamp(incidenceCosineRaw, -1, 1)));
+        const incidenceCosine = clamp(Math.cos(deg2rad(incidenceAngle)), 0, 1);
+
+        const glass = glassProfileForState(state);
+        const solarReflectance = schlickReflectance(glass.solarR, incidenceAngle);
+        const solarTransmittance = angularTransmittance(glass.solarT, glass.solarR, incidenceAngle);
+        const solarGain = clamp(directExposure * incidenceCosine * solarTransmittance, 0, 1);
+        const currentWeatherFactor = weatherFactor(state.cloudCoverage, state.precipitation);
+        const currentSolarRadiationFactor = state.useOpenDataSolarRadiation
+          ? solarRadiationFactor(state.solarRadiation, true, state.solarReference)
+          : null;
+        const radiationOrWeatherFactor = currentSolarRadiationFactor ?? currentWeatherFactor;
+        const effectiveSolarGain = clamp(solarGain * radiationOrWeatherFactor, 0, 1);
+        const windowArea = Number.isFinite(state.windowWidth) && Number.isFinite(state.windowHeight)
+          ? Math.max(0, state.windowWidth * state.windowHeight)
+          : null;
+        const estimatedHeatPowerWm2 = state.useOpenDataSolarRadiation
+          ? clamp(state.solarRadiation * solarGain, 0, 2000)
+          : clamp(state.solarReference * effectiveSolarGain, 0, 2000);
+        const estimatedHeatPowerW = windowArea !== null && windowArea > 0
+          ? estimatedHeatPowerWm2 * windowArea
+          : null;
+        const forecastTemperatureRisk = Math.max(
+          state.useTodayMax ? temperatureRisk(state.forecastTodayMax, state.hotDayThreshold, state.veryHotThreshold) : 0,
+          state.useTomorrowMax ? temperatureRisk(state.forecastTomorrowMax, state.hotDayThreshold, state.veryHotThreshold) : 0
+        );
+        const temperatureGateSignal = Math.max(
+          Number.isFinite(state.forecastTodayMax) ? state.forecastTodayMax : Number.NEGATIVE_INFINITY,
+          state.useTomorrowMax && Number.isFinite(state.forecastTomorrowMax) ? state.forecastTomorrowMax : Number.NEGATIVE_INFINITY
+        );
+        const coldLockoutTemp = state.heatProtectionMinOutsideTemp;
+        const heatProtectionCurrentTemperatureAllowed = !Number.isFinite(state.outsideTemp)
+          || !Number.isFinite(coldLockoutTemp)
+          || state.outsideTemp >= coldLockoutTemp;
+        const heatProtectionTemperatureAllowed = heatProtectionCurrentTemperatureAllowed && (!Number.isFinite(temperatureGateSignal)
+          || !Number.isFinite(state.hotDayThreshold)
+          || temperatureGateSignal >= state.hotDayThreshold);
+        const forecastUvRisk = state.useForecastUv ? uvRisk(state.forecastUv) : 1;
+        const forecastSolarRadiationRisk = state.useOpenDataSolarRadiation
+          ? solarRadiationFactor(state.forecastSolarMax, true, state.solarReference)
+          : 1;
+        const forecastCloudDamping = state.useForecastClouds ? clamp(1 - state.forecastCloudCoverage / 100, 0, 1) : 1;
+        const forecastRainProbDamping = state.useForecastRainProb ? precipitationProbabilityDamping(state.forecastRainProb) : 1;
+        const forecastRainAmountDamping = state.useForecastRainAmount ? precipitationAmountDamping(state.forecastRainAmount) : 1;
+        const forecastPreemptiveActive = isAfterPreemptiveStart(sun.date, state.preemptiveStart);
+        const heatPowerTemperatureGateActive = !Number.isFinite(state.heatPowerTempThreshold)
+          || (Number.isFinite(state.outsideTemp) && state.outsideTemp >= state.heatPowerTempThreshold)
+          || (
+            heatProtectionCurrentTemperatureAllowed
+            &&
+            forecastPreemptiveActive
+            && Number.isFinite(temperatureGateSignal)
+            && Number.isFinite(state.hotDayThreshold)
+            && temperatureGateSignal >= state.hotDayThreshold
+          );
+        const heatPowerLimitTrigger = !state.heatPowerLimitEnabled
+          ? "aus"
+          : !effectiveSunOnWindow
+            ? "keine direkte Sonne"
+            : !(Number.isFinite(state.heatPowerMaxWatts) && state.heatPowerMaxWatts > 0)
+              ? "kein Watt-Limit"
+              : !heatProtectionCurrentTemperatureAllowed
+                ? "Kälte-Sperre"
+              : !heatPowerTemperatureGateActive
+                ? "unter Temperatur-/Forecast-Gate"
+                : Number.isFinite(state.outsideTemp) && Number.isFinite(state.heatPowerTempThreshold) && state.outsideTemp >= state.heatPowerTempThreshold
+                  ? "Aussentemperatur"
+                  : Number.isFinite(temperatureGateSignal) && Number.isFinite(state.veryHotThreshold) && temperatureGateSignal >= state.veryHotThreshold
+                    ? "Very-Hot-Forecast"
+                    : Number.isFinite(temperatureGateSignal) && Number.isFinite(state.hotDayThreshold) && temperatureGateSignal >= state.hotDayThreshold
+                      ? "Hot-Forecast"
+                      : "immer";
+        const heatPowerLimitActive = state.heatPowerLimitEnabled
+          && effectiveSunOnWindow
+          && Number.isFinite(estimatedHeatPowerW)
+          && estimatedHeatPowerW > 0
+          && Number.isFinite(state.heatPowerMaxWatts)
+          && state.heatPowerMaxWatts > 0
+          && heatPowerTemperatureGateActive;
+        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerW > state.heatPowerMaxWatts
+          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerW) * 100, 0, 100))
+          : null;
+        const forecastRisk = forecastPreemptiveActive
+          ? clamp(
+              forecastTemperatureRisk
+              * forecastSolarRadiationRisk
+              * forecastUvRisk
+              * forecastCloudDamping
+              * forecastRainProbDamping
+              * forecastRainAmountDamping,
+              0,
+              1
+            )
+          : 0;
+        const forecastTemperatureGainBoost = heatProtectionTemperatureAllowed && forecastPreemptiveActive
+          ? clamp01(forecastTemperatureRisk)
+          : 0;
+        const forecastTemperaturePolicyPressure = heatProtectionTemperatureAllowed && forecastPreemptiveActive
+          ? veryHotPolicyPressure(forecastTemperatureRisk, state.forecastInfluence)
+          : 0;
+        const forecastGainUplift = heatProtectionTemperatureAllowed
+          ? clamp(
+              1
+              + state.forecastInfluence * forecastRisk
+              + state.forecastInfluence * forecastTemperatureGainBoost,
+              1,
+              1 + 2 * state.forecastInfluence
+            )
+          : 0;
+        const forecastAdjustedGain = heatProtectionTemperatureAllowed
+          ? clamp(effectiveSolarGain * forecastGainUplift, 0, 1)
+          : 0;
+        const heatGainResponse = heatGainResponseFactor(forecastAdjustedGain);
+
+        const components = {
+          direct_exposure: directExposure,
+          incidence: incidenceCosine,
+          glazing: solarTransmittance,
+          weather: currentSolarRadiationFactor === null ? currentWeatherFactor : null,
+          solar_radiation: state.useOpenDataSolarRadiation ? currentSolarRadiationFactor : null,
+          forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null,
+          forecast_uv: state.useForecastUv ? forecastUvRisk : null,
+          forecast_clouds: state.useForecastClouds ? forecastCloudDamping : null,
+          forecast_precipitation_probability: state.useForecastRainProb ? forecastRainProbDamping : null,
+          forecast_precipitation_amount: state.useForecastRainAmount ? forecastRainAmountDamping : null
+        };
+        const weights = {
+          direct_exposure: state.weightDirect,
+          incidence: state.weightIncidence,
+          glazing: state.weightGlazing,
+          weather: state.weightWeather,
+          solar_radiation: state.weightSolarRadiation,
+          forecast_temperature: state.weightForecastTemp,
+          forecast_uv: state.weightForecastUv,
+          forecast_clouds: state.weightForecastClouds,
+          forecast_precipitation_probability: state.weightForecastRainProb,
+          forecast_precipitation_amount: state.weightForecastRainAmount
+        };
+
+        const weightedScore = weightedRiskScore(components, weights);
+        const rawScore = gainLimitedPolicyScore(weightedScore, heatGainResponse);
+        const adjustedScore = adjustedPolicyScore(rawScore, state.policyPreset, state.additionalWindows);
+        const baseThresholds = { partial: state.partialThreshold, full: state.fullThreshold };
+        const configuredPositions = { partial: state.partialPosition, full: state.fullPosition };
+        const normalizedPositions = normalizePolicyPositions(state.partialPosition, state.fullPosition);
+        const basePositions = { partial: normalizedPositions.partial, full: normalizedPositions.full };
+        const thresholds = adjustedThresholds(state.partialThreshold, state.fullThreshold, state.policyPreset, state.additionalWindows);
+        const positions = adjustedPositions(state.partialPosition, state.fullPosition, state.policyPreset, state.additionalWindows);
+        const awayAdjusted = awayAdjustments(
+          adjustedScore,
+          thresholds,
+          positions,
+          state.awayActive,
+          state.awayScoreMultiplier,
+          state.awayThresholdReduction,
+          state.awayPositionOffset
+        );
+        const temperatureAdjusted = temperaturePolicyAdjustments(
+          awayAdjusted.thresholds,
+          awayAdjusted.positions,
+          forecastTemperaturePolicyPressure
+        );
+        const policyResult = state.enableHeatGainPolicy ? policyTargetPosition(
+          awayAdjusted.score,
+          temperatureAdjusted.thresholds.partial,
+          temperatureAdjusted.thresholds.full,
+          temperatureAdjusted.positions.partial,
+          temperatureAdjusted.positions.full
+        ) : { level: "disabled", target: null };
+
+        const hotDaySignal = Math.max(
+          state.useTodayMax ? state.forecastTodayMax : Number.NEGATIVE_INFINITY,
+          state.useTomorrowMax ? state.forecastTomorrowMax : Number.NEGATIVE_INFINITY
+        );
+        const hotDayOverrideActive = state.hotDayCloseEnabled
+          && forecastPreemptiveActive
+          && heatProtectionCurrentTemperatureAllowed
+          && sun.elevation > 0
+          && Number.isFinite(hotDaySignal)
+          && hotDaySignal >= state.hotDayCloseThreshold;
+        const veryHotDayOverrideActive = hotDayOverrideActive
+          && Number.isFinite(state.veryHotThreshold)
+          && hotDaySignal >= state.veryHotThreshold;
+        const activeHotDayClosePosition = hotDayOverrideActive
+          ? (veryHotDayOverrideActive ? state.veryHotDayClosePosition : state.hotDayClosePosition)
+          : null;
+
+        const cosGamma = Math.cos(deg2rad(gamma));
+        const nightModeActive = sun.elevation <= 0;
+        const baseVerticalClosure = effectiveSunOnWindow && cosGamma > 0
+          ? Math.round(clamp(((state.distance / cosGamma) * Math.tan(deg2rad(Math.max(sun.elevation, 0)))) / state.windowHeight * 100, 0, 100))
+          : null;
+        const legacyBaseVerticalPosition = baseVerticalClosure !== null
+          ? 100 - baseVerticalClosure
+          : state.defaultPosition;
+        const legacyDrivenPosition = baseVerticalClosure !== null
+          ? Math.round(clamp(100 - ((100 - legacyBaseVerticalPosition) * heatGainResponse), 0, 100))
+          : state.defaultPosition;
+        const baseVerticalPosition = state.enableLegacyBasicShading
+          ? legacyDrivenPosition
+          : state.defaultPosition;
+
+        let effectivePolicyTarget = policyResult.target;
+        let effectivePolicyLevel = policyResult.level;
+        if (activeHotDayClosePosition !== null) {
+          effectivePolicyTarget = Math.min(effectivePolicyTarget ?? 100, activeHotDayClosePosition);
+          if (veryHotDayOverrideActive) {
+            effectivePolicyLevel = "veryhotday";
+          } else if (
+            effectivePolicyLevel === "none"
+            || effectivePolicyLevel === "partial"
+            || activeHotDayClosePosition < (policyResult.target ?? 100)
+          ) {
+            effectivePolicyLevel = "hotday";
+          }
+        }
+        if (heatPowerLimitedOpenPosition !== null) {
+          effectivePolicyTarget = Math.min(effectivePolicyTarget ?? 100, heatPowerLimitedOpenPosition);
+          if (heatPowerLimitedOpenPosition < (policyResult.target ?? 100)) {
+            effectivePolicyLevel = "heatpower";
+          }
+        }
+
+        const noSunFallback = activeHotDayClosePosition !== null
+          ? Math.min(state.defaultPosition, activeHotDayClosePosition)
+          : state.defaultPosition;
+        const daylightOpen = effectiveSunOnWindow
+          ? Math.round(clamp(Math.min(baseVerticalPosition, effectivePolicyTarget ?? 100), 0, 100))
+          : Math.round(clamp(noSunFallback, 0, 100));
+        const finalOpen = nightModeActive
+          ? Math.round(clamp(state.sunsetPosition, 0, 100))
+          : daylightOpen;
+        const finalClosure = Math.round(clamp(100 - finalOpen, 0, 100));
+
+        setText("openingValue", String(finalOpen));
+        setText("closureValue", String(finalClosure));
+        setText("policyScoreValue", round(awayAdjusted.score, 2));
+
+        const pill = document.getElementById("policyLevelPill");
+        pill.textContent = effectivePolicyLevel;
+        pill.className = `pill ${effectivePolicyLevel}`;
+
+        setText("dateCell", `${sun.date.toLocaleDateString("de-DE")} ${state.time}`);
+        setText("nightModeCell", nightModeActive ? `aktiv -> ${state.sunsetPosition} % offen` : "aus");
+        setText("solarAzimuthCell", `${round(sun.azimuth, 1)} deg`);
+        setText("solarElevationCell", `${round(sun.elevation, 1)} deg`);
+        setText("gammaCell", `${round(gamma, 1)} deg`);
+        setText("localAngleCell", `${round(localAngle, 1)} deg`);
+        setText("horizonCell", `lower ${round(horizon.lower, 1)} deg / upper ${round(horizon.upper, 1)} deg / ${sunWithinHorizon ? "sichtbar" : "blockiert"}`);
+        renderHorizonEditor(profile, localAngle, sun.elevation, horizon, sunPaths);
+        setText("revealCell", `links ${percent(leftShadow * 100)} / rechts ${percent(rightShadow * 100)} / oben ${percent(topShadow * 100)} / gesamt ${percent(totalRevealShadow * 100)}`);
+        setText("directExposureCell", round(directExposure, 3));
+        setText("effectiveSunCell", effectiveSunOnWindow ? "ja" : "nein");
+        setText("incidenceCell", `${round(incidenceAngle, 1)} deg / ${round(incidenceCosine, 3)}`);
+        setText("transmissionCell", `${round(solarTransmittance, 3)} (R ${round(solarReflectance, 3)})`);
+        setText("weatherNowCell", `${state.cloudCoverage.toFixed(0)} % Wolken, ${round(state.precipitation, 1)} mm Regen`);
+        setText("weatherFactorCell", round(currentWeatherFactor, 3));
+        setText("solarRadiationCell", state.useOpenDataSolarRadiation
+          ? `${round(state.solarRadiation, 0)} / ${round(state.solarReference, 0)} W/m² -> ${factorPercent(currentSolarRadiationFactor)}`
+          : "aus");
+        setText("radiationOrWeatherCell", `${factorPercent(radiationOrWeatherFactor)} (${state.useOpenDataSolarRadiation ? "Solarleistung" : "Wetter"})`);
+        setText("effectiveGainCell", round(effectiveSolarGain, 3));
+        setText("heatPowerCell", `${round(estimatedHeatPowerWm2, 1)} W/m2${estimatedHeatPowerW === null ? "" : ` / ${round(estimatedHeatPowerW, 0)} W Fenster`} (${state.useOpenDataSolarRadiation ? "Solarwert" : "Referenz/Wetter"})`);
+        setText("heatPowerLimitCell", state.heatPowerLimitEnabled
+          ? (heatPowerLimitedOpenPosition === null
+            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W, Limit ${round(state.heatPowerMaxWatts, 0)} W)`
+            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W > ${round(state.heatPowerMaxWatts, 0)} W)`)
+          : "aus");
+        setText(
+          "forecastTodayCell",
+          `Tmax ${round(state.forecastTodayMax, 1)} C, Gate ${heatProtectionTemperatureAllowed ? "frei" : "gesperrt"} ab ${round(state.hotDayThreshold, 1)} C, Kälte-Sperre < ${round(coldLockoutTemp, 1)} C, Very-Hot bei ${round(state.veryHotThreshold, 1)} C, Solar ${factorPercent(forecastSolarRadiationRisk)}, Wolken ${state.forecastCloudCoverage.toFixed(0)} %, UV ${round(state.forecastUv, 1)}`
+        );
+        setText("forecastRiskCell", `${round(forecastRisk, 3)} (${forecastPreemptiveActive ? "aktiv" : "vor Start"}), Temp-Risk ${round(forecastTemperatureRisk, 3)}, Temp-Boost ${round(forecastTemperatureGainBoost, 3)}, Policy-Druck ${round(forecastTemperaturePolicyPressure, 3)}`);
+        setText("forecastAdjustedGainCell", `${round(forecastAdjustedGain, 3)} (Multiplikator ${round(forecastGainUplift, 2)}x)`);
+        setText("weightedScoreCell", round(weightedScore, 3));
+        setText("rawScoreCell", round(rawScore, 3));
+        setText("basePositionCell", state.enableLegacyBasicShading
+          ? `${baseVerticalPosition} % offen (Legacy ${legacyBaseVerticalPosition} %, Response ${round(heatGainResponse, 2)} aus Gain ${round(forecastAdjustedGain, 2)})`
+          : `${baseVerticalPosition} % offen (Legacy aus; alter Schreibtisch-/Blendschutz ignoriert)`);
+        setText("policyTargetCell", state.enableHeatGainPolicy
+          ? (effectivePolicyTarget === null
+            ? `- (Very-Hot: Schwellen -${round(temperatureAdjusted.thresholdReduction, 2)}, Ziel -${temperatureAdjusted.positionOffset} % offen)`
+            : `${effectivePolicyTarget} % offen (Very-Hot: Schwellen -${round(temperatureAdjusted.thresholdReduction, 2)}, Ziel -${temperatureAdjusted.positionOffset} % offen)`)
+          : "aus");
+        setText(
+          "hotDayOverrideCell",
+          hotDayOverrideActive
+            ? `${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} -> max. ${activeHotDayClosePosition} % offen`
+            : "aus"
+        );
+        setText("finalPositionCell", `${finalOpen} % offen / ${finalClosure} % geschlossen`);
+        const decisionReason = !state.enableHeatGainPolicy
+          ? "Policy ist ausgeschaltet."
+          : policyResult.level === "disabled"
+            ? "Policy hat keine aktiven Gewichte."
+            : policyResult.level === "none"
+              ? `Score ${round(awayAdjusted.score, 3)} liegt unter Partial-Schwelle ${round(temperatureAdjusted.thresholds.partial, 3)}.`
+              : policyResult.level === "full"
+                ? `Score ${round(awayAdjusted.score, 3)} ist >= Full-Schwelle ${round(temperatureAdjusted.thresholds.full, 3)}.`
+                : `Score ${round(awayAdjusted.score, 3)} liegt zwischen Partial ${round(temperatureAdjusted.thresholds.partial, 3)} und Full ${round(temperatureAdjusted.thresholds.full, 3)}.`;
+        const hotDayLine = hotDayOverrideActive
+          ? `Hot-Day-Override: ${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} begrenzt zusaetzlich auf max. ${activeHotDayClosePosition} % offen.`
+          : "Hot-Day-Override: aus oder nicht getriggert.";
+        const heatPowerLine = heatPowerLimitedOpenPosition !== null
+          ? `Watt-Limit: ${round(estimatedHeatPowerW, 0)} W geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W -> max. ${heatPowerLimitedOpenPosition} % offen.`
+          : state.heatPowerLimitEnabled
+            ? `Watt-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${estimatedHeatPowerW === null ? "unbekannt" : `${round(estimatedHeatPowerW, 0)} W`}.`
+            : "Watt-Limit: aus.";
+        const temperatureBand = !heatProtectionTemperatureAllowed
+          ? "below_hot"
+          : hotDaySignal >= state.veryHotThreshold
+            ? "very_hot_saturated"
+            : forecastTemperatureRisk > 0
+              ? "between_hot_and_very_hot"
+              : "hot_gate_only";
+        const temperatureEffectNote = !heatProtectionTemperatureAllowed
+          ? "Temperatur: unter Hot-Day-Schwelle, Waermeschutz bleibt aus."
+          : !forecastPreemptiveActive
+            ? "Temperatur: vor praeventivem Start, Very-Hot-Druck ist noch aus."
+            : temperatureBand === "very_hot_saturated"
+              ? "Temperatur: bei/ueber Very-Hot-Schwelle, weitere Grad erhoehen den Druck nicht mehr."
+              : effectivePolicyLevel === "full"
+                ? "Temperatur: Full-Ziel ist schon erreicht; Very-Hot kann es nur frueher erreichen, aber nicht unter die maximale normale Schliessung gehen."
+                : forecastTemperaturePolicyPressure > 0
+                  ? "Temperatur: Very-Hot-Druck senkt Schwellen und bewegt das Partial-Ziel Richtung strenges Ziel."
+                  : "Temperatur: Hot-Day-Gate ist offen, Very-Hot-Druck aber noch 0.";
+        setText(
+          "policyExplanationCell",
+          [
+            `1. Physik: effective gain ${round(effectiveSolarGain, 3)} -> forecast-adjusted gain ${round(forecastAdjustedGain, 3)} -> response ${round(heatGainResponse, 3)}.`,
+            `2. Score: weighted ${round(weightedScore, 3)} -> physikalisch gedeckelt ${round(rawScore, 3)} -> Preset '${state.policyPreset}' ${round(adjustedScore, 3)} -> Away ${round(awayAdjusted.score, 3)}.`,
+            `3. Schwellen: Basis partial/full ${round(baseThresholds.partial, 2)}/${round(baseThresholds.full, 2)} -> Preset ${round(thresholds.partial, 2)}/${round(thresholds.full, 2)} -> Away ${round(awayAdjusted.thresholds.partial, 2)}/${round(awayAdjusted.thresholds.full, 2)} -> Very-Hot ${round(temperatureAdjusted.thresholds.partial, 2)}/${round(temperatureAdjusted.thresholds.full, 2)}.`,
+            `4. Ziele (% offen): Eingabe partial/full ${configuredPositions.partial}/${configuredPositions.full}${normalizedPositions.legacy ? ` -> Legacy-%geschlossen erkannt, normalisiert zu ${basePositions.partial}/${basePositions.full}` : ""} -> Preset ${positions.partial}/${positions.full} -> Away ${awayAdjusted.positions.partial}/${awayAdjusted.positions.full} -> Very-Hot ${temperatureAdjusted.positions.partial}/${temperatureAdjusted.positions.full}.`,
+            `5. Temperatur-Band: ${temperatureBand}; ${temperatureEffectNote}`,
+            `6. Entscheidung: ${decisionReason} Ergebnis der Policy: ${effectivePolicyTarget === null ? "kein Ziel" : `${effectivePolicyTarget} % offen`}. ${hotDayLine} ${heatPowerLine}`,
+            `7. Finale Position: ${effectiveSunOnWindow ? "direkte Sonne wirksam, Policy darf eingreifen" : "keine direkte Sonne, Default/Hot-Day-Fallback"}; Nachtmodus ${nightModeActive ? "aktiv" : "aus"} -> ${finalOpen} % offen.`
+          ].join("\n")
+        );
+
+        solarStatus.textContent = `Berechneter Sonnenstand: Azimut ${round(sun.azimuth, 1)} deg, Elevation ${round(sun.elevation, 1)} deg.`;
+        document.getElementById("windowStatus").textContent = effectiveSunOnWindow
+          ? "Direkte Sonne ist fuer dieses Fenster gerade wirksam."
+          : "Direkte Sonne ist fuer dieses Fenster gerade nicht wirksam.";
+        renderWindow(
+          finalClosure,
+          effectiveSunOnWindow,
+          effectivePolicyLevel,
+          profile,
+          localAngle,
+          sun.elevation,
+          horizon,
+          sunPaths
+        );
+        renderWindowHorizonPreview(profile, localAngle, sun.elevation, horizon, sunPaths);
+      } catch (error) {
+        errorBox.textContent = error.message || String(error);
+      }
+    }
+
+    addMissingInfoButtons();
+    bindRangePairs();
+    bindInfoButtons();
+    bindHorizonEditor();
+    syncDateTimeReadouts();
+    updateGlassInfo();
+
+    inputIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (!element) {
+        return;
+      }
+      const eventName = element.type === "checkbox" ? "change" : "input";
+      element.addEventListener(eventName, () => {
+        if (id === "glassType") {
+          updateGlassInfo();
+        }
+        if (id === "devicePreset") {
+          sourceStatus.textContent = "Preset ausgewaehlt. Wenn du die Werte uebernehmen willst, klicke auf 'System-Preset anwenden'.";
+        }
+        if (id === "policyPreset" || id === "showExpertWeights") {
+          updateExpertWeightsVisibility();
+          applyPolicyPresetWeights();
+        }
+        render();
+      });
+    });
+
+    applyDevicePresetBtn.addEventListener("click", applyDevicePreset);
+    refreshSourcesBtn.addEventListener("click", refreshHASources);
+    importSourceBtn.addEventListener("click", importSelectedHASource);
+    horizonExampleBtn.addEventListener("click", () => {
+      horizonProfileInput.value = exampleHorizonJson();
+      render();
+    });
+    openHorizonToolBtn.addEventListener("click", () => {
+      window.open("/local/solar_shading_horizon_preview.html", "_blank", "noopener");
+    });
+
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+    dayOfYearRange.value = String(dayOfYear);
+    timeRange.value = String(today.getHours() * 60 + today.getMinutes());
+    syncDateTimeReadouts();
+
+    refreshHASources();
+    render();
+  </script>
+</body>
+</html>
