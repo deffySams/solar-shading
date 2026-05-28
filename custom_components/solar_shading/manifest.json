@@ -13,12 +13,12 @@
     "sensor",
     "weather"
   ],
-  "documentation": "https://github.com/basbruss/adaptive-cover",
+  "documentation": "https://github.com/deffySams/solar-shading",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/basbruss/adaptive-cover/issues",
+  "issue_tracker": "https://github.com/deffySams/solar-shading/issues",
   "requirements": [
     "astral",
     "pandas"
   ],
-  "version": "0.3.0b32"
+  "version": "0.3.0b33"
 }

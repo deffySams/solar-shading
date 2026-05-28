@@ -1,6 +1,9 @@
-"""The Adaptive Cover integration."""
+"""The Solar Shading integration."""
 
 from __future__ import annotations
+
+from pathlib import Path
+from shutil import copy2
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -23,6 +26,7 @@ from .coordinator import AdaptiveDataUpdateCoordinator
 
 PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.BUTTON]
 CONF_SUN = ["sun.sun"]
+WWW_ASSETS = ("solar_shading_simulator.html", "solar_shading_horizon_preview.html")
 
 
 async def async_initialize_integration(
@@ -35,9 +39,10 @@ async def async_initialize_integration(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Adaptive Cover from a config entry."""
+    """Set up Solar Shading from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
+    await _async_install_www_assets(hass)
 
     coordinator = AdaptiveDataUpdateCoordinator(hass)
     _temp_entity = entry.options.get(CONF_TEMP_ENTITY)
@@ -95,3 +100,27 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def _async_install_www_assets(hass: HomeAssistant) -> None:
+    """Install bundled simulator assets into Home Assistant's /local path."""
+    await hass.async_add_executor_job(_install_www_assets, hass.config.path("www"))
+
+
+def _install_www_assets(www_path: str) -> None:
+    """Copy bundled simulator assets when missing or changed."""
+    source_dir = Path(__file__).with_name("www")
+    if not source_dir.exists():
+        return
+
+    target_dir = Path(www_path)
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    for filename in WWW_ASSETS:
+        source = source_dir / filename
+        if not source.exists():
+            continue
+        target = target_dir / filename
+        if target.exists() and target.read_bytes() == source.read_bytes():
+            continue
+        copy2(source, target)

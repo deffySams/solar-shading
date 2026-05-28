@@ -14,7 +14,17 @@ This project is a private fork of [Adaptive Cover](https://github.com/basbruss/a
 - Daylight-first heat-gain policy with presets, expert weights and `% open` targets.
 - Separate hot-day and very-hot-day open limits, so "hot" and "very hot" can produce visibly different maximum closing behavior.
 - Away-from-home stricter mode.
-- Browser simulator at `/local/solar_shading_simulator.html` for importing an existing Solar Shading window and tuning the inputs before committing settings.
+- Bundled browser simulator at `/local/solar_shading_simulator.html` for importing an existing Solar Shading window and tuning the inputs before committing settings.
+- Bundled horizon preview at `/local/solar_shading_horizon_preview.html`.
+
+## Simulator
+
+Solar Shading ships with a browser simulator. It is installed with the integration and copied automatically to Home Assistant's `/config/www` folder on setup.
+
+- Main simulator: `/local/solar_shading_simulator.html`
+- Horizon preview: `/local/solar_shading_horizon_preview.html`
+- In Home Assistant, open `http://homeassistant.local:8123/local/solar_shading_simulator.html`.
+- The simulator can import current Solar Shading sensor attributes, show the visible horizon in the window preview, plot the current sun position, and compare the selected day with the shortest and longest day.
 
 ## Important Disclaimer
 
@@ -57,9 +67,7 @@ The goal is understandable and adjustable behavior, not a certified building-phy
     - [Climate](#climate)
     - [Blindspot](#blindspot)
   - [Entities](#entities)
-  - [Features Planned](#features-planned)
-    - [Simulation](#simulation)
-    - [Blueprint (deprecated since v1.0.0)](#blueprint-deprecated-since-v100)
+  - [Blueprint (deprecated since v1.0.0)](#blueprint-deprecated-since-v100)
 
 ## Features
 
@@ -88,14 +96,14 @@ The goal is understandable and adjustable behavior, not a certified building-phy
 
 ### HACS (Recommended)
 
-Add <https://github.com/basbruss/adaptive-cover> as custom repository to HACS.
-Search and download Adaptive Cover within HACS.
+Add <https://github.com/deffySams/solar-shading> as custom repository to HACS.
+Search and download Solar Shading within HACS.
 
-Restart Home-Assistant and add the integration.
+Restart Home Assistant and add the integration. The simulator is bundled and copied to `/config/www` automatically during setup.
 
 ### Manual
 
-Download the `adaptive_cover` folder from this github.
+Download the `solar_shading` folder from this GitHub repository.
 Add the folder to `config/custom_components/`.
 
 Restart Home-Assistant and add the integration.
@@ -303,20 +311,6 @@ When climate mode is setup you will also get these entities:
 | `switch.{type}_outside_temperature_{name}` | `on`    | Switches between inside and outside temperatures as the basis for determining the climate control strategy. |
 
 ![entities](https://github.com/basbruss/adaptive-cover/blob/main/images/entities.png)
-
-## Features Planned
-
-- Manual override controls
-
-  - ~~Time to revert back to adaptive control~~
-  - ~~Reset button~~
-  - Wait until next manual/none adaptive change
-
-- ~~Algorithm to control radiation and/or illumination~~
-
-### Simulation
-
-![combined_simulation](custom_components/adaptive_cover/simulation/sim_plot.png)
 
 ### Blueprint (deprecated since v1.0.0)
 
