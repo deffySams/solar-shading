@@ -1015,6 +1015,8 @@ class AdaptiveGeneralCover(ABC):
             return False
         if self.sunset_valid or not self.forecast_preemptive_active:
             return False
+        if not self.direct_sun_valid or self.direct_solar_exposure_factor <= 0.001:
+            return False
         if not self.heat_protection_current_temperature_allowed:
             return False
         if self.hot_day_signal is None or self.hot_day_close_threshold is None:
@@ -1454,13 +1456,6 @@ class NormalCoverState:
         else:
             state = self.cover.default
             self.cover.logger.debug("No sun in window: using default value (%s)", state)
-            active_hot_day_position = self.cover.active_hot_day_close_position
-            if active_hot_day_position is not None:
-                state = min(state, active_hot_day_position)
-                self.cover.logger.debug(
-                    "Hot-day override active without direct sun: reduced open fallback to %s",
-                    state,
-                )
 
         result = np.clip(state, 0, 100)
         if self.cover.apply_max_position and result > self.cover.max_pos:

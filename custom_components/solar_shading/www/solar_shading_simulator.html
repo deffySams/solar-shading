@@ -761,7 +761,7 @@
           </div>
           <div class="checkbox-row">
             <input id="hotDayCloseEnabled" type="checkbox">
-            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt, wird eine maximale Offenposition erzwungen, unabhaengig von den feineren Gewichten.">i</button></label>
+            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt und direkte Sonne auf das Fenster faellt, wird eine maximale Offenposition erzwungen. Sobald keine direkte Sonne mehr auf dem Fenster ist, greift dieses Limit nicht.">i</button></label>
           </div>
           <div class="checkbox-row">
             <input id="heatPowerLimitEnabled" type="checkbox">
@@ -2819,7 +2819,7 @@
         const hotDayOverrideActive = state.hotDayCloseEnabled
           && forecastPreemptiveActive
           && heatProtectionCurrentTemperatureAllowed
-          && sun.elevation > 0
+          && effectiveSunOnWindow
           && Number.isFinite(hotDaySignal)
           && hotDaySignal >= state.hotDayCloseThreshold;
         const veryHotDayOverrideActive = hotDayOverrideActive
@@ -2865,9 +2865,7 @@
           }
         }
 
-        const noSunFallback = activeHotDayClosePosition !== null
-          ? Math.min(state.defaultPosition, activeHotDayClosePosition)
-          : state.defaultPosition;
+        const noSunFallback = state.defaultPosition;
         const daylightOpen = effectiveSunOnWindow
           ? Math.round(clamp(Math.min(baseVerticalPosition, effectivePolicyTarget ?? 100), 0, 100))
           : Math.round(clamp(noSunFallback, 0, 100));
