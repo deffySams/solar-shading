@@ -2,6 +2,16 @@
 
 Private Home Assistant custom integration for daylight-aware heat protection of covers, rollers, blinds and awnings.
 
+## Simulation oeffnen
+
+Nach der Installation ist der Simulator direkt ueber Home Assistant erreichbar:
+
+- Lokaler Home-Assistant-Link: `http://homeassistant.local:8123/local/solar_shading_simulator.html`
+- Direkter Link in diesem Setup: `http://192.168.178.20:8123/local/solar_shading_simulator.html`
+- Horizon-Preview: `http://homeassistant.local:8123/local/solar_shading_horizon_preview.html`
+
+Falls der Hostname nicht aufloest, ersetze `homeassistant.local:8123` durch die IP-Adresse deiner Home-Assistant-Instanz. Die Dateien werden beim Setup der Integration automatisch nach `/config/www` kopiert und sind deshalb unter `/local/...` erreichbar.
+
 This project is a private fork of [Adaptive Cover](https://github.com/basbruss/adaptive-cover). Huge credit to Bas Bruss and the Adaptive Cover contributors: the original integration, entity model, manual override handling and sun-position control backbone come from that project. This fork layers an experimental thermal/daylight policy on top.
 
 ## What This Fork Adds
