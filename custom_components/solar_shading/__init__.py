@@ -23,6 +23,7 @@ from .const import (
     _LOGGER,
 )
 from .coordinator import AdaptiveDataUpdateCoordinator
+from .simulator import SolarShadingSimulationView
 
 PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.BUTTON]
 CONF_SUN = ["sun.sun"]
@@ -42,6 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Solar Shading from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
+    _async_register_simulator_api(hass)
     await _async_install_www_assets(hass)
 
     coordinator = AdaptiveDataUpdateCoordinator(hass)
@@ -124,3 +126,11 @@ def _install_www_assets(www_path: str) -> None:
         if target.exists() and target.read_bytes() == source.read_bytes():
             continue
         copy2(source, target)
+
+
+def _async_register_simulator_api(hass: HomeAssistant) -> None:
+    """Register the simulator API once."""
+    if hass.data[DOMAIN].get("simulator_api_registered"):
+        return
+    hass.http.register_view(SolarShadingSimulationView)
+    hass.data[DOMAIN]["simulator_api_registered"] = True

@@ -1241,6 +1241,7 @@
               <div class="metric"><div class="name">Policy-Ziel offen</div><div class="val" id="policyTargetCell"></div></div>
               <div class="metric"><div class="name">Hot-day override</div><div class="val" id="hotDayOverrideCell"></div></div>
               <div class="metric"><div class="name">Finale Offenposition</div><div class="val" id="finalPositionCell"></div></div>
+              <div class="metric"><div class="name">Berechnungsquelle</div><div class="val" id="calculationSourceCell"></div></div>
             </div>
             <h2 style="margin-top: 18px;">Policy-Entscheidung</h2>
             <div class="soft-card policy-explain" id="policyExplanationCell"></div>
@@ -2812,6 +2813,118 @@
       document.getElementById(id).textContent = value;
     }
 
+    let backendSimulationSeq = 0;
+
+    function haAuthToken() {
+      const manualToken = haTokenInput.value.trim();
+      if (manualToken) {
+        return manualToken;
+      }
+      try {
+        const tokens = JSON.parse(localStorage.getItem("hassTokens") || "{}");
+        return tokens.access_token || "";
+      } catch (_error) {
+        return "";
+      }
+    }
+
+    async function requestBackendSimulation(state, sun, context) {
+      const seq = ++backendSimulationSeq;
+      setText("calculationSourceCell", "JS Vorschau, warte auf HA Python ...");
+      try {
+        const headers = {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        };
+        const token = haAuthToken();
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(`${haApiBaseUrl()}/api/solar_shading/simulate`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            values: state,
+            sun: {
+              azimuth: sun.azimuth,
+              elevation: sun.elevation
+            }
+          })
+        });
+        if (seq !== backendSimulationSeq) {
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(`HA Python API ${response.status}`);
+        }
+        applyBackendSimulationResult(await response.json(), context);
+      } catch (error) {
+        if (seq === backendSimulationSeq) {
+          setText("calculationSourceCell", `JS Fallback (${error.message})`);
+        }
+      }
+    }
+
+    function applyBackendSimulationResult(result, context) {
+      const attrs = result.attributes || {};
+      const open = Number(result.open_position);
+      const closed = Number(result.closed_position);
+      const level = attrs.heat_gain_policy_action_level || "none";
+      if (Number.isFinite(open)) {
+        setText("openingValue", String(open));
+        setText("closureValue", String(Number.isFinite(closed) ? closed : 100 - open));
+        setText("finalPositionCell", `${open} % offen / ${Number.isFinite(closed) ? closed : 100 - open} % geschlossen`);
+      }
+      setText("calculationSourceCell", "HA Python / calculation.py");
+      setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
+      setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
+      setText("revealCell", `links ${round(attrs.left_reveal_shadow_pct, 1)} % / rechts ${round(attrs.right_reveal_shadow_pct, 1)} % / oben ${round(attrs.top_reveal_shadow_pct, 1)} % / gesamt ${round(attrs.total_reveal_shadow_pct, 1)} %`);
+      setText("directExposureCell", round(attrs.direct_solar_exposure_factor, 3));
+      setText("effectiveSunCell", attrs.direct_sun_valid && attrs.direct_solar_exposure_factor > 0.001 ? "ja" : "nein");
+      setText("incidenceCell", `${round(attrs.incidence_angle_deg, 1)} deg / ${round(attrs.incidence_cosine, 3)}`);
+      setText("transmissionCell", `${round(attrs.solar_transmittance_factor, 3)} (R ${round(attrs.solar_reflectance_factor, 3)})`);
+      setText("weatherFactorCell", round(attrs.weather_factor, 3));
+      setText("radiationOrWeatherCell", round(attrs.radiation_or_weather_factor, 3));
+      setText("effectiveGainCell", round(attrs.effective_solar_gain_factor, 3));
+      setText("heatPowerCell", `${round(attrs.estimated_solar_heat_power_w_m2, 1)} W/m2${attrs.estimated_solar_heat_power_w === null ? "" : ` / ${round(attrs.estimated_solar_heat_power_w, 0)} W Fenster`} (HA Python)`);
+      setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
+        ? `kein Deckel (${attrs.heat_power_limit_trigger})`
+        : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
+      setText("forecastRiskCell", `${round(attrs.forecast_risk_factor, 3)}, Temp-Risk ${round(attrs.forecast_temperature_risk, 3)}, Temp-Boost ${round(attrs.forecast_temperature_gain_boost, 3)}, Policy-Druck ${round(attrs.forecast_temperature_policy_pressure, 3)}`);
+      setText("forecastAdjustedGainCell", `${round(attrs.forecast_adjusted_gain_factor, 3)} (Multiplikator ${round(attrs.forecast_gain_uplift_factor, 2)}x)`);
+      setText("weightedScoreCell", round(attrs.heat_gain_policy_weighted_score, 3));
+      setText("rawScoreCell", round(attrs.heat_gain_policy_raw_score, 3));
+      setText("policyTargetCell", attrs.heat_gain_policy_target_position === null ? "-" : `${attrs.heat_gain_policy_target_position} % offen`);
+      setText("hotDayOverrideCell", attrs.heat_gain_policy_hot_day_override_active
+        ? `${attrs.heat_gain_policy_very_hot_day_override_active ? "sehr heiss" : "heiss"} -> max. ${attrs.heat_gain_policy_active_hot_day_close_position} % offen`
+        : "aus");
+      setText("policyScoreValue", round(attrs.heat_gain_policy_score, 2));
+      const pill = document.getElementById("policyLevelPill");
+      pill.textContent = level;
+      pill.className = `pill ${level}`;
+      if (Number.isFinite(open)) {
+        renderWindow(
+          Number.isFinite(closed) ? closed : 100 - open,
+          attrs.direct_sun_valid && attrs.direct_solar_exposure_factor > 0.001,
+          level,
+          context.profile,
+          context.localAngle,
+          context.sunElevation,
+          context.horizon,
+          context.sunPaths
+        );
+      }
+      setText(
+        "policyExplanationCell",
+        [
+          "HA Python Berechnung aktiv.",
+          ...(result.annotations || []),
+          `Final: ${Number.isFinite(open) ? `${open} % offen` : "unbekannt"}, Level ${level}, Score ${round(attrs.heat_gain_policy_score, 3)}.`,
+          `Direkte Sonne: ${attrs.direct_sun_valid ? "ja" : "nein"}, Exposition ${round(attrs.direct_solar_exposure_factor, 3)}, Watt-Trigger ${attrs.heat_power_limit_trigger}.`
+        ].join("\n")
+      );
+    }
+
     function render() {
       syncDateTimeReadouts();
       updateExpertWeightsVisibility();
@@ -3199,6 +3312,13 @@
           sunPaths
         );
         renderWindowHorizonPreview(profile, localAngle, sun.elevation, horizon, sunPaths);
+        requestBackendSimulation(state, sun, {
+          profile,
+          localAngle,
+          sunElevation: sun.elevation,
+          horizon,
+          sunPaths
+        });
       } catch (error) {
         errorBox.textContent = error.message || String(error);
       }

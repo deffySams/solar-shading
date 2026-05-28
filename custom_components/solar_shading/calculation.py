@@ -158,6 +158,7 @@ class AdaptiveGeneralCover(ABC):
     full_close_threshold: float | None
     partial_close_position: int | None
     full_close_position: int | None
+    evaluation_datetime: datetime | None = field(default=None, kw_only=True)
     sun_data: SunData = field(init=False)
     _parsed_horizon_profile: list = field(init=False, repr=False)
 
@@ -840,7 +841,8 @@ class AdaptiveGeneralCover(ABC):
     def forecast_preemptive_active(self) -> bool:
         """Return whether forecast-based pre-emptive mode is currently active."""
         return after_preemptive_start(
-            datetime.now(), self.forecast_preemptive_start_time
+            self.evaluation_datetime or datetime.now(),
+            self.forecast_preemptive_start_time,
         )
 
     @property
@@ -1341,7 +1343,7 @@ class AdaptiveGeneralCover(ABC):
         """Determine if it is after sunset plus offset."""
         sunset = self.sun_data.sunset().replace(tzinfo=None)
         sunrise = self.sun_data.sunrise().replace(tzinfo=None)
-        now_utc = datetime.now(UTC).replace(tzinfo=None)
+        now_utc = (self.evaluation_datetime or datetime.now(UTC)).replace(tzinfo=None)
         after_sunset = now_utc > (sunset + timedelta(minutes=self.sunset_off))
         before_sunrise = now_utc < (sunrise + timedelta(minutes=self.sunrise_off))
         self.logger.debug(
