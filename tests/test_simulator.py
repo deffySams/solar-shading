@@ -3,7 +3,10 @@
 from types import SimpleNamespace
 import unittest
 
-from custom_components.solar_shading.simulator import simulate_from_payload
+from custom_components.solar_shading.simulator import (
+    SolarShadingSimulationView,
+    simulate_from_payload,
+)
 
 
 class _States:
@@ -98,6 +101,9 @@ def _payload(**overrides):
 
 
 class SimulatorBackendTest(unittest.TestCase):
+    def test_simulator_endpoint_is_public_for_local_page(self):
+        self.assertFalse(SolarShadingSimulationView.requires_auth)
+
     def test_simulator_uses_python_policy(self):
         result = simulate_from_payload(_Hass(), _payload())
 

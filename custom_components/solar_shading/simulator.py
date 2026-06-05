@@ -70,7 +70,7 @@ class SolarShadingSimulationView(HomeAssistantView):
 
     url = SIMULATOR_API_URL
     name = "api:solar_shading:simulate"
-    requires_auth = True
+    requires_auth = False
 
     async def post(self, request):
         """Handle a simulator request."""
