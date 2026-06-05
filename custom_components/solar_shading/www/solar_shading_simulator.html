@@ -985,6 +985,23 @@
         <details>
           <summary>Simulator Import / Export</summary>
           <p class="subtle">Exportiert nur Simulatorwerte. HA-Token und Live-Sensorwerte werden nicht gespeichert.</p>
+          <div class="grid">
+            <div class="field">
+              <label for="simImportMode">Simulator-Import-Modus</label>
+              <select id="simImportMode">
+                <option value="replace" selected>Werte ersetzen</option>
+                <option value="overlay">Nur leere Werte fuellen</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="simPresetScope">Preset-/Export-Umfang</label>
+              <select id="simPresetScope">
+                <option value="all" selected>Alles</option>
+                <option value="global">Globale Policy / Waermeschutz</option>
+                <option value="geometry">Fenster-Geometrie / Horizont</option>
+              </select>
+            </div>
+          </div>
           <div class="field">
             <label for="simConfigText">JSON</label>
             <textarea id="simConfigText" placeholder="Export erscheint hier, oder JSON zum Import einfuegen."></textarea>
@@ -998,6 +1015,33 @@
             <button class="action-btn secondary" type="button" id="importConfigBtn">JSON importieren</button>
           </div>
           <div class="status" id="simConfigStatus">Noch kein Simulator-JSON geladen.</div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Lokale Presets</summary>
+          <p class="subtle">Speichert Presets im Browser dieses Geraets. Damit kannst du ein Rollo als Vorlage fuer andere Fenster nutzen. Fuer globale Einstellungen nutze den Umfang "Globale Policy / Waermeschutz".</p>
+          <div class="grid">
+            <div class="field">
+              <label for="presetName">Preset-Name</label>
+              <input id="presetName" type="text" placeholder="z.B. Aussenrollo Sommer">
+            </div>
+            <div class="field">
+              <label for="presetSelect">Gespeicherte Presets</label>
+              <select id="presetSelect">
+                <option value="">Keine Presets gespeichert</option>
+              </select>
+            </div>
+          </div>
+          <div class="cta-row">
+            <button class="action-btn primary" type="button" id="savePresetBtn">Preset speichern</button>
+            <button class="action-btn" type="button" id="loadPresetBtn">Preset laden</button>
+            <button class="action-btn" type="button" id="deletePresetBtn">Loeschen</button>
+            <button class="action-btn secondary" type="button" id="exportPresetLibraryBtn">Preset-Library exportieren</button>
+            <button class="action-btn secondary" type="button" id="importPresetLibraryBtn">JSON als Preset-Library importieren</button>
+          </div>
+          <div class="status" id="presetStatus">Presets sind lokal im Browser gespeichert.</div>
         </details>
       </section>
 
@@ -1270,6 +1314,8 @@
     const applyDevicePresetBtn = document.getElementById("applyDevicePresetBtn");
     const refreshSourcesBtn = document.getElementById("refreshSourcesBtn");
     const importSourceBtn = document.getElementById("importSourceBtn");
+    const simImportModeSelect = document.getElementById("simImportMode");
+    const simPresetScopeSelect = document.getElementById("simPresetScope");
     const simConfigText = document.getElementById("simConfigText");
     const simConfigFile = document.getElementById("simConfigFile");
     const simConfigStatus = document.getElementById("simConfigStatus");
@@ -1278,6 +1324,14 @@
     const downloadConfigBtn = document.getElementById("downloadConfigBtn");
     const selectConfigFileBtn = document.getElementById("selectConfigFileBtn");
     const importConfigBtn = document.getElementById("importConfigBtn");
+    const presetNameInput = document.getElementById("presetName");
+    const presetSelect = document.getElementById("presetSelect");
+    const presetStatus = document.getElementById("presetStatus");
+    const savePresetBtn = document.getElementById("savePresetBtn");
+    const loadPresetBtn = document.getElementById("loadPresetBtn");
+    const deletePresetBtn = document.getElementById("deletePresetBtn");
+    const exportPresetLibraryBtn = document.getElementById("exportPresetLibraryBtn");
+    const importPresetLibraryBtn = document.getElementById("importPresetLibraryBtn");
     const horizonProfileInput = document.getElementById("horizonProfile");
     const horizonEditorSvg = document.getElementById("horizonEditorSvg");
     const horizonEditorStatus = document.getElementById("horizonEditorStatus");
@@ -1430,6 +1484,34 @@
       "heatProtectionMinOutsideTemp", "heatPowerMaxWatts"
     ];
 
+    const PRESET_STORAGE_KEY = "solar_shading_simulator_presets_v1";
+    const PRESET_SCOPE_IDS = {
+      all: inputIds,
+      global: [
+        "devicePreset", "defaultPosition", "sunsetPosition", "glassType",
+        "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
+        "useTodayMax", "useTomorrowMax", "useForecastClouds", "useForecastUv",
+        "useOpenDataSolarRadiation", "useForecastRainProb", "useForecastRainAmount",
+        "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
+        "enableHeatGainPolicy", "policyPreset", "additionalWindows", "awayActive",
+        "awayScoreMultiplier", "awayThresholdReduction", "awayPositionOffset",
+        "enableLegacyBasicShading", "showExpertWeights", "hotDayCloseEnabled",
+        "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
+        "heatPowerLimitEnabled", "heatPowerTempThreshold",
+        "heatProtectionMinOutsideTemp", "heatPowerMaxWatts",
+        "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
+        "weightSolarRadiation", "weightForecastTemp", "weightForecastUv",
+        "weightForecastClouds", "weightForecastRainProb", "weightForecastRainAmount",
+        "partialThreshold", "fullThreshold", "partialPosition", "fullPosition"
+      ],
+      geometry: [
+        "latitude", "longitude", "windowAzimuth", "fovLeft", "fovRight",
+        "minElevation", "maxElevation", "windowHeight", "windowWidth",
+        "distance", "revealLeft", "revealRight", "revealTop", "horizonProfile",
+        "glassType", "customVisibleT", "customSolarT", "customVisibleR", "customSolarR"
+      ]
+    };
+
     const HORIZON_EXAMPLE_PROFILE = [
       { angle: 43, lower_elevation: 6, upper_elevation: 90 },
       { angle: 51, lower_elevation: 17, upper_elevation: 90 },
@@ -1496,9 +1578,13 @@
       return true;
     }
 
-    function simulatorConfigValues() {
+    function idsForScope(scope) {
+      return PRESET_SCOPE_IDS[scope] || PRESET_SCOPE_IDS.all;
+    }
+
+    function simulatorConfigValues(ids = inputIds) {
       const values = {};
-      inputIds.forEach((id) => {
+      ids.forEach((id) => {
         const element = document.getElementById(id);
         if (!element) {
           return;
@@ -1515,12 +1601,20 @@
       return values;
     }
 
-    function simulatorConfigJson() {
-      return JSON.stringify({
+    function simulatorConfigPayload({ name = "", scope = simPresetScopeSelect.value } = {}) {
+      return {
         type: "solar_shading_simulator_config",
-        version: 1,
+        version: 2,
+        name,
+        scope,
         exported_at: new Date().toISOString(),
-        values: simulatorConfigValues()
+        values: simulatorConfigValues(idsForScope(scope))
+      };
+    }
+
+    function simulatorConfigJson(options = {}) {
+      return JSON.stringify({
+        ...simulatorConfigPayload(options)
       }, null, 2);
     }
 
@@ -1904,7 +1998,16 @@
     }
 
     function parseSimulatorImportPayload(text) {
+      if (!text || !text.trim()) {
+        throw new Error("Kein JSON im Textfeld.");
+      }
       const payload = JSON.parse(text);
+      if (payload && payload.type === "solar_shading_simulator_preset_library" && payload.presets) {
+        return { kind: "preset_library", presets: payload.presets };
+      }
+      if (payload && payload.type === "solar_shading_simulator_preset" && payload.values) {
+        return { kind: "simulator", values: payload.values };
+      }
       if (payload && payload.type === "solar_shading_simulator_config" && payload.values) {
         return { kind: "simulator", values: payload.values };
       }
@@ -1934,12 +2037,12 @@
     function exportSimulatorConfig() {
       const json = simulatorConfigJson();
       simConfigText.value = json;
-      simConfigStatus.textContent = "Simulator-JSON exportiert.";
+      simConfigStatus.textContent = `Simulator-JSON frisch exportiert (${simPresetScopeSelect.options[simPresetScopeSelect.selectedIndex].text}).`;
       return json;
     }
 
     async function copySimulatorConfig() {
-      const json = simConfigText.value.trim() || exportSimulatorConfig();
+      const json = exportSimulatorConfig();
       try {
         await navigator.clipboard.writeText(json);
         simConfigStatus.textContent = "JSON in die Zwischenablage kopiert.";
@@ -1949,29 +2052,36 @@
     }
 
     function downloadSimulatorConfig() {
-      const json = simConfigText.value.trim() || exportSimulatorConfig();
+      const json = exportSimulatorConfig();
+      downloadJsonFile(json, `solar-shading-simulator-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`);
+      simConfigStatus.textContent = "Aktueller Simulator-Export wurde heruntergeladen.";
+    }
+
+    function downloadJsonFile(json, filename) {
       const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
       link.href = url;
-      link.download = `solar-shading-simulator-${stamp}.json`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      simConfigStatus.textContent = "JSON-Datei wurde heruntergeladen.";
     }
 
     function importSimulatorConfigText() {
       try {
         const parsed = parseSimulatorImportPayload(simConfigText.value.trim());
+        if (parsed.kind === "preset_library") {
+          importPresetLibrary(parsed.presets);
+          return;
+        }
         if (parsed.kind === "ha_state") {
-          applyImportedState(parsed.entry, document.getElementById("haImportMode").value);
+          applyImportedState(parsed.entry, simImportModeSelect.value);
           simConfigStatus.textContent = "HA-Attribute aus JSON importiert.";
           return;
         }
-        const changed = applySimulatorValues(parsed.values, document.getElementById("haImportMode").value);
+        const changed = applySimulatorValues(parsed.values, simImportModeSelect.value);
         simConfigStatus.textContent = `${changed} Simulatorwerte importiert.`;
       } catch (error) {
         simConfigStatus.textContent = `Import fehlgeschlagen: ${error.message}`;
@@ -1989,6 +2099,186 @@
         simConfigStatus.textContent = `Datei konnte nicht gelesen werden: ${error.message}`;
       } finally {
         simConfigFile.value = "";
+      }
+    }
+
+    function emptyPresetLibrary() {
+      return { version: 1, presets: {} };
+    }
+
+    function loadPresetLibrary() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || "");
+        if (parsed && parsed.presets && typeof parsed.presets === "object") {
+          return parsed;
+        }
+      } catch (_error) {
+        // Fall through to a clean library.
+      }
+      return emptyPresetLibrary();
+    }
+
+    function savePresetLibrary(library) {
+      try {
+        localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(library));
+        refreshPresetList();
+      } catch (error) {
+        presetStatus.textContent = `Preset konnte nicht gespeichert werden: ${error.message}`;
+      }
+    }
+
+    function presetId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return `preset-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+    }
+
+    function refreshPresetList() {
+      const library = loadPresetLibrary();
+      const entries = Object.entries(library.presets)
+        .sort((a, b) => (a[1].name || "").localeCompare(b[1].name || "", "de"));
+      const current = presetSelect.value;
+      presetSelect.innerHTML = "";
+      if (!entries.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Keine Presets gespeichert";
+        presetSelect.appendChild(option);
+        return;
+      }
+      entries.forEach(([id, preset]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = `${preset.name || id} (${preset.scope || "all"})`;
+        presetSelect.appendChild(option);
+      });
+      if (current && library.presets[current]) {
+        presetSelect.value = current;
+      }
+    }
+
+    function saveCurrentPreset() {
+      const name = presetNameInput.value.trim() || `Preset ${new Date().toLocaleString("de-DE")}`;
+      const library = loadPresetLibrary();
+      const selected = presetSelect.value;
+      const id = selected && library.presets[selected]?.name === name ? selected : presetId();
+      library.presets[id] = {
+        type: "solar_shading_simulator_preset",
+        version: 1,
+        name,
+        scope: simPresetScopeSelect.value,
+        updated_at: new Date().toISOString(),
+        values: simulatorConfigValues(idsForScope(simPresetScopeSelect.value))
+      };
+      savePresetLibrary(library);
+      presetSelect.value = id;
+      presetStatus.textContent = `Preset '${name}' gespeichert.`;
+    }
+
+    function loadSelectedPreset() {
+      const library = loadPresetLibrary();
+      const preset = library.presets[presetSelect.value];
+      if (!preset) {
+        presetStatus.textContent = "Bitte zuerst ein Preset auswaehlen.";
+        return;
+      }
+      const changed = applySimulatorValues(preset.values, simImportModeSelect.value);
+      presetNameInput.value = preset.name || "";
+      simPresetScopeSelect.value = preset.scope || "all";
+      presetStatus.textContent = `Preset '${preset.name || presetSelect.value}' geladen (${changed} Werte).`;
+    }
+
+    function deleteSelectedPreset() {
+      const library = loadPresetLibrary();
+      const id = presetSelect.value;
+      if (!id || !library.presets[id]) {
+        presetStatus.textContent = "Kein Preset zum Loeschen ausgewaehlt.";
+        return;
+      }
+      const name = library.presets[id].name || id;
+      delete library.presets[id];
+      savePresetLibrary(library);
+      presetStatus.textContent = `Preset '${name}' geloescht.`;
+    }
+
+    function exportPresetLibrary() {
+      const json = JSON.stringify({
+        type: "solar_shading_simulator_preset_library",
+        version: 1,
+        exported_at: new Date().toISOString(),
+        presets: loadPresetLibrary().presets
+      }, null, 2);
+      simConfigText.value = json;
+      downloadJsonFile(json, `solar-shading-preset-library-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`);
+      simConfigStatus.textContent = "Preset-Library ins JSON-Feld exportiert.";
+      presetStatus.textContent = "Preset-Library exportiert und als Datei heruntergeladen.";
+      return json;
+    }
+
+    function importPresetLibrary(presets) {
+      if (!presets || typeof presets !== "object") {
+        throw new Error("Preset-Library enthaelt keine Presets.");
+      }
+      const library = loadPresetLibrary();
+      let imported = 0;
+      Object.entries(presets).forEach(([id, preset]) => {
+        if (!preset || !preset.values || typeof preset.values !== "object") {
+          return;
+        }
+        library.presets[id || presetId()] = {
+          type: "solar_shading_simulator_preset",
+          version: 1,
+          name: preset.name || id || "Importiertes Preset",
+          scope: preset.scope || "all",
+          updated_at: preset.updated_at || new Date().toISOString(),
+          values: preset.values
+        };
+        imported += 1;
+      });
+      savePresetLibrary(library);
+      simConfigStatus.textContent = `${imported} Presets importiert.`;
+      presetStatus.textContent = `${imported} Presets in die lokale Library uebernommen.`;
+    }
+
+    function importJsonAsPresetLibrary() {
+      try {
+        const parsed = parseSimulatorImportPayload(simConfigText.value.trim());
+        if (parsed.kind === "preset_library") {
+          importPresetLibrary(parsed.presets);
+          return;
+        }
+        const name = presetNameInput.value.trim() || `Import ${new Date().toLocaleString("de-DE")}`;
+        const library = loadPresetLibrary();
+        const id = presetId();
+        const values = parsed.kind === "ha_state"
+          ? {}
+          : parsed.values;
+        if (parsed.kind === "ha_state") {
+          applyImportedState(parsed.entry, "replace");
+          library.presets[id] = {
+            type: "solar_shading_simulator_preset",
+            version: 1,
+            name,
+            scope: "all",
+            updated_at: new Date().toISOString(),
+            values: simulatorConfigValues(inputIds)
+          };
+        } else {
+          library.presets[id] = {
+            type: "solar_shading_simulator_preset",
+            version: 1,
+            name,
+            scope: simPresetScopeSelect.value,
+            updated_at: new Date().toISOString(),
+            values
+          };
+        }
+        savePresetLibrary(library);
+        presetSelect.value = id;
+        presetStatus.textContent = `JSON als Preset '${name}' gespeichert.`;
+      } catch (error) {
+        presetStatus.textContent = `Preset-Import fehlgeschlagen: ${error.message}`;
       }
     }
 
@@ -3361,6 +3651,18 @@
     selectConfigFileBtn.addEventListener("click", () => simConfigFile.click());
     importConfigBtn.addEventListener("click", importSimulatorConfigText);
     simConfigFile.addEventListener("change", () => importSimulatorConfigFile(simConfigFile.files?.[0]));
+    savePresetBtn.addEventListener("click", saveCurrentPreset);
+    loadPresetBtn.addEventListener("click", loadSelectedPreset);
+    deletePresetBtn.addEventListener("click", deleteSelectedPreset);
+    exportPresetLibraryBtn.addEventListener("click", exportPresetLibrary);
+    importPresetLibraryBtn.addEventListener("click", importJsonAsPresetLibrary);
+    presetSelect.addEventListener("change", () => {
+      const preset = loadPresetLibrary().presets[presetSelect.value];
+      if (preset) {
+        presetNameInput.value = preset.name || "";
+        simPresetScopeSelect.value = preset.scope || "all";
+      }
+    });
     horizonExampleBtn.addEventListener("click", () => {
       horizonProfileInput.value = exampleHorizonJson();
       render();
@@ -3376,6 +3678,7 @@
     dayOfYearRange.value = String(dayOfYear);
     timeRange.value = String(today.getHours() * 60 + today.getMinutes());
     syncDateTimeReadouts();
+    refreshPresetList();
 
     refreshHASources();
     render();
