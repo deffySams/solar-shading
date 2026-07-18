@@ -1,10 +1,23 @@
 """Fetch sun data."""
 
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import pandas as pd
+from astral import Observer
+from astral.sun import azimuth, elevation, sunrise, sunset
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.sun import get_astral_location
+
+try:
+    from homeassistant.helpers.sun import get_astral_observer
+except ImportError:  # Older supported Home Assistant releases
+
+    def get_astral_observer(hass: HomeAssistant) -> Observer:
+        """Build an Astral observer for older supported HA releases."""
+        return Observer(
+            latitude=hass.config.latitude,
+            longitude=hass.config.longitude,
+            elevation=hass.config.elevation,
+        )
 
 
 class SunData:
@@ -12,9 +25,7 @@ class SunData:
 
     def __init__(self, timezone, hass: HomeAssistant) -> None:  # noqa: D107
         self.hass = hass
-        location, elevation = get_astral_location(self.hass)
-        self.location = location  # astral.location.Location
-        self.elevation = elevation
+        self.observer = get_astral_observer(self.hass)
         self.timezone = timezone
 
     @property
@@ -31,37 +42,17 @@ class SunData:
     @property
     def solar_azimuth(self) -> list:
         """Create list with solar azimuth data per 5 minutes."""
-        index = 0
-        azi_list = []
-        for _i in self.times:
-            azi_list.append(
-                self.location.solar_azimuth(self.times[index], self.elevation)
-            )
-            index += 1
-        return azi_list
+        return [azimuth(self.observer, point_in_time) for point_in_time in self.times]
 
     @property
     def solar_elevation(self) -> list:
         """Create list with solar elevation data per 5 minutes."""
-        index = 0
-        ele_list = []
-        for _i in self.times:
-            ele_list.append(
-                self.location.solar_elevation(self.times[index], self.elevation)
-            )
-            index += 1
-        return ele_list
+        return [elevation(self.observer, point_in_time) for point_in_time in self.times]
 
     def sunset(self) -> datetime:
         """Fetch sunset time."""
-        return self.location.sunset(date.today(), local=False)
+        return sunset(self.observer, date.today(), tzinfo=UTC)
 
     def sunrise(self) -> datetime:
         """Fetch sunrise time."""
-        return self.location.sunrise(date.today(), local=False)
-
-    # def df_today(self)-> pd.DataFrame:
-    #     """Create dataframe with azimuth and elevation data"""
-    #     df_today = pd.DataFrame({"azimuth":self.solar_azimuth, "elevation":self.solar_elevation})
-    #     df_today = df_today.set_index(self.times)
-    #     return df_today
+        return sunrise(self.observer, date.today(), tzinfo=UTC)
