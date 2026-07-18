@@ -28,6 +28,7 @@
 
     body {
       margin: 0;
+      overflow-x: hidden;
       color: var(--ink);
       font-family: Georgia, "Times New Roman", serif;
       background:
@@ -36,6 +37,7 @@
     }
 
     .app {
+      width: 100%;
       max-width: 1780px;
       margin: 0 auto;
       padding: 18px;
@@ -73,7 +75,7 @@
     }
 
     h1 {
-      font-size: clamp(28px, 3vw, 52px);
+      font-size: 42px;
     }
 
     p, label, li, td, th, summary {
@@ -474,6 +476,7 @@
 
     .policy-explain {
       white-space: pre-line;
+      overflow-wrap: anywhere;
       margin-top: 14px;
       font-size: 14px;
       line-height: 1.5;
@@ -509,6 +512,8 @@
 
     .metrics-grid .metric .val {
       font-size: 14px;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     @media (max-width: 1400px) {
@@ -538,6 +543,18 @@
     }
 
     @media (max-width: 720px) {
+      .app {
+        padding: 10px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
       .grid,
       .grid-3,
       .kpi-grid,
@@ -579,6 +596,23 @@
             <div class="field">
               <label for="sunsetPosition"><span class="label-main">Ruhe-/Nachtposition nach Zeit (% offen)</span> <button class="info-btn" type="button" data-info="Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergang/Sonnenaufgang plus Offset bestimmen, wann diese Ruheposition gilt.">i</button></label>
               <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
+            </div>
+            <div class="field">
+              <label for="nightMode"><span class="label-main">Nachtsteuerung</span> <button class="info-btn" type="button" data-info="Zeitgefuehrt verwendet die festen Uhrzeiten unten. Sonnengefuehrt verwendet Sonnenuntergang und Sonnenaufgang. In beiden Modi wird waehrend der Nacht die Ruhe-/Nachtposition angefahren.">i</button></label>
+              <select id="nightMode">
+                <option value="time" selected>Zeitgefuehrt</option>
+                <option value="solar">Sonnengefuehrt</option>
+              </select>
+            </div>
+            <div id="nightTimePanel" class="grid">
+              <div class="field">
+                <label for="nightStartTime">Nacht beginnt</label>
+                <input id="nightStartTime" type="time" value="22:00">
+              </div>
+              <div class="field">
+                <label for="nightEndTime">Nacht endet</label>
+                <input id="nightEndTime" type="time" value="06:00">
+              </div>
             </div>
           </div>
         <div class="cta-row">
@@ -652,7 +686,14 @@
             <input id="revealTop" type="number" min="0" step="0.01" value="0.00">
           </div>
           <div class="field">
-            <label for="horizonProfile"><span class="label-main">Lokales Horizontprofil</span> <button class="info-btn" type="button" data-info="Das Profil ist lokal zum Fenster gedacht: 0 Grad links, 90 Grad geradeaus, 180 Grad rechts. lower_elevation beschreibt die untere sichtbare Himmelskante, upper_elevation die obere.">i</button></label>
+            <label for="horizonMode"><span class="label-main">Winkelbezug des Horizonts</span> <button class="info-btn" type="button" data-info="Kompass-Azimut nutzt 0 bis 359 Grad wie eine Solar-App. Fenstersicht nutzt 0 Grad links, 90 Grad geradeaus und 180 Grad rechts. Die Berechnung wandelt den aktuellen Sonnenstand passend um.">i</button></label>
+            <select id="horizonMode">
+              <option value="compass">Kompass-Azimut (0 bis 359 Grad)</option>
+              <option value="window" selected>Fenstersicht (0 bis 180 Grad)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="horizonProfile"><span class="label-main">Horizontprofil</span> <button class="info-btn" type="button" data-info="Jeder Punkt definiert bei einem Winkel die untere und obere sichtbare Himmelskante. Der Winkelbezug wird im Feld darueber festgelegt.">i</button></label>
             <textarea id="horizonProfile">[
   {"angle": 43, "lower_elevation": 6, "upper_elevation": 90},
   {"angle": 51, "lower_elevation": 17, "upper_elevation": 90},
@@ -750,6 +791,25 @@
           <div class="checkbox-row">
             <input id="enableHeatGainPolicy" type="checkbox">
             <label for="enableHeatGainPolicy"><span class="label-main">Waermeeintrags-Policy aktiv</span><button class="info-btn" type="button" data-info="Wenn aus, zeigt der Simulator nur die Basic-Position mit unserer physikalischen Daempfung. Wenn an, werden die Gewichte, Schwellen und Zielpositionen als zusaetzliche strengere Schicht angewendet.">i</button></label>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="heatProtectionControlMode"><span class="label-main">Hitzeschutz-Verhalten</span> <button class="info-btn" type="button" data-info="Skalierend berechnet eine stufenlose Zielposition aus Physik, Preset und Risikofaktoren. Binaer faehrt beim Ueberschreiten einer klaren, durch das Glas uebertragenen Solarleistung direkt auf eine feste Position.">i</button></label>
+              <select id="heatProtectionControlMode">
+                <option value="scaling" selected>Skalierend</option>
+                <option value="binary">Binaer: Schwelle und feste Position</option>
+              </select>
+            </div>
+          </div>
+          <div id="binaryControlPanel" class="grid hidden">
+            <div class="field">
+              <label for="binaryCloseThreshold"><span class="label-main">Binaer schliessen ab (W/m2 Glas)</span> <button class="info-btn" type="button" data-info="Geschaetzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Ab dieser Schwelle faehrt das Cover auf die feste Position.">i</button></label>
+              <input id="binaryCloseThreshold" type="number" min="0" max="1000" step="10" value="180">
+            </div>
+            <div class="field">
+              <label for="binaryClosePosition"><span class="label-main">Feste Position bei Ueberschreitung (% offen)</span> <button class="info-btn" type="button" data-info="Automatisches Ziel bei gerissener Schwelle. Das begrenzt die berechnete Offenposition; eine manuelle Fahrt wird weiterhin nur durch die bestehende Override-Logik behandelt.">i</button></label>
+              <input id="binaryClosePosition" type="number" min="0" max="100" step="1" value="20">
+            </div>
           </div>
           <div class="checkbox-row">
             <input id="additionalWindows" type="checkbox">
@@ -1346,10 +1406,11 @@
 
     const inputIds = [
       "dayOfYearRange", "timeRange", "latitude", "longitude", "windowAzimuth",
-      "defaultPosition", "sunsetPosition", "fovLeft", "fovRight", "minElevation", "maxElevation",
+      "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime",
+      "fovLeft", "fovRight", "minElevation", "maxElevation",
       "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
-      "revealTop", "horizonProfile",
+      "revealTop", "horizonMode", "horizonProfile",
       "solarRadiation", "solarReference", "outsideTemp",
       "forecastTodayMax", "forecastTomorrowMax", "forecastSolarMax", "hotDayThreshold",
       "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
@@ -1360,6 +1421,7 @@
       "awayThresholdReduction", "awayPositionOffset", "useTodayMax",
       "useTomorrowMax", "useOpenDataSolarRadiation", "enableHeatGainPolicy",
       "additionalWindows", "awayActive", "devicePreset", "showExpertWeights",
+      "heatProtectionControlMode", "binaryCloseThreshold", "binaryClosePosition",
       "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
       "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
       "heatProtectionMinOutsideTemp", "maxTransmittedSolarPower"
@@ -1369,11 +1431,12 @@
     const PRESET_SCOPE_IDS = {
       all: inputIds,
       global: [
-        "devicePreset", "defaultPosition", "sunsetPosition", "glassType",
+        "devicePreset", "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime", "glassType",
         "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
         "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
         "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
         "enableHeatGainPolicy", "policyPreset", "additionalWindows", "awayActive",
+        "heatProtectionControlMode", "binaryCloseThreshold", "binaryClosePosition",
         "awayScoreMultiplier", "awayThresholdReduction", "awayPositionOffset",
         "showExpertWeights", "hotDayCloseEnabled",
         "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
@@ -1386,7 +1449,7 @@
       geometry: [
         "latitude", "longitude", "windowAzimuth", "fovLeft", "fovRight",
         "minElevation", "maxElevation", "windowHeight", "windowWidth",
-        "distance", "revealLeft", "revealRight", "revealTop", "horizonProfile",
+        "distance", "revealLeft", "revealRight", "revealTop", "horizonMode", "horizonProfile",
         "glassType", "customVisibleT", "customSolarT", "customVisibleR", "customSolarR"
       ]
     };
@@ -1719,6 +1782,14 @@
         "hidden",
         !document.getElementById("showExpertWeights").checked
       );
+      document.getElementById("binaryControlPanel").classList.toggle(
+        "hidden",
+        document.getElementById("heatProtectionControlMode").value !== "binary"
+      );
+      document.getElementById("nightTimePanel").classList.toggle(
+        "hidden",
+        document.getElementById("nightMode").value !== "time"
+      );
     }
 
     function haApiBaseUrl() {
@@ -1790,6 +1861,9 @@
       overwrite("windowAzimuth", attrs.azimuth_window);
       overwrite("defaultPosition", attrs.default);
       overwrite("sunsetPosition", attrs.sunset_default);
+      overwrite("nightMode", attrs.night_mode);
+      overwrite("nightStartTime", attrs.night_start_time ? String(attrs.night_start_time).slice(0, 5) : null);
+      overwrite("nightEndTime", attrs.night_end_time ? String(attrs.night_end_time).slice(0, 5) : null);
       overwrite("fovLeft", attrs.fov_left_deg ?? attrs.field_of_view?.[0]);
       overwrite("fovRight", attrs.fov_right_deg ?? attrs.field_of_view?.[1]);
       overwrite("minElevation", attrs.min_elevation_deg);
@@ -1801,6 +1875,7 @@
       overwrite("revealRight", attrs.reveal_right_depth_m);
       overwrite("revealTop", attrs.reveal_top_depth_m);
       overwrite("glassType", attrs.glass_type ?? "double_clear");
+      overwrite("horizonMode", attrs.horizon_mode);
       overwrite("horizonProfile", typeof attrs.horizon_profile === "string" ? attrs.horizon_profile : JSON.stringify(attrs.horizon_profile || [], null, 2));
       overwrite("forecastTodayMax", attrs.forecast_today_max_temp);
       overwrite("forecastTomorrowMax", attrs.forecast_tomorrow_max_temp);
@@ -1816,6 +1891,9 @@
       overwrite("useTomorrowMax", attrs.use_forecast_max_temp_tomorrow);
       overwrite("useOpenDataSolarRadiation", attrs.use_open_data_solar_radiation);
       overwrite("enableHeatGainPolicy", attrs.heat_gain_policy_enabled);
+      overwrite("heatProtectionControlMode", attrs.heat_protection_control_mode);
+      overwrite("binaryCloseThreshold", attrs.binary_close_threshold_w_m2);
+      overwrite("binaryClosePosition", attrs.binary_close_position);
       overwrite("showExpertWeights", attrs.heat_gain_policy_show_expert_weights);
       overwrite("policyPreset", attrs.heat_gain_policy_preset);
       overwrite("additionalWindows", attrs.heat_gain_policy_has_additional_daylight_windows);
@@ -2155,6 +2233,9 @@
         windowAzimuth: parseNumber("windowAzimuth"),
         defaultPosition: parseNumber("defaultPosition"),
         sunsetPosition: parseNumber("sunsetPosition"),
+        nightMode: document.getElementById("nightMode").value,
+        nightStartTime: document.getElementById("nightStartTime").value || "22:00",
+        nightEndTime: document.getElementById("nightEndTime").value || "06:00",
         fovLeft: parseNumber("fovLeft"),
         fovRight: parseNumber("fovRight"),
         minElevation: parseNumber("minElevation"),
@@ -2170,6 +2251,7 @@
         revealLeft: parseNumber("revealLeft"),
         revealRight: parseNumber("revealRight"),
         revealTop: parseNumber("revealTop"),
+        horizonMode: document.getElementById("horizonMode").value,
         horizonProfile: profileText,
         solarRadiation: parseNumber("solarRadiation"),
         solarReference: parseNumber("solarReference"),
@@ -2198,6 +2280,9 @@
         useTomorrowMax: parseBool("useTomorrowMax"),
         useOpenDataSolarRadiation: parseBool("useOpenDataSolarRadiation"),
         enableHeatGainPolicy: parseBool("enableHeatGainPolicy"),
+        heatProtectionControlMode: document.getElementById("heatProtectionControlMode").value,
+        binaryCloseThreshold: parseNumber("binaryCloseThreshold"),
+        binaryClosePosition: parseNumber("binaryClosePosition"),
         additionalWindows: parseBool("additionalWindows"),
         awayActive: parseBool("awayActive"),
         showExpertWeights: parseBool("showExpertWeights"),
@@ -2338,9 +2423,10 @@
         return [];
       }
       const parsed = JSON.parse(text);
+      const maxAngle = document.getElementById("horizonMode").value === "compass" ? 359 : 180;
       return parsed
         .map((item) => ({
-          angle: clamp(Number(item.angle), 0, 180),
+          angle: clamp(Number(item.angle), 0, maxAngle),
           lower: clamp(Number(item.lower_elevation ?? 0), 0, 90),
           upper: clamp(Number(item.upper_elevation ?? 90), 0, 90)
         }))
@@ -2376,11 +2462,38 @@
       return { lower: 0, upper: 90 };
     }
 
+    function interpolateCompassHorizon(compassAzimuth, profile) {
+      if (!profile.length) {
+        return { lower: 0, upper: 90 };
+      }
+      if (profile.length === 1) {
+        return { lower: profile[0].lower, upper: profile[0].upper };
+      }
+      let angle = ((compassAzimuth % 360) + 360) % 360;
+      const cyclic = [...profile, { ...profile[0], angle: profile[0].angle + 360 }];
+      if (angle < profile[0].angle) {
+        angle += 360;
+      }
+      for (let index = 0; index < cyclic.length - 1; index += 1) {
+        const left = cyclic[index];
+        const right = cyclic[index + 1];
+        if (left.angle <= angle && angle <= right.angle) {
+          const ratio = (angle - left.angle) / Math.max(right.angle - left.angle, 1e-6);
+          return {
+            lower: left.lower + (right.lower - left.lower) * ratio,
+            upper: left.upper + (right.upper - left.upper) * ratio
+          };
+        }
+      }
+      return { lower: profile[0].lower, upper: profile[0].upper };
+    }
+
     function horizonJson(profile) {
+      const maxAngle = document.getElementById("horizonMode").value === "compass" ? 359 : 180;
       return JSON.stringify(
         profile
           .map((point) => ({
-            angle: Math.round(clamp(point.angle, 0, 180)),
+            angle: Math.round(clamp(point.angle, 0, maxAngle)),
             lower_elevation: Math.round(clamp(point.lower, 0, 90) * 10) / 10,
             upper_elevation: Math.round(clamp(point.upper, 0, 90) * 10) / 10
           }))
@@ -2404,7 +2517,9 @@
       const margin = { top: 22, right: 22, bottom: 42, left: 46 };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
-      const x = (angle) => margin.left + (clamp(angle, 0, 180) / 180) * innerWidth;
+      const compassMode = document.getElementById("horizonMode").value === "compass";
+      const maxAngle = compassMode ? 360 : 180;
+      const x = (angle) => margin.left + (clamp(angle, 0, maxAngle) / maxAngle) * innerWidth;
       const y = (elevation) => margin.top + innerHeight - (clamp(elevation, 0, 90) / 90) * innerHeight;
       const linePath = (key) => points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point[key])}`).join(" ");
       const lowerPath = points.map((point, index) => `${index === 0 ? "M" : "L"} ${x(point.angle)} ${y(point.lower)}`).join(" ");
@@ -2414,7 +2529,7 @@
         <line x1="${margin.left}" y1="${y(elev)}" x2="${width - margin.right}" y2="${y(elev)}" stroke="#d9cab8" stroke-width="1" opacity="0.8"></line>
         <text x="${margin.left - 8}" y="${y(elev) + 4}" text-anchor="end" fill="#6d6155" font-size="11">${elev}°</text>
       `).join("");
-      const ticks = [0, 45, 90, 135, 180].map((angle) => `
+      const ticks = (compassMode ? [0, 90, 180, 270, 360] : [0, 45, 90, 135, 180]).map((angle) => `
         <line x1="${x(angle)}" y1="${height - margin.bottom}" x2="${x(angle)}" y2="${height - margin.bottom + 6}" stroke="#6d6155" stroke-width="1"></line>
         <text x="${x(angle)}" y="${height - 16}" text-anchor="middle" fill="#6d6155" font-size="11">${angle}°</text>
       `).join("");
@@ -2472,7 +2587,7 @@
         const innerX = clamp((xRatio - margin.left) / Math.max(1 - margin.left - margin.right, 1e-6), 0, 1);
         const innerY = clamp((yRatio - margin.top) / Math.max(1 - margin.top - margin.bottom, 1e-6), 0, 1);
         return {
-          angle: innerX * 180,
+          angle: innerX * (document.getElementById("horizonMode").value === "compass" ? 360 : 180),
           elevation: (1 - innerY) * 90
         };
       };
@@ -2497,7 +2612,11 @@
           return;
         }
         const chartPoint = toChartPoint(event);
-        point.angle = clamp(chartPoint.angle, 0, 180);
+        point.angle = clamp(
+          chartPoint.angle,
+          0,
+          document.getElementById("horizonMode").value === "compass" ? 359 : 180
+        );
         if (drag.key === "lower") {
           point.lower = Math.min(clamp(chartPoint.elevation, 0, 90), point.upper);
         } else {
@@ -2721,6 +2840,22 @@
       const startMinutes = Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
       const currentMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
       return currentMinutes >= startMinutes;
+    }
+
+    function isNightModeActive(state, sun) {
+      if (state.nightMode !== "time") {
+        return sun.elevation <= 0;
+      }
+      const toMinutes = (value) => {
+        const [hoursRaw, minutesRaw] = String(value || "00:00").split(":");
+        return Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
+      };
+      const current = toMinutes(state.time);
+      const start = toMinutes(state.nightStartTime);
+      const end = toMinutes(state.nightEndTime);
+      return start <= end
+        ? current >= start && current < end
+        : current >= start || current < end;
     }
 
     function round(value, digits = 3) {
@@ -2981,6 +3116,12 @@
         setText("finalPositionCell", `${open} % offen / ${Number.isFinite(closed) ? closed : 100 - open} % geschlossen`);
       }
       setText("calculationSourceCell", "HA Python / calculation.py");
+      setText(
+        "nightModeCell",
+        attrs.sunset_valid
+          ? `aktiv (${attrs.night_mode}) -> ${open} % offen`
+          : `aus (${attrs.night_mode})`
+      );
       setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
       setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
       setText("revealCell", `links ${round(attrs.left_reveal_shadow_pct, 1)} % / rechts ${round(attrs.right_reveal_shadow_pct, 1)} % / oben ${round(attrs.top_reveal_shadow_pct, 1)} % / gesamt ${round(attrs.total_reveal_shadow_pct, 1)} %`);
@@ -3025,8 +3166,10 @@
         [
           "HA Python Berechnung aktiv.",
           ...(result.annotations || []),
+          `Entscheidung: ${attrs.decision_reason || "unbekannt"}.`,
           `Final: ${Number.isFinite(open) ? `${open} % offen` : "unbekannt"}, Level ${level}, Score ${round(attrs.heat_gain_policy_score, 3)}.`,
-          `Direkte Sonne: ${attrs.direct_sun_valid ? "ja" : "nein"}, Exposition ${round(attrs.direct_solar_exposure_factor, 3)}, Watt-Trigger ${attrs.heat_power_limit_trigger}.`
+          `Direkte Sonne: ${attrs.direct_sun_valid ? "ja" : "nein"}, Exposition ${round(attrs.direct_solar_exposure_factor, 3)}, Watt-Trigger ${attrs.heat_power_limit_trigger}.`,
+          `Pruefkette: ${JSON.stringify(attrs.decision_trace || [])}`
         ].join("\n")
       );
     }
@@ -3051,10 +3194,14 @@
 
         const gamma = ((state.windowAzimuth - sun.azimuth + 180) % 360) - 180;
         const localAngle = localWindowAngle(gamma);
-        const horizon = interpolateHorizon(localAngle, profile);
+        const horizonAngle = state.horizonMode === "compass" ? sun.azimuth : localAngle;
+        const horizon = state.horizonMode === "compass"
+          ? interpolateCompassHorizon(sun.azimuth, profile)
+          : interpolateHorizon(localAngle, profile);
+        const nightModeActive = isNightModeActive(state, sun);
         const sunWithinHorizon = sun.elevation >= horizon.lower && sun.elevation <= horizon.upper;
         const validElevation = sun.elevation >= state.minElevation && sun.elevation <= state.maxElevation;
-        const valid = gamma < Math.min(state.fovLeft, 90) && gamma > -Math.min(state.fovRight, 90) && validElevation && sun.elevation > 0;
+        const valid = gamma < Math.min(state.fovLeft, 90) && gamma > -Math.min(state.fovRight, 90) && validElevation && sun.elevation > 0 && !nightModeActive;
         const directSunVisible = valid && sunWithinHorizon;
 
         const leftShadow = leftRevealShadow(gamma, state.windowWidth, state.revealLeft);
@@ -3211,13 +3358,25 @@
           awayAdjusted.positions,
           forecastTemperaturePolicyPressure
         );
-        const policyResult = state.enableHeatGainPolicy ? policyTargetPosition(
+        const scalingPolicyResult = state.enableHeatGainPolicy ? policyTargetPosition(
           awayAdjusted.score,
           temperatureAdjusted.thresholds.partial,
           temperatureAdjusted.thresholds.full,
           temperatureAdjusted.positions.partial,
           temperatureAdjusted.positions.full
         ) : { level: "disabled", target: null };
+        const binaryHeatActive = state.enableHeatGainPolicy
+          && state.heatProtectionControlMode === "binary"
+          && effectiveSunOnWindow
+          && heatProtectionTemperatureAllowed
+          && Number.isFinite(transmittedSolarPowerWm2)
+          && transmittedSolarPowerWm2 >= state.binaryCloseThreshold;
+        const policyResult = state.heatProtectionControlMode === "binary"
+          ? {
+              level: binaryHeatActive ? "binary" : "none",
+              target: binaryHeatActive ? clamp(state.binaryClosePosition, 0, 100) : null
+            }
+          : scalingPolicyResult;
 
         const hotDaySignal = Math.max(
           state.useTodayMax ? state.forecastTodayMax : Number.NEGATIVE_INFINITY,
@@ -3237,7 +3396,6 @@
           : null;
 
         const cosGamma = Math.cos(deg2rad(gamma));
-        const nightModeActive = sun.elevation <= 0;
         const baseVerticalClosure = effectiveSunOnWindow && cosGamma > 0
           ? Math.round(clamp(((state.distance / cosGamma) * Math.tan(deg2rad(Math.max(sun.elevation, 0)))) / state.windowHeight * 100, 0, 100))
           : null;
@@ -3291,7 +3449,13 @@
         setText("gammaCell", `${round(gamma, 1)} deg`);
         setText("localAngleCell", `${round(localAngle, 1)} deg`);
         setText("horizonCell", `lower ${round(horizon.lower, 1)} deg / upper ${round(horizon.upper, 1)} deg / ${sunWithinHorizon ? "sichtbar" : "blockiert"}`);
-        renderHorizonEditor(profile, localAngle, sun.elevation, horizon, sunPaths);
+        renderHorizonEditor(
+          profile,
+          horizonAngle,
+          sun.elevation,
+          horizon,
+          state.horizonMode === "compass" ? null : sunPaths
+        );
         setText("revealCell", `links ${percent(leftShadow * 100)} / rechts ${percent(rightShadow * 100)} / oben ${percent(topShadow * 100)} / gesamt ${percent(totalRevealShadow * 100)}`);
         setText("directExposureCell", round(directExposure, 3));
         setText("effectiveSunCell", effectiveSunOnWindow ? "ja" : "nein");
@@ -3333,6 +3497,10 @@
         setText("finalPositionCell", `${finalOpen} % offen / ${finalClosure} % geschlossen`);
         const decisionReason = !state.enableHeatGainPolicy
           ? "Policy ist ausgeschaltet."
+          : state.heatProtectionControlMode === "binary"
+            ? (binaryHeatActive
+              ? `Durchgelassene Solarleistung ${round(transmittedSolarPowerWm2, 1)} W/m2 erreicht die Binaerschwelle ${round(state.binaryCloseThreshold, 1)} W/m2.`
+              : `Binaerschwelle nicht erreicht oder Temperatur-/Sonnengate gesperrt: ${round(transmittedSolarPowerWm2, 1)} W/m2 bei ${round(state.binaryCloseThreshold, 1)} W/m2 Schwelle.`)
           : policyResult.level === "disabled"
             ? "Policy hat keine aktiven Gewichte."
             : policyResult.level === "none"
@@ -3371,8 +3539,12 @@
           [
             `1. Physik: effective gain ${round(effectiveSolarGain, 3)} -> forecast-adjusted gain ${round(forecastAdjustedGain, 3)} -> response ${round(heatGainResponse, 3)}.`,
             `2. Score: weighted ${round(weightedScore, 3)} -> physikalisch gedeckelt ${round(rawScore, 3)} -> Preset '${state.policyPreset}' ${round(adjustedScore, 3)} -> Away ${round(awayAdjusted.score, 3)}.`,
-            `3. Schwellen: Basis partial/full ${round(baseThresholds.partial, 2)}/${round(baseThresholds.full, 2)} -> Preset ${round(thresholds.partial, 2)}/${round(thresholds.full, 2)} -> Away ${round(awayAdjusted.thresholds.partial, 2)}/${round(awayAdjusted.thresholds.full, 2)} -> Very-Hot ${round(temperatureAdjusted.thresholds.partial, 2)}/${round(temperatureAdjusted.thresholds.full, 2)}.`,
-            `4. Ziele (% offen): Eingabe partial/full ${configuredPositions.partial}/${configuredPositions.full}${normalizedPositions.legacy ? ` -> Legacy-%geschlossen erkannt, normalisiert zu ${basePositions.partial}/${basePositions.full}` : ""} -> Preset ${positions.partial}/${positions.full} -> Away ${awayAdjusted.positions.partial}/${awayAdjusted.positions.full} -> Very-Hot ${temperatureAdjusted.positions.partial}/${temperatureAdjusted.positions.full}.`,
+            state.heatProtectionControlMode === "binary"
+              ? `3. Binaerschwelle: durchgelassene Solarleistung ${round(transmittedSolarPowerWm2, 1)} W/m2; Eingriff ab ${round(state.binaryCloseThreshold, 1)} W/m2.`
+              : `3. Schwellen: Basis partial/full ${round(baseThresholds.partial, 2)}/${round(baseThresholds.full, 2)} -> Preset ${round(thresholds.partial, 2)}/${round(thresholds.full, 2)} -> Away ${round(awayAdjusted.thresholds.partial, 2)}/${round(awayAdjusted.thresholds.full, 2)} -> Very-Hot ${round(temperatureAdjusted.thresholds.partial, 2)}/${round(temperatureAdjusted.thresholds.full, 2)}.`,
+            state.heatProtectionControlMode === "binary"
+              ? `4. Binaerziel: ${round(state.binaryClosePosition, 0)} % offen bei Ueberschreitung, sonst kein Binaereingriff.`
+              : `4. Ziele (% offen): Eingabe partial/full ${configuredPositions.partial}/${configuredPositions.full}${normalizedPositions.legacy ? ` -> Legacy-%geschlossen erkannt, normalisiert zu ${basePositions.partial}/${basePositions.full}` : ""} -> Preset ${positions.partial}/${positions.full} -> Away ${awayAdjusted.positions.partial}/${awayAdjusted.positions.full} -> Very-Hot ${temperatureAdjusted.positions.partial}/${temperatureAdjusted.positions.full}.`,
             `5. Temperatur-Band: ${temperatureBand}; ${temperatureEffectNote}`,
             `6. Entscheidung: ${decisionReason} Ergebnis der Policy: ${effectivePolicyTarget === null ? "kein Ziel" : `${effectivePolicyTarget} % offen`}. ${hotDayLine} ${heatPowerLine}`,
             `7. Finale Position: ${effectiveSunOnWindow ? "direkte Sonne wirksam, Policy darf eingreifen" : "keine direkte Sonne, Default/Hot-Day-Fallback"}; Nachtmodus ${nightModeActive ? "aktiv" : "aus"} -> ${finalOpen} % offen.`
@@ -3388,18 +3560,24 @@
           effectiveSunOnWindow,
           effectivePolicyLevel,
           profile,
-          localAngle,
+          horizonAngle,
           sun.elevation,
           horizon,
-          sunPaths
+          state.horizonMode === "compass" ? null : sunPaths
         );
-        renderWindowHorizonPreview(profile, localAngle, sun.elevation, horizon, sunPaths);
+        renderWindowHorizonPreview(
+          profile,
+          horizonAngle,
+          sun.elevation,
+          horizon,
+          state.horizonMode === "compass" ? null : sunPaths
+        );
         requestBackendSimulation(state, sun, {
           profile,
-          localAngle,
+          localAngle: horizonAngle,
           sunElevation: sun.elevation,
           horizon,
-          sunPaths
+          sunPaths: state.horizonMode === "compass" ? null : sunPaths
         });
       } catch (error) {
         errorBox.textContent = error.message || String(error);

@@ -38,7 +38,7 @@ def parse_horizon_profile(value) -> list[HorizonPoint]:
         upper = float(item.get("upper_elevation", 90))
         points.append(
             HorizonPoint(
-                angle=max(0.0, min(180.0, angle)),
+                angle=max(0.0, min(359.0, angle)),
                 lower_elevation=max(0.0, min(90.0, lower)),
                 upper_elevation=max(0.0, min(90.0, upper)),
             )
@@ -74,6 +74,42 @@ def interpolate_horizon_elevations(
                 return left.lower_elevation, left.upper_elevation
 
             ratio = (clamped_angle - left.angle) / (right.angle - left.angle)
+            lower = left.lower_elevation + (
+                right.lower_elevation - left.lower_elevation
+            ) * ratio
+            upper = left.upper_elevation + (
+                right.upper_elevation - left.upper_elevation
+            ) * ratio
+            return lower, upper
+
+    point = profile[-1]
+    return point.lower_elevation, point.upper_elevation
+
+
+def interpolate_compass_horizon_elevations(
+    compass_azimuth: float, profile: list[HorizonPoint]
+) -> tuple[float, float]:
+    """Interpolate a cyclic 0..359 degree compass horizon profile."""
+    if not profile:
+        return 0.0, 90.0
+    if len(profile) == 1:
+        point = profile[0]
+        return point.lower_elevation, point.upper_elevation
+
+    angle = float(compass_azimuth) % 360.0
+    cyclic = [*profile, HorizonPoint(
+        angle=profile[0].angle + 360.0,
+        lower_elevation=profile[0].lower_elevation,
+        upper_elevation=profile[0].upper_elevation,
+    )]
+    if angle < profile[0].angle:
+        angle += 360.0
+
+    for left, right in zip(cyclic, cyclic[1:]):
+        if left.angle <= angle <= right.angle:
+            if np.isclose(left.angle, right.angle):
+                return left.lower_elevation, left.upper_elevation
+            ratio = (angle - left.angle) / (right.angle - left.angle)
             lower = left.lower_elevation + (
                 right.lower_elevation - left.lower_elevation
             ) * ratio

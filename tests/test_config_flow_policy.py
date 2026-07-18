@@ -4,11 +4,14 @@ from custom_components.solar_shading.config_flow import (
     _validate_policy_input,
 )
 from custom_components.solar_shading.const import (
+    CONF_BINARY_CLOSE_POSITION,
+    CONF_BINARY_CLOSE_THRESHOLD,
     CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_FULL_CLOSE_THRESHOLD,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_FULL_CLOSE_POSITION,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
+    CONF_HEAT_PROTECTION_CONTROL_MODE,
 )
 
 class ConfigFlowPolicyValidationTests(unittest.TestCase):
@@ -27,6 +30,19 @@ class ConfigFlowPolicyValidationTests(unittest.TestCase):
         self.assertNotIn("lux_entity", migrated)
         self.assertNotIn("weight_weather", migrated)
         self.assertNotIn("heat_power_max_watts", migrated)
+
+    def test_transparent_cover_migrates_to_binary_control(self):
+        migrated = _migrate_retired_options(
+            {
+                "transparent_blind": True,
+                "irradiance_threshold": 240,
+            }
+        )
+
+        self.assertEqual(migrated[CONF_HEAT_PROTECTION_CONTROL_MODE], "binary")
+        self.assertEqual(migrated[CONF_BINARY_CLOSE_THRESHOLD], 240)
+        self.assertEqual(migrated[CONF_BINARY_CLOSE_POSITION], 0)
+        self.assertNotIn("transparent_blind", migrated)
 
     def test_legacy_closed_notation_is_accepted(self):
         errors = _validate_policy_input({

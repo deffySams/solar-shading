@@ -60,6 +60,21 @@ class HorizonProfileTests(unittest.TestCase):
         self.assertEqual(GEOMETRY.local_window_angle(0), 90.0)
         self.assertEqual(GEOMETRY.local_window_angle(-90), 180.0)
 
+    def test_compass_horizon_interpolates_across_north(self) -> None:
+        profile = GEOMETRY.parse_horizon_profile(
+            [
+                {"angle": 350, "lower_elevation": 20},
+                {"angle": 10, "lower_elevation": 40},
+            ]
+        )
+
+        lower, upper = GEOMETRY.interpolate_compass_horizon_elevations(
+            0, profile
+        )
+
+        self.assertAlmostEqual(lower, 30.0)
+        self.assertEqual(upper, 90.0)
+
 
 class RevealShadowTests(unittest.TestCase):
     """Test reveal shading helpers."""

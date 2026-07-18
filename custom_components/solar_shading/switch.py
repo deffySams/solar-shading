@@ -76,13 +76,14 @@ async def async_setup_entry(
         coordinator,
     )
 
-    climate_mode = config_entry.options.get(CONF_CLIMATE_MODE)
-    weather_entity = config_entry.options.get(CONF_WEATHER_ENTITY)
-    sensor_entity = config_entry.options.get(CONF_OUTSIDETEMP_ENTITY)
-    irradiance_entity = config_entry.options.get(CONF_IRRADIANCE_ENTITY)
+    options = coordinator.options
+    climate_mode = options.get(CONF_CLIMATE_MODE)
+    weather_entity = options.get(CONF_WEATHER_ENTITY)
+    sensor_entity = options.get(CONF_OUTSIDETEMP_ENTITY)
+    irradiance_entity = options.get(CONF_IRRADIANCE_ENTITY)
     switches = []
 
-    if len(config_entry.options.get(CONF_ENTITIES)) >= 1:
+    if len(options.get(CONF_ENTITIES, [])) >= 1:
         switches = [control_switch, manual_switch]
 
     if climate_mode:

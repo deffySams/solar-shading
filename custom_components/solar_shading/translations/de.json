@@ -6,8 +6,18 @@
         "data": {
           "name": "Name",
           "blueprint": "Blueprint zu HomeAssistant hinzufÃ¼gen",
-          "mode": "Typ der Abdeckung"
+          "mode": "Typ der Abdeckung",
+          "entry_type": "Neu anlegen"
         }
+      },
+      "window": {
+        "data": {
+          "mode": "Beschattungssystem",
+          "house_profile_entry_id": "Hausprofil",
+          "template_entry": "Einstellungen eines vorhandenen Fensters uebernehmen"
+        },
+        "title": "Fenster-Defaults zuordnen",
+        "description": "Ein verknuepftes Fenster erbt Haus-, Stockwerk-, Fassaden- und Raumwerte. Am Fenster bleiben nur Cover, genaue Abmessungen und optionale lokale Korrekturen."
       },
       "automation": {
         "data": {
@@ -63,7 +73,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
@@ -90,7 +108,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
@@ -105,7 +123,6 @@
           "outside_temp": "Au?entemperatur-Sensor (optional)",
           "temp_low": "Untere Temperaturschwelle",
           "temp_high": "Obere Temperaturschwelle",
-          "transparent_blind": "Transparentes Cover",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
           "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
           "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
@@ -116,7 +133,6 @@
           "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
           "temp_low": "Mindesttemperatur f?r Komfort",
           "temp_high": "H?chsttemperatur f?r Komfort",
-          "transparent_blind": "Das Cover ist transparent und sollte im Sommermodus vollst?ndig schlie?en",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
           "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
           "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
@@ -154,6 +170,9 @@
         "data": {
           "enable_heat_gain_policy": "Waermeeintrags-Policy aktivieren",
           "policy_preset": "Preset",
+          "heat_protection_control_mode": "Hitzeschutz-Verhalten",
+          "binary_close_threshold_w_m2": "Binaer schliessen ab (W/m2 Glas)",
+          "binary_close_position": "Festes Binaerziel (% offen)",
           "has_additional_daylight_windows": "Weitere Tageslichtfenster in anderen Richtungen vorhanden",
           "weight_direct_exposure": "Gewicht: direkte Exposition",
           "weight_incidence": "Gewicht: Sonnenwinkel",
@@ -182,6 +201,9 @@
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
           "policy_preset": "Voreinstellung fuer Tageslicht- vs. Kuehlfokus. Im Normalmodus liefert das Preset auch die Expert-Gewichte; aktiviere Expert-Gewichte, um sie manuell zu ueberschreiben.",
+          "heat_protection_control_mode": "Skalierend berechnet ein stufenloses Ziel aus Physik und Preset. Binaer vergleicht die durch das Glas uebertragene Solarleistung mit einer klaren W/m2-Schwelle und faehrt dann ein festes Ziel an.",
+          "binary_close_threshold_w_m2": "Geschaetzte direkte Solarleistung pro Quadratmeter Glas nach Ausrichtung, Laibung, Reflexion und Transmission.",
+          "binary_close_position": "Automatisches Ziel nach Ueberschreiten der Binaerschwelle in Prozent offen. Die manuelle Override-Logik bleibt unveraendert.",
           "has_additional_daylight_windows": "Wenn der Raum relevante Fenster in anderen Himmelsrichtungen hat, darf dieses Fenster etwas aggressiver verschattet werden.",
           "weight_direct_exposure": "Gewichtung des geometrischen Expositionsfaktors aus Horizont und Laibungen. 0 deaktiviert diesen Faktor.",
           "weight_incidence": "Gewichtung des Einfallswinkels zwischen Sonne und Fensternormale. 0 ignoriert den Winkel-Effekt.",
@@ -241,7 +263,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
@@ -270,7 +300,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
@@ -307,7 +337,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
@@ -336,7 +374,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
@@ -387,13 +425,177 @@
       "init": {
         "menu_options": {
           "automation": "Automatisierungskonfiguration Ã¤ndern",
+          "assignment": "Haus, Stockwerk, Raum und Fassade",
           "blind": "Jalousien-Einstellungen anpassen",
           "climate": "Klimakonfiguration bearbeiten",
           "weather": "Wetterkonfiguration bearbeiten",
           "policy": "Gewichte & Schwellen bearbeiten",
           "blind_spot": "Blindenbereich einrichten",
-          "interp": "Bereichsanpassung"
+          "interp": "Bereichsanpassung",
+          "house_defaults": "Hausregeln und Defaults",
+          "house_expert": "Haus-Feinabstimmung",
+          "house_facades": "Fassaden",
+          "house_floors": "Stockwerke",
+          "house_rooms": "Raeume",
+          "house_room_facades": "Raumfassaden / Waende"
         }
+      },
+      "assignment": {
+        "data": {
+          "house_profile_entry_id": "Hausprofil",
+          "floor_name": "Home-Assistant-Stockwerk",
+          "room_name": "Home-Assistant-Bereich / Raum",
+          "facade_name": "Fassade",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen"
+        },
+        "data_description": {
+          "facade_offset": "Korrektur relativ zur ausgewaehlten Fassade. Fuer ein paralleles Fenster auf 0 lassen.",
+          "use_local_geometry": "Nur aktivieren, wenn dieses Fenster ein anderes Sichtfeld, andere Laibungen oder anderes Glas braucht.",
+          "use_local_horizon": "Fuer einen eigenen Fensterhorizont, waehrend die restliche Geometrie vererbt bleibt.",
+          "use_local_policy": "Nur fuer echte Ausnahmen. Die lokal ueberschriebenen Regeln folgen danach nicht mehr globalen Hausaenderungen."
+        },
+        "title": "Fenster zuordnen"
+      },
+      "house_defaults": {
+        "data": {
+          "house_reference_azimuth": "Azimut der Referenzfassade",
+          "glass_type": "Standardverglasung",
+          "fov_left": "Standard-Sichtfeld links",
+          "fov_right": "Standard-Sichtfeld rechts",
+          "reveal_left_depth": "Standard-Laibung links",
+          "reveal_right_depth": "Standard-Laibung rechts",
+          "reveal_top_depth": "Standard-Laibung oben",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Standard-Horizontprofil",
+          "default_percentage": "Tages-Fallback (% offen)",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
+          "sunset_position": "Nachtposition (% offen)",
+          "weather_entity": "Quelle der Temperaturprognose",
+          "use_forecast_max_temp_today": "Heutige Maximaltemperatur verwenden",
+          "use_forecast_max_temp_tomorrow": "Morgige Maximaltemperatur verwenden",
+          "use_open_data_solar_radiation": "Open-Meteo-Solarstrahlung verwenden",
+          "solar_radiation_entity": "Lokaler Solarstrahlungssensor",
+          "forecast_hot_day_threshold": "Heisser Tag ab Prognosetemperatur",
+          "forecast_very_hot_day_threshold": "Sehr heisser Tag ab Prognosetemperatur",
+          "forecast_preemptive_start_time": "Fruehester Forecast-Eingriff",
+          "policy_preset": "Hitzeschutz-Preset",
+          "heat_protection_control_mode": "Hitzeschutz-Verhalten",
+          "binary_close_threshold_w_m2": "Binaer schliessen ab (W/m2 Glas)",
+          "binary_close_position": "Festes Binaerziel (% offen)",
+          "heat_power_limit_enabled": "Durchgelassene Solarleistung stufenlos begrenzen",
+          "max_transmitted_solar_power_w_m2": "Maximal durchgelassene Solarleistung (W/m2 Glas)",
+          "enable_away_mode": "Bei Abwesenheit strenger reagieren",
+          "away_entity": "Abwesenheits-Entitaet"
+        },
+        "data_description": {
+          "house_reference_azimuth": "Kompass-Azimut der Referenzfassade, am besten der am weitesten nach Norden gerichteten Fassade. Fassaden speichern nur ihre Drehung relativ zu dieser Achse.",
+          "horizon_profile": "JSON-Horizont fuer Fenster ohne spezielleren Fassaden-, Stockwerks-, Raumwand- oder Fensterhorizont.",
+          "night_mode": "Zeitgefuehrt nutzt die beiden festen Uhrzeiten. Sonnengefuehrt nutzt Sonnenuntergang und Sonnenaufgang.",
+          "binary_close_threshold_w_m2": "Geschaetzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Beim Ueberschreiten wird das feste Ziel angefahren.",
+          "binary_close_position": "Automatisches Ziel beim Ueberschreiten der Binaerschwelle. Manuelle Fahrten bleiben ueber die bestehende Override-Logik moeglich.",
+          "max_transmitted_solar_power_w_m2": "Stufenloser Grenzwert der geschaetzten durchgelassenen Solarleistung. Die Offenposition wird ungefaehr proportional zur Ueberschreitung reduziert."
+        },
+        "title": "Regeln und Defaults fuer das ganze Haus",
+        "description": "Alle verknuepften Fenster erben diese Werte, solange eine feinere Ebene sie nicht ausdruecklich ueberschreibt."
+      },
+      "house_expert": {
+        "data": {
+          "solar_radiation_reference_w_m2": "Einstrahlung, die als starke Sonne zaehlt (W/m2)",
+          "forecast_influence_strength": "Forecast-Einfluss",
+          "heat_power_outside_temp_threshold": "Stufenloses Leistungslimit ab Aussentemperatur",
+          "heat_protection_min_outside_temp": "Hitzeschutz deaktivieren unter Aussentemperatur",
+          "hot_day_close_enabled": "Offenposition an heissen Tagen begrenzen",
+          "hot_day_close_threshold": "Heiss-Tag-Limit ab Prognosetemperatur",
+          "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
+          "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
+          "show_expert_weights": "Einzelne Expertengewichte verwenden",
+          "weight_direct_exposure": "Gewicht: geometrische Exposition",
+          "weight_incidence": "Gewicht: Einfallswinkel",
+          "weight_glazing": "Gewicht: Glastransmission",
+          "weight_forecast_temperature": "Gewicht: Prognosetemperatur",
+          "weight_solar_radiation": "Gewicht: Solarstrahlung",
+          "partial_close_threshold": "Normiertes Risiko, ab dem Skalierung beginnt",
+          "full_close_threshold": "Normiertes Risiko fuer das strenge Ziel",
+          "partial_close_position": "Startziel der Skalierung (% offen)",
+          "full_close_position": "Strenges Skalierungsziel (% offen)",
+          "away_score_multiplier": "Risiko-Multiplikator bei Abwesenheit",
+          "away_threshold_reduction": "Schwellenabsenkung bei Abwesenheit",
+          "away_position_offset": "Zusaetzliche Reduktion bei Abwesenheit (% offen)",
+          "sunset_offset": "Versatz zum Sonnenuntergang",
+          "sunrise_offset": "Versatz zum Sonnenaufgang"
+        },
+        "data_description": {
+          "solar_radiation_reference_w_m2": "Einfallende direkte Strahlung vor Fenstergeometrie und Glas. Aktuelle W/m2 geteilt durch diesen Wert ergeben den Einstrahlungsfaktor; ein kleinerer Wert reagiert staerker.",
+          "partial_close_threshold": "Nur fuer Experten: dimensionsloser Risikoindex. Fuer eine Einrichtung ohne Scores den Preset- oder Binaermodus verwenden.",
+          "full_close_threshold": "Nur fuer Experten: dimensionsloser Risikoindex, bei dem das strenge Skalierungsziel erreicht wird."
+        },
+        "title": "Haus-Feinabstimmung"
+      },
+      "house_facades": {
+        "data": {"profile_action": "Fassade bearbeiten oder neu anlegen"},
+        "title": "Fassade auswaehlen"
+      },
+      "house_facade_edit": {
+        "data": {
+          "profile_name": "Fassadenname",
+          "delete_profile": "Diese Fassade loeschen",
+          "facade_offset": "Drehung relativ zur Referenzfassade",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Fassadenhorizont",
+          "fov_left": "Sichtfeld links",
+          "fov_right": "Sichtfeld rechts",
+          "reveal_left_depth": "Laibung links",
+          "reveal_right_depth": "Laibung rechts",
+          "reveal_top_depth": "Laibung oben",
+          "policy_preset": "Hitzeschutz-Preset"
+        },
+        "data_description": {
+          "facade_offset": "Vorzeichenbehaftete Drehung zur Haus-Referenzfassade. Fensterazimut = Referenz + Fassadendrehung + Fensterkorrektur."
+        },
+        "title": "Fassaden-Defaults"
+      },
+      "house_floors": {
+        "data": {
+          "floor_name": "Home-Assistant-Stockwerk",
+          "delete_profile": "Dieses Stockwerksprofil loeschen",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Stockwerkshorizont",
+          "policy_preset": "Hitzeschutz-Preset"
+        },
+        "title": "Stockwerks-Defaults"
+      },
+      "house_rooms": {
+        "data": {
+          "room_name": "Home-Assistant-Bereich / Raum",
+          "delete_profile": "Dieses Raumprofil loeschen",
+          "floor_name": "Stockwerk dieses Raums",
+          "facade_name": "Standardfassade dieses Raums",
+          "policy_preset": "Hitzeschutz-Preset",
+          "has_additional_daylight_windows": "Raum hat Tageslichtfenster an weiteren Fassaden"
+        },
+        "title": "Raum-Defaults"
+      },
+      "house_room_facades": {
+        "data": {
+          "room_name": "Home-Assistant-Bereich / Raum",
+          "facade_name": "Fassade / Wand in diesem Raum",
+          "delete_profile": "Dieses Raumfassadenprofil loeschen",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Horizont dieser Raumfassade",
+          "reveal_left_depth": "Laibung links",
+          "reveal_right_depth": "Laibung rechts",
+          "reveal_top_depth": "Laibung oben",
+          "fov_left": "Sichtfeld links",
+          "fov_right": "Sichtfeld rechts",
+          "policy_preset": "Hitzeschutz-Preset"
+        },
+        "title": "Defaults fuer Raumfassade / Wand",
+        "description": "Das ist die feinste gemeinsame Ebene vor einem einzelnen Fenster. Spaetere Wand-Thermik, Daempfung und Phasenverschiebung gehoeren hierhin."
       },
       "automation": {
         "data": {
@@ -449,7 +651,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
@@ -476,7 +686,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
@@ -491,7 +701,6 @@
           "outside_temp": "Au?entemperatur-Sensor (optional)",
           "temp_low": "Untere Temperaturschwelle",
           "temp_high": "Obere Temperaturschwelle",
-          "transparent_blind": "Transparentes Cover",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
           "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
           "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
@@ -502,7 +711,6 @@
           "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
           "temp_low": "Mindesttemperatur f?r Komfort",
           "temp_high": "H?chsttemperatur f?r Komfort",
-          "transparent_blind": "Das Cover ist transparent und sollte im Sommermodus vollst?ndig schlie?en",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
           "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
           "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
@@ -540,6 +748,9 @@
         "data": {
           "enable_heat_gain_policy": "Waermeeintrags-Policy aktivieren",
           "policy_preset": "Preset",
+          "heat_protection_control_mode": "Hitzeschutz-Verhalten",
+          "binary_close_threshold_w_m2": "Binaer schliessen ab (W/m2 Glas)",
+          "binary_close_position": "Festes Binaerziel (% offen)",
           "has_additional_daylight_windows": "Weitere Tageslichtfenster in anderen Richtungen vorhanden",
           "weight_direct_exposure": "Gewicht: direkte Exposition",
           "weight_incidence": "Gewicht: Sonnenwinkel",
@@ -568,6 +779,9 @@
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
           "policy_preset": "Voreinstellung fuer Tageslicht- vs. Kuehlfokus. Im Normalmodus liefert das Preset auch die Expert-Gewichte; aktiviere Expert-Gewichte, um sie manuell zu ueberschreiben.",
+          "heat_protection_control_mode": "Skalierend berechnet ein stufenloses Ziel aus Physik und Preset. Binaer vergleicht die durch das Glas uebertragene Solarleistung mit einer klaren W/m2-Schwelle und faehrt dann ein festes Ziel an.",
+          "binary_close_threshold_w_m2": "Geschaetzte direkte Solarleistung pro Quadratmeter Glas nach Ausrichtung, Laibung, Reflexion und Transmission.",
+          "binary_close_position": "Automatisches Ziel nach Ueberschreiten der Binaerschwelle in Prozent offen. Die manuelle Override-Logik bleibt unveraendert.",
           "has_additional_daylight_windows": "Wenn der Raum relevante Fenster in anderen Himmelsrichtungen hat, darf dieses Fenster etwas aggressiver verschattet werden.",
           "weight_direct_exposure": "Gewichtung des geometrischen Expositionsfaktors aus Horizont und Laibungen. 0 deaktiviert diesen Faktor.",
           "weight_incidence": "Gewichtung des Einfallswinkels zwischen Sonne und Fensternormale. 0 ignoriert den Winkel-Effekt.",
@@ -627,7 +841,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
@@ -656,7 +878,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
@@ -693,7 +915,15 @@
           "reveal_left_depth": "Laibung links",
           "reveal_right_depth": "Laibung rechts",
           "reveal_top_depth": "Laibung oben",
-          "horizon_profile": "Lokales Horizontprofil",
+          "horizon_profile": "Horizontprofil",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
+          "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
+          "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
+          "night_mode": "Nachtsteuerung",
+          "night_start_time": "Nacht beginnt",
+          "night_end_time": "Nacht endet",
           "glass_type": "Glasart",
           "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
@@ -722,7 +952,7 @@
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
-          "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
+          "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
@@ -781,6 +1011,30 @@
         "daylight_first_multi_aspect": "Tageslicht zuerst (mehrere Fassaden)",
         "balanced": "Ausgewogen",
         "cooling_first": "K?hlung zuerst"
+      }
+    },
+    "entry_type": {
+      "options": {
+        "house": "Hausprofil",
+        "window": "Fenster"
+      }
+    },
+    "horizon_mode": {
+      "options": {
+        "compass": "Kompass-Azimut (0 bis 359 Grad)",
+        "window": "Fenstersicht (0 links, 90 geradeaus, 180 rechts)"
+      }
+    },
+    "night_mode": {
+      "options": {
+        "time": "Feste Uhrzeiten",
+        "solar": "Sonnenuntergang und Sonnenaufgang"
+      }
+    },
+    "heat_protection_control_mode": {
+      "options": {
+        "scaling": "Skalierend aus Preset und Physik",
+        "binary": "Binaere Schwelle und festes Ziel"
       }
     }
   }

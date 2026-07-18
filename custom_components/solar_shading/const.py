@@ -60,6 +60,29 @@ CONF_REVEAL_RIGHT = "reveal_right_depth"
 CONF_REVEAL_TOP = "reveal_top_depth"
 CONF_GLASS_TYPE = "glass_type"
 CONF_TEMPLATE_ENTRY = "template_entry"
+CONF_ENTRY_TYPE = "entry_type"
+CONF_HOUSE_PROFILE_ENTRY_ID = "house_profile_entry_id"
+CONF_HOUSE_REFERENCE_AZIMUTH = "house_reference_azimuth"
+CONF_HOUSE_DEFAULTS = "house_defaults"
+CONF_FLOOR_PROFILES = "floor_profiles"
+CONF_FACADE_PROFILES = "facade_profiles"
+CONF_ROOM_PROFILES = "room_profiles"
+CONF_ROOM_FACADE_PROFILES = "room_facade_profiles"
+CONF_PROFILE_OVERRIDES = "overrides"
+CONF_PROFILE_ACTION = "profile_action"
+CONF_PROFILE_NAME = "profile_name"
+CONF_PROFILE_DELETE = "delete_profile"
+CONF_USE_LOCAL_GEOMETRY = "use_local_geometry"
+CONF_USE_LOCAL_HORIZON = "use_local_horizon"
+CONF_USE_LOCAL_POLICY = "use_local_policy"
+CONF_WINDOW_OVERRIDES = "window_overrides"
+CONF_HORIZON_MODE = "horizon_mode"
+CONF_NIGHT_MODE = "night_mode"
+CONF_NIGHT_START_TIME = "night_start_time"
+CONF_NIGHT_END_TIME = "night_end_time"
+CONF_HEAT_PROTECTION_CONTROL_MODE = "heat_protection_control_mode"
+CONF_BINARY_CLOSE_THRESHOLD = "binary_close_threshold_w_m2"
+CONF_BINARY_CLOSE_POSITION = "binary_close_position"
 CONF_FACADE_NAME = "facade_name"
 CONF_FLOOR_NAME = "floor_name"
 CONF_ROOM_NAME = "room_name"
@@ -117,6 +140,25 @@ POLICY_PRESET_OPTIONS = [
     "daylight_first_multi_aspect",
     "balanced",
     "cooling_first",
+]
+
+ENTRY_TYPE_WINDOW = "window"
+ENTRY_TYPE_HOUSE = "house"
+ENTRY_TYPE_OPTIONS = [ENTRY_TYPE_WINDOW, ENTRY_TYPE_HOUSE]
+
+HORIZON_MODE_WINDOW = "window"
+HORIZON_MODE_COMPASS = "compass"
+HORIZON_MODE_OPTIONS = [HORIZON_MODE_WINDOW, HORIZON_MODE_COMPASS]
+
+NIGHT_MODE_TIME = "time"
+NIGHT_MODE_SOLAR = "solar"
+NIGHT_MODE_OPTIONS = [NIGHT_MODE_TIME, NIGHT_MODE_SOLAR]
+
+HEAT_PROTECTION_MODE_SCALING = "scaling"
+HEAT_PROTECTION_MODE_BINARY = "binary"
+HEAT_PROTECTION_MODE_OPTIONS = [
+    HEAT_PROTECTION_MODE_SCALING,
+    HEAT_PROTECTION_MODE_BINARY,
 ]
 
 

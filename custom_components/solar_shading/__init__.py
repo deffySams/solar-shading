@@ -13,16 +13,20 @@ from homeassistant.helpers.event import (
 )
 
 from .const import (
+    CONF_ENTRY_TYPE,
     CONF_END_ENTITY,
     CONF_ENTITIES,
+    CONF_HOUSE_PROFILE_ENTRY_ID,
     CONF_PRESENCE_ENTITY,
     CONF_SOLAR_RADIATION_ENTITY,
     CONF_TEMP_ENTITY,
     CONF_WEATHER_ENTITY,
     DOMAIN,
+    ENTRY_TYPE_HOUSE,
     _LOGGER,
 )
 from .coordinator import AdaptiveDataUpdateCoordinator
+from .profiles import resolve_effective_options
 from .simulator import SolarShadingSimulationView
 
 PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.BUTTON]
@@ -43,16 +47,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Solar Shading from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN].setdefault("house_profiles", {})
     _async_register_simulator_api(hass)
     await _async_install_www_assets(hass)
 
+    if entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
+        hass.data[DOMAIN]["house_profiles"][entry.entry_id] = entry
+        entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+        return True
+
     coordinator = AdaptiveDataUpdateCoordinator(hass)
-    _temp_entity = entry.options.get(CONF_TEMP_ENTITY)
-    _presence_entity = entry.options.get(CONF_PRESENCE_ENTITY)
-    _weather_entity = entry.options.get(CONF_WEATHER_ENTITY)
-    _solar_radiation_entity = entry.options.get(CONF_SOLAR_RADIATION_ENTITY)
-    _cover_entities = entry.options.get(CONF_ENTITIES, [])
-    _end_time_entity = entry.options.get(CONF_END_ENTITY)
+    options = resolve_effective_options(hass, entry).options
+    _temp_entity = options.get(CONF_TEMP_ENTITY)
+    _presence_entity = options.get(CONF_PRESENCE_ENTITY)
+    _weather_entity = options.get(CONF_WEATHER_ENTITY)
+    _solar_radiation_entity = options.get(CONF_SOLAR_RADIATION_ENTITY)
+    _cover_entities = options.get(CONF_ENTITIES, [])
+    _end_time_entity = options.get(CONF_END_ENTITY)
     _entities = ["sun.sun"]
     for entity in [
         _temp_entity,
@@ -93,6 +104,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    if entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
+        hass.data[DOMAIN].get("house_profiles", {}).pop(entry.entry_id, None)
+        return True
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -101,6 +115,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
+    if entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
+        hass.data[DOMAIN].setdefault("house_profiles", {})[entry.entry_id] = entry
+        linked_entries = [
+            candidate
+            for candidate in hass.config_entries.async_entries(DOMAIN)
+            if candidate.options.get(CONF_HOUSE_PROFILE_ENTRY_ID) == entry.entry_id
+        ]
+        for linked_entry in linked_entries:
+            await hass.config_entries.async_reload(linked_entry.entry_id)
+        return
     await hass.config_entries.async_reload(entry.entry_id)
 
 

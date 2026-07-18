@@ -357,7 +357,7 @@ flowchart TD
 | `heat_power_max_watts` name | It is W/m2, not watts. | Rename with migration alias. |
 | `solar_radiation_reference_w_m2` name | Reads like a limit, but is a calibration reference. | Rename label/help text first; maybe config key later. |
 
-## Proposed Setup Model
+## Implemented Setup Model
 
 ```mermaid
 flowchart TD
@@ -371,7 +371,7 @@ flowchart TD
   Window --> WindowDetails["Fenster: Cover-Entity, Masse, lokaler Horizont, lokale Laibung, lokale Sonderregeln"]
 ```
 
-Next iteration target:
+Current resolver:
 
 ```text
 effective_config =
@@ -390,7 +390,7 @@ facades, floors, and window geometry. Window-specific settings are for real
 exceptions such as local horizon, special reveal geometry, or a different cover
 entity.
 
-Settings ownership for the next implementation:
+Current settings ownership:
 
 | Level | Owns | Typical overrides |
 | --- | --- | --- |
@@ -444,34 +444,32 @@ Normal setup should only ask:
 
 Everything else should be expert mode or inherited from house/facade defaults.
 
-## First implementation step
+## Current implementation
 
-Implemented as a low-risk setup improvement before a full global profile
-storage model:
+The profile storage model is implemented with dedicated house-profile config
+entries:
 
 ```text
-1. Existing-window template
-   During new window setup, an existing Solar Shading entry can be selected as
-   a template. Its options are copied as suggested defaults, except the cover
-   entity group is not copied.
-
-2. Facade-derived azimuth
-   Each window can store facade/floor/room labels and optionally derive its
-   compass azimuth from:
+1. House defaults and expert tuning are stored once.
+2. Facades store rotation, shared geometry, horizon and optional preset.
+3. HA floors and areas are selected through native dropdowns.
+4. Room-facade profiles provide the narrowest shared wall-level override.
+5. Linked windows inherit all rules and keep only endpoint/dimension values.
+6. Facade-derived azimuth is calculated as:
 
    window_azimuth = (facade_reference_azimuth + facade_offset) mod 360
 ```
 
-This supports the 40-window workflow immediately:
+This supports the 40-window workflow:
 
 ```text
-1. Configure one good reference window with the desired house-level settings.
-2. Create the next window from that existing-window template.
-3. Set facade/floor/room labels.
-4. Use facade reference + offset for azimuth.
-5. Adjust only cover entity, horizon, reveal, and dimensions when needed.
+1. Create one house profile and set the reference facade.
+2. Add the required facades and their rotations.
+3. Assign HA floors and rooms once in the house profile.
+4. Create each linked window with cover entity, room, facade and dimensions.
+5. Enable local horizon/geometry/policy only for real exceptions.
 ```
 
-The full future model can still introduce explicit house/facade/floor profile
-storage later. The current implementation keeps compatibility by writing the
-resolved `set_azimuth` into the existing calculation path.
+Every window sensor exposes the applied layers and per-setting sources. See
+`docs/calculation-flow.md` for the complete mathematical flow and the planned
+room-facade insertion point for wall/roof phase shift.

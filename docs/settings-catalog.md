@@ -19,12 +19,14 @@ Retire       Remove or migrate away.
 | Setting | Meaning | Target |
 | --- | --- | --- |
 | `name` | Name of this Solar Shading config entry. | Window |
+| `entry_type` | Creates either one house profile or one window entry. | Setup |
+| `house_profile_entry_id` | Links a window to its inherited house profile. | Window |
 | `mode` / `sensor_type` | Cover calculation type: blind, awning, tilt. | House default, Window override |
-| `template_entry` | Copies options from an existing entry during setup. | Retire after real profiles |
+| `template_entry` | Optional compatibility shortcut for unlinked windows; house profiles are preferred. | Compatibility |
 | `group` | Cover entities controlled by this entry. | Window |
-| `facade_name` | Free text label for the facade. | Retire into facade_id / facade dropdown |
-| `floor_name` | Free text label for the floor. | Retire into HA floor dropdown |
-| `room_name` | Free text label for the room. | Retire into HA area/room dropdown |
+| `facade_name` | Selects a facade profile from the linked house. | Window / Room |
+| `floor_name` | Home Assistant floor ID selected through the native dropdown. | Room / Window |
+| `room_name` | Home Assistant area ID selected through the native dropdown. | Window |
 
 ## House Axis, Facades, And Geometry
 
@@ -39,6 +41,7 @@ Retire       Remove or migrate away.
 | `min_elevation` | Minimum solar elevation to consider. | Expert / Room facade |
 | `max_elevation` | Maximum solar elevation to consider. | Expert / Room facade |
 | `horizon_profile` | Local lower/upper horizon profile across the window view. | Room facade, Window override |
+| `horizon_mode` | Chooses local window angles 0..180 or true compass azimuth 0..359. | House / Facade / Room facade / Window override |
 | `window_width` | Physical glass/window width in m. | Window |
 | `window_height` | Physical glass/window height in m. | Window |
 | `distance_shaded_area` | Vertical blind projection depth / shaded target distance. | Window, rename |
@@ -59,6 +62,9 @@ Retire       Remove or migrate away.
 | --- | --- | --- |
 | `default_percentage` | Normal open position / fallback target. | House default, Room/Window override |
 | `sunset_position` | Position after sunset / night fallback. | House, rename to Ruhe-/Nachtposition |
+| `night_mode` | Uses either fixed times or solar sunset/sunrise for night position. | House |
+| `night_start_time` | Start of fixed-time night mode. | House |
+| `night_end_time` | End of fixed-time night mode. | House |
 | `sunset_offset` | Offset around sunset. | Expert, replace normal UI with time-guided setting |
 | `sunrise_offset` | Offset around sunrise. | Expert, replace normal UI with time-guided setting |
 | `enable_max_position` | Enable upper output clamp. | Expert / Window |
@@ -118,6 +124,9 @@ Retire       Remove or migrate away.
 | --- | --- | --- |
 | `enable_heat_gain_policy` | Enables the current heat-gain policy. | House |
 | `policy_preset` | Bias profile: daylight/balanced/cooling. | House |
+| `heat_protection_control_mode` | Selects scaling policy or binary physical threshold. | House |
+| `binary_close_threshold_w_m2` | Transmitted solar power per m2 of glass that triggers binary control. | House / Window override |
+| `binary_close_position` | Fixed percent-open target when binary threshold is crossed. | House / Window override |
 | `has_additional_daylight_windows` | Room has other daylight, so shading may be stricter. | Room |
 | `partial_close_threshold` | Internal score where partial shading starts. | Expert / House preset |
 | `full_close_threshold` | Internal score where strong shading starts. | Expert / House preset |
@@ -161,7 +170,7 @@ Retire       Remove or migrate away.
 | `presence_entity` | Presence source for old comfort logic. | Legacy |
 | `irradiance_entity` | Irradiance sensor for old logic. | Legacy |
 | `irradiance_threshold` | Irradiance threshold for old logic. | Legacy |
-| `transparent_blind` | Old binary transparent-cover summer close rule. | Replace with cover effect + binary/scaling mode |
+| `transparent_blind` | Retired. Existing `true` values migrate to binary mode, the old field is discarded. | Migration only |
 
 ## Removed In 0.3.0b41
 

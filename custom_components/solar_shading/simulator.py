@@ -240,6 +240,17 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         distance=_float(values, "distance", 0.5) or 0.5,
         h_win=_float(values, "windowHeight", 2.1) or 2.1,
     )
+    cover.horizon_mode = values.get("horizonMode") or "window"
+    cover.night_mode = values.get("nightMode") or "time"
+    cover.night_start_time = values.get("nightStartTime") or "22:00:00"
+    cover.night_end_time = values.get("nightEndTime") or "06:00:00"
+    cover.heat_protection_control_mode = (
+        values.get("heatProtectionControlMode") or "scaling"
+    )
+    cover.binary_close_threshold_w_m2 = _float(
+        values, "binaryCloseThreshold", 180
+    )
+    cover.binary_close_position = _int(values, "binaryClosePosition", 20)
     cover.hass = _SimulationHass(hass, fake_states)
     cover.sun_data = _SimulationSunData(cover.sol_elev > 0, now)
     open_position = int(round(NormalCoverState(cover).get_state()))
@@ -281,12 +292,22 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "heat_gain_policy_score": _round(cover.policy_score),
         "heat_gain_policy_action_level": cover.policy_action_level,
         "heat_gain_policy_target_position": cover.heat_gain_target_position,
+        "heat_protection_control_mode": cover.heat_protection_control_mode,
+        "binary_close_threshold_w_m2": cover.binary_close_threshold_w_m2,
+        "binary_close_position": cover.binary_close_position,
+        "binary_heat_protection_active": cover.binary_heat_protection_active,
         "heat_gain_policy_hot_day_override_active": cover.hot_day_override_active,
         "heat_gain_policy_very_hot_day_override_active": cover.very_hot_day_override_active,
         "heat_gain_policy_active_hot_day_close_position": cover.active_hot_day_close_position,
         "forecast_preemptive_active": cover.forecast_preemptive_active,
         "sunset_valid": cover.sunset_valid,
         "direct_sun_valid": cover.direct_sun_valid,
+        "horizon_mode": cover.horizon_mode,
+        "night_mode": cover.night_mode,
+        "night_start_time": cover.night_start_time,
+        "night_end_time": cover.night_end_time,
+        "decision_reason": cover.decision_reason,
+        "decision_trace": cover.decision_trace,
     }
     return {
         "source": "ha_python",

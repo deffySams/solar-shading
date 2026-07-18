@@ -2,7 +2,8 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -20,6 +21,7 @@ from .sun import SunData
 from .config_context_adapter import ConfigContextAdapter
 from .geometry import (
     combined_reveal_shadow_fraction,
+    interpolate_compass_horizon_elevations,
     interpolate_horizon_elevations,
     left_reveal_shadow_fraction,
     local_window_angle,
@@ -221,6 +223,10 @@ class AdaptiveGeneralCover(ABC):
     @property
     def effective_horizon_elevations(self) -> tuple[float, float]:
         """Return interpolated lower and upper horizon elevations."""
+        if getattr(self, "horizon_mode", "window") == "compass":
+            return interpolate_compass_horizon_elevations(
+                self.sol_azi, self._parsed_horizon_profile
+            )
         return interpolate_horizon_elevations(
             self.local_solar_angle, self._parsed_horizon_profile
         )
@@ -955,6 +961,8 @@ class AdaptiveGeneralCover(ABC):
     @property
     def heat_gain_policy_active(self) -> bool:
         """Return whether the heat-gain overlay policy is enabled."""
+        if getattr(self, "heat_protection_control_mode", "scaling") == "binary":
+            return self.enable_heat_gain_policy
         weight_policy_active = self.enable_heat_gain_policy and any(
             weight > 0.0 for weight in self.policy_component_weights.values()
         )
@@ -1131,6 +1139,8 @@ class AdaptiveGeneralCover(ABC):
     @property
     def policy_action_level(self) -> str:
         """Return the active policy action level."""
+        if getattr(self, "heat_protection_control_mode", "scaling") == "binary":
+            return "binary" if self.binary_heat_protection_active else "none"
         if not self.heat_gain_policy_active:
             return "disabled"
         base_level, base_target = policy_target_position(
@@ -1159,6 +1169,8 @@ class AdaptiveGeneralCover(ABC):
     @property
     def heat_gain_target_position(self) -> int | None:
         """Return the overlay target position from the heat-gain policy."""
+        if getattr(self, "heat_protection_control_mode", "scaling") == "binary":
+            return self.binary_heat_target_position
         if not self.heat_gain_policy_active:
             return None
         policy_target = policy_target_position(
@@ -1174,8 +1186,49 @@ class AdaptiveGeneralCover(ABC):
         return policy_target
 
     @property
+    def binary_heat_protection_active(self) -> bool:
+        """Return whether binary heat protection crosses its physical threshold."""
+        if getattr(self, "heat_protection_control_mode", "scaling") != "binary":
+            return False
+        if not self.enable_heat_gain_policy or not self.direct_sun_valid:
+            return False
+        if not self.heat_protection_temperature_allowed:
+            return False
+        threshold = getattr(self, "binary_close_threshold_w_m2", None)
+        power = self.transmitted_solar_power_w_m2
+        if threshold is None or power is None:
+            return False
+        return float(power) >= float(threshold)
+
+    @property
+    def binary_heat_target_position(self) -> int | None:
+        """Return the fixed open position for binary heat protection."""
+        if not self.binary_heat_protection_active:
+            return None
+        position = getattr(self, "binary_close_position", None)
+        if position is None:
+            return None
+        return int(np.clip(position, 0, 100))
+
+    @property
     def sunset_valid(self) -> bool:
-        """Determine if it is after sunset plus offset."""
+        """Determine whether the configured night mode is active."""
+        if getattr(self, "night_mode", "solar") == "time":
+            start = self._parse_clock_time(
+                getattr(self, "night_start_time", "22:00:00")
+            )
+            end = self._parse_clock_time(
+                getattr(self, "night_end_time", "06:00:00")
+            )
+            if start is not None and end is not None:
+                now = self.evaluation_datetime or datetime.now(ZoneInfo(self.timezone))
+                if now.tzinfo is not None:
+                    now = now.astimezone(ZoneInfo(self.timezone))
+                current = now.time().replace(tzinfo=None)
+                if start <= end:
+                    return start <= current < end
+                return current >= start or current < end
+
         sunset = self.sun_data.sunset().replace(tzinfo=None)
         sunrise = self.sun_data.sunrise().replace(tzinfo=None)
         now_utc = (self.evaluation_datetime or datetime.now(UTC)).replace(tzinfo=None)
@@ -1185,6 +1238,73 @@ class AdaptiveGeneralCover(ABC):
             "After sunset plus offset? %s", (after_sunset or before_sunrise)
         )
         return after_sunset or before_sunrise
+
+    @staticmethod
+    def _parse_clock_time(value: str | time | None) -> time | None:
+        """Parse Home Assistant time selector values."""
+        if isinstance(value, time):
+            return value.replace(tzinfo=None)
+        if not value:
+            return None
+        try:
+            return time.fromisoformat(str(value))
+        except ValueError:
+            return None
+
+    @property
+    def decision_reason(self) -> str:
+        """Return the primary reason for the current target position."""
+        if self.sunset_valid:
+            return "night_position"
+        if not self.valid:
+            return "sun_outside_window"
+        if not self.sun_within_horizon_profile:
+            return "sun_blocked_by_horizon"
+        if self.is_sun_in_blind_spot:
+            return "sun_in_excluded_angle"
+        if self.direct_solar_exposure_factor <= 0.001:
+            return "sun_blocked_by_reveal"
+        if not self.heat_protection_current_temperature_allowed:
+            return "below_heat_protection_temperature"
+        if self.heat_power_limited_open_position is not None:
+            return "transmitted_solar_power_limit"
+        if self.binary_heat_protection_active:
+            return "binary_solar_threshold"
+        if self.very_hot_day_override_active:
+            return "very_hot_day_override"
+        if self.hot_day_override_active:
+            return "hot_day_override"
+        if self.heat_gain_target_position is not None:
+            return f"scaling_{self.policy_action_level}"
+        return "default_position"
+
+    @property
+    def decision_trace(self) -> list[dict[str, object]]:
+        """Return ordered gates and the values that produced the decision."""
+        return [
+            {"gate": "night", "passed": not self.sunset_valid},
+            {"gate": "window_azimuth", "passed": bool(self.valid)},
+            {"gate": "horizon", "passed": bool(self.sun_within_horizon_profile)},
+            {
+                "gate": "direct_exposure",
+                "passed": self.direct_solar_exposure_factor > 0.001,
+                "value": round(self.direct_solar_exposure_factor, 4),
+            },
+            {
+                "gate": "outside_temperature",
+                "passed": bool(self.heat_protection_current_temperature_allowed),
+                "value": self.heat_power_outside_temperature,
+            },
+            {
+                "gate": "transmitted_solar_power",
+                "passed": self.transmitted_solar_power_w_m2 is not None,
+                "value_w_m2": self.transmitted_solar_power_w_m2,
+            },
+            {
+                "decision": self.decision_reason,
+                "target_open_pct": self.heat_gain_target_position,
+            },
+        ]
 
     @property
     def default(self) -> float:
@@ -1300,7 +1420,6 @@ class ClimateCoverData:
     outside_entity: str
     temp_switch: bool
     blind_type: str
-    transparent_blind: bool
     irradiance_entity: str
     irradiance_threshold: int
     temp_summer_outside: float
@@ -1446,10 +1565,6 @@ class ClimateCoverState(NormalCoverState):
                 "n_w_p(): low irradiance outside summer = use default"
             )
             return self.cover.default
-
-        # If it's summer and there's a transparent blind, return 0
-        if is_summer and self.climate_data.transparent_blind:
-            return 0
 
         # If none of the above conditions are met, get the state from the parent class
         self.cover.logger.debug("n_w_p(): None of the climate conditions are met")

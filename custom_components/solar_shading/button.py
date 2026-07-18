@@ -31,7 +31,7 @@ async def async_setup_entry(
 
     buttons = []
 
-    entities = config_entry.options.get(CONF_ENTITIES, [])
+    entities = coordinator.options.get(CONF_ENTITIES, [])
     if len(entities) >= 1:
         buttons = [reset_manual]
 
@@ -66,7 +66,7 @@ class AdaptiveCoverButton(
         self._attr_unique_id = f"{unique_id}_{button_name}"
         self._device_id = unique_id
         self._button_name = button_name
-        self._entities = config_entry.options.get(CONF_ENTITIES, [])
+        self._entities = coordinator.options.get(CONF_ENTITIES, [])
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._device_id)},
             name=self._device_name,

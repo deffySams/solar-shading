@@ -35,6 +35,9 @@ def _payload(**overrides):
         "windowAzimuth": 90,
         "defaultPosition": 100,
         "sunsetPosition": 100,
+        "nightMode": "time",
+        "nightStartTime": "22:00",
+        "nightEndTime": "06:00",
         "fovLeft": 90,
         "fovRight": 90,
         "minElevation": 0,
@@ -44,6 +47,7 @@ def _payload(**overrides):
         "distance": 0.5,
         "glassType": "double_clear",
         "horizonProfile": "[]",
+        "horizonMode": "window",
         "solarRadiation": 800,
         "solarReference": 900,
         "outsideTemp": 28,
@@ -58,6 +62,9 @@ def _payload(**overrides):
         "useTomorrowMax": False,
         "useOpenDataSolarRadiation": True,
         "enableHeatGainPolicy": True,
+        "heatProtectionControlMode": "scaling",
+        "binaryCloseThreshold": 180,
+        "binaryClosePosition": 20,
         "policyPreset": "balanced",
         "additionalWindows": False,
         "awayActive": False,
@@ -106,6 +113,68 @@ class SimulatorBackendTest(unittest.TestCase):
 
         self.assertEqual(result["open_position"], 100)
         self.assertFalse(result["attributes"]["direct_sun_valid"])
+
+    def test_binary_control_uses_transmitted_solar_power_threshold(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                heatProtectionControlMode="binary",
+                binaryCloseThreshold=100,
+                binaryClosePosition=22,
+                hotDayCloseEnabled=False,
+            ),
+        )
+
+        self.assertEqual(result["open_position"], 22)
+        self.assertTrue(result["attributes"]["binary_heat_protection_active"])
+        self.assertEqual(result["attributes"]["decision_reason"], "binary_solar_threshold")
+
+    def test_binary_control_stays_open_below_threshold(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                heatProtectionControlMode="binary",
+                binaryCloseThreshold=1000,
+                binaryClosePosition=22,
+                hotDayCloseEnabled=False,
+            ),
+        )
+
+        self.assertEqual(result["open_position"], 100)
+        self.assertFalse(result["attributes"]["binary_heat_protection_active"])
+
+    def test_fixed_night_time_overrides_daylight_calculation(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                time="23:00",
+                nightMode="time",
+                nightStartTime="22:00",
+                nightEndTime="06:00",
+                sunsetPosition=35,
+            ),
+        )
+
+        self.assertEqual(result["open_position"], 35)
+        self.assertTrue(result["attributes"]["sunset_valid"])
+        self.assertEqual(result["attributes"]["decision_reason"], "night_position")
+
+    def test_compass_horizon_uses_true_solar_azimuth(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                horizonMode="compass",
+                horizonProfile=(
+                    '[{"angle":0,"lower_elevation":50},'
+                    '{"angle":180,"lower_elevation":50},'
+                    '{"angle":359,"lower_elevation":50}]'
+                ),
+            ),
+        )
+
+        self.assertFalse(result["attributes"]["sun_within_horizon_profile"])
+        self.assertEqual(result["attributes"]["horizon_mode"], "compass")
+        self.assertTrue(result["attributes"]["decision_trace"])
 
 
 if __name__ == "__main__":

@@ -30,6 +30,7 @@ from .compat import state_attr
 from .config_context_adapter import ConfigContextAdapter
 from .forecast import extract_daily_forecast_summary
 from .solar_radiation import async_fetch_open_meteo_solar_summary
+from .profiles import resolve_effective_options
 
 from .calculation import (
     AdaptiveHorizontalCover,
@@ -49,6 +50,8 @@ from .const import (
     CONF_AWAY_POSITION_OFFSET,
     CONF_AWAY_SCORE_MULTIPLIER,
     CONF_AWAY_THRESHOLD_REDUCTION,
+    CONF_BINARY_CLOSE_POSITION,
+    CONF_BINARY_CLOSE_THRESHOLD,
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
@@ -82,12 +85,14 @@ from .const import (
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
+    CONF_HEAT_PROTECTION_CONTROL_MODE,
     CONF_HEIGHT_WIN,
     CONF_HOT_DAY_CLOSE_ENABLED,
     CONF_HOT_DAY_CLOSE_POSITION,
     CONF_HOT_DAY_CLOSE_THRESHOLD,
     CONF_VERY_HOT_DAY_CLOSE_POSITION,
     CONF_HORIZON_PROFILE,
+    CONF_HORIZON_MODE,
     CONF_INTERP,
     CONF_INTERP_END,
     CONF_INTERP_LIST,
@@ -105,6 +110,9 @@ from .const import (
     CONF_MAX_POSITION,
     CONF_MIN_ELEVATION,
     CONF_MIN_POSITION,
+    CONF_NIGHT_END_TIME,
+    CONF_NIGHT_MODE,
+    CONF_NIGHT_START_TIME,
     CONF_OUTSIDE_THRESHOLD,
     CONF_OUTSIDETEMP_ENTITY,
     CONF_PRESENCE_ENTITY,
@@ -129,7 +137,6 @@ from .const import (
     CONF_TILT_DEPTH,
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
-    CONF_TRANSPARENT_BLIND,
     CONF_USE_FACADE_AZIMUTH,
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
     CONF_USE_FORECAST_MAX_TEMP_TOMORROW,
@@ -179,12 +186,14 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
 
         self.logger = ConfigContextAdapter(_LOGGER)
         self.logger.set_config_name(self.config_entry.data.get("name"))
+        self.profile_resolution = resolve_effective_options(hass, self.config_entry)
+        self.options = self.profile_resolution.options
         self._cover_type = self.config_entry.data.get("sensor_type")
-        self._climate_mode = self.config_entry.options.get(CONF_CLIMATE_MODE, False)
+        self._climate_mode = self.options.get(CONF_CLIMATE_MODE, False)
         self._switch_mode = True if self._climate_mode else False
-        self._inverse_state = self.config_entry.options.get(CONF_INVERSE_STATE, False)
-        self._use_interpolation = self.config_entry.options.get(CONF_INTERP, False)
-        self._track_end_time = self.config_entry.options.get(CONF_RETURN_SUNSET)
+        self._inverse_state = self.options.get(CONF_INVERSE_STATE, False)
+        self._use_interpolation = self.options.get(CONF_INTERP, False)
+        self._track_end_time = self.options.get(CONF_RETURN_SUNSET)
         self._temp_toggle = None
         self._control_toggle = None
         self._manual_toggle = None
@@ -193,10 +202,10 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self._sun_end_time = None
         self._sun_start_time = None
         # self._end_time = None
-        self.manual_reset = self.config_entry.options.get(
+        self.manual_reset = self.options.get(
             CONF_MANUAL_OVERRIDE_RESET, False
         )
-        self.manual_duration = self.config_entry.options.get(
+        self.manual_duration = self.options.get(
             CONF_MANUAL_OVERRIDE_DURATION, {"minutes": 15}
         )
         self.state_change = False
@@ -209,7 +218,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self.manager = AdaptiveCoverManager(self.manual_duration, self.logger)
         self.wait_for_target = {}
         self.target_call = {}
-        self.ignore_intermediate_states = self.config_entry.options.get(
+        self.ignore_intermediate_states = self.options.get(
             CONF_MANUAL_IGNORE_INTERMEDIATE, False
         )
         self._update_listener = None
@@ -325,10 +334,14 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
 
     async def _async_update_data(self) -> AdaptiveCoverData:
         self.logger.debug("Updating data")
+        self.profile_resolution = resolve_effective_options(
+            self.hass, self.config_entry
+        )
+        self.options = self.profile_resolution.options
         if self.first_refresh:
-            self._cached_options = self.config_entry.options
+            self._cached_options = self.options
 
-        options = self.config_entry.options
+        options = self.options
         self._update_options(options)
         self._forecast_summary = await self._async_get_forecast_summary(
             options.get(CONF_WEATHER_ENTITY)
@@ -405,6 +418,12 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "manual_list": self.manager.manual_controlled,
             },
             attributes={
+                "house_profile": self.profile_resolution.house_profile_name,
+                "house_profile_entry_id": (
+                    self.profile_resolution.house_profile_entry_id
+                ),
+                "configuration_layers": list(self.profile_resolution.layers),
+                "configuration_sources": self.profile_resolution.source_by_key,
                 "default": options.get(CONF_DEFAULT_HEIGHT),
                 "sunset_default": options.get(CONF_SUNSET_POS),
                 "sunset_offset": options.get(CONF_SUNSET_OFFSET),
@@ -437,6 +456,10 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "reveal_right_depth_m": options.get(CONF_REVEAL_RIGHT),
                 "reveal_top_depth_m": options.get(CONF_REVEAL_TOP),
                 "horizon_profile": options.get(CONF_HORIZON_PROFILE),
+                "horizon_mode": options.get(CONF_HORIZON_MODE, "window"),
+                "night_mode": options.get(CONF_NIGHT_MODE, "solar"),
+                "night_start_time": options.get(CONF_NIGHT_START_TIME),
+                "night_end_time": options.get(CONF_NIGHT_END_TIME),
                 "blind_spot": options.get(CONF_BLIND_SPOT_ELEVATION),
                 "local_solar_angle": round(normal_cover.local_solar_angle, 2),
                 "effective_lower_horizon_elevation": round(
@@ -680,6 +703,20 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 ),
                 "heat_gain_policy_score": round(normal_cover.policy_score, 4),
                 "heat_gain_policy_action_level": normal_cover.policy_action_level,
+                "heat_protection_control_mode": getattr(
+                    normal_cover, "heat_protection_control_mode", "scaling"
+                ),
+                "binary_close_threshold_w_m2": getattr(
+                    normal_cover, "binary_close_threshold_w_m2", None
+                ),
+                "binary_close_position": getattr(
+                    normal_cover, "binary_close_position", None
+                ),
+                "binary_heat_protection_active": (
+                    normal_cover.binary_heat_protection_active
+                ),
+                "decision_reason": normal_cover.decision_reason,
+                "decision_trace": normal_cover.decision_trace,
                 "heat_gain_policy_base_partial_threshold": round(
                     normal_cover.base_policy_thresholds[0], 4
                 ),
@@ -971,6 +1008,19 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 *self.common_data(options),
                 *self.tilt_data(options),
             )
+        cover_data.horizon_mode = options.get(CONF_HORIZON_MODE, "window")
+        cover_data.night_mode = options.get(CONF_NIGHT_MODE, "solar")
+        cover_data.night_start_time = options.get(
+            CONF_NIGHT_START_TIME, "22:00:00"
+        )
+        cover_data.night_end_time = options.get(CONF_NIGHT_END_TIME, "06:00:00")
+        cover_data.heat_protection_control_mode = options.get(
+            CONF_HEAT_PROTECTION_CONTROL_MODE, "scaling"
+        )
+        cover_data.binary_close_threshold_w_m2 = options.get(
+            CONF_BINARY_CLOSE_THRESHOLD, 180
+        )
+        cover_data.binary_close_position = options.get(CONF_BINARY_CLOSE_POSITION, 20)
         return cover_data
 
     @property
@@ -1176,7 +1226,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_OUTSIDETEMP_ENTITY),
             self._temp_toggle,
             self._cover_type,
-            options.get(CONF_TRANSPARENT_BLIND),
             options.get(CONF_IRRADIANCE_ENTITY),
             options.get(CONF_IRRADIANCE_THRESHOLD),
             options.get(CONF_OUTSIDE_THRESHOLD),

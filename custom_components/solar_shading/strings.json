@@ -6,8 +6,18 @@
         "data": {
           "name": "Name",
           "blueprint": "Add blueprint to HomeAssistant",
-          "mode": "Type of blind"
+          "mode": "Type of blind",
+          "entry_type": "Create"
         }
+      },
+      "window": {
+        "data": {
+          "mode": "Shading system",
+          "house_profile_entry_id": "House profile",
+          "template_entry": "Reuse settings from an existing window"
+        },
+        "title": "Assign window defaults",
+        "description": "A linked window inherits house, floor, facade and room settings. Only its cover entity, exact dimensions and optional local corrections remain at the window."
       },
       "automation": {
         "data": {
@@ -63,7 +73,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source"
         },
@@ -90,7 +108,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
@@ -105,7 +123,6 @@
           "outside_temp": "Outside temperature sensor (optional)",
           "temp_low": "Low temperature threshold",
           "temp_high": "High temperature threshold",
-          "transparent_blind": "Transparent blind",
           "irradiance_entity": "Irradiance sensor (optional)",
           "irradiance_threshold": "Irradiance threshold",
           "outside_threshold": "Minimum outside temperature for summer mode"
@@ -116,7 +133,6 @@
           "outside_temp": "Overrides outside temperature from weather entity if both are set",
           "temp_low": "Minimum comfortable temperature",
           "temp_high": "Maximum comfortable temperature",
-          "transparent_blind": "The blind is transparent and should always close fully when summer mode is active",
           "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
           "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
           "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
@@ -154,6 +170,9 @@
         "data": {
           "enable_heat_gain_policy": "Enable heat-gain policy",
           "policy_preset": "Preset",
+          "heat_protection_control_mode": "Heat-protection behavior",
+          "binary_close_threshold_w_m2": "Binary close threshold (W/m2 glass)",
+          "binary_close_position": "Fixed binary target (% open)",
           "has_additional_daylight_windows": "Additional daylight windows on other orientations",
           "weight_direct_exposure": "Weight: direct exposure",
           "weight_incidence": "Weight: sun angle",
@@ -182,6 +201,9 @@
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
           "policy_preset": "Preset daylight/cooling bias. In normal mode it also provides the expert weights; enable expert weights to override them manually.",
+          "heat_protection_control_mode": "Scaling derives a continuously changing target from physics and the selected preset. Binary mode compares transmitted solar power with one physical W/m2 threshold and then commands one fixed target.",
+          "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission.",
+          "binary_close_position": "Automatic target after the binary threshold is crossed, expressed as percent open. Manual override behavior remains unchanged.",
           "has_additional_daylight_windows": "If the room has relevant windows on other orientations, Solar Shading may close this window a bit more aggressively.",
           "weight_direct_exposure": "Weight of the geometric exposure factor from horizon and reveals. Set to 0 to disable this factor.",
           "weight_incidence": "Weight of the angle between sun and window normal. Set to 0 to ignore shallow-vs-direct incidence.",
@@ -241,7 +263,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source"
         },
@@ -270,7 +300,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
@@ -307,7 +337,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
@@ -336,7 +374,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
@@ -387,13 +425,177 @@
       "init": {
         "menu_options": {
           "automation": "Modify Automation Configuration",
+          "assignment": "House, floor, room and facade",
           "blind": "Fine-tune Blind Settings",
           "climate": "Edit Climate Configuration",
           "weather": "Edit Weather Configuration",
           "policy": "Edit Weights & Thresholds",
           "blind_spot": "Setup Blindspot",
-          "interp": "Range Adjustment"
+          "interp": "Range Adjustment",
+          "house_defaults": "House defaults",
+          "house_expert": "House expert tuning",
+          "house_facades": "Facades",
+          "house_floors": "Floors",
+          "house_rooms": "Rooms",
+          "house_room_facades": "Room facades / walls"
         }
+      },
+      "assignment": {
+        "data": {
+          "house_profile_entry_id": "House profile",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
+          "facade_name": "Facade",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection"
+        },
+        "data_description": {
+          "facade_offset": "Correction relative to the selected facade. Leave 0 for windows parallel to that facade.",
+          "use_local_geometry": "Enable only when this window needs different field of view, reveals or glazing.",
+          "use_local_horizon": "Enable for a window-specific horizon while keeping all other inherited geometry.",
+          "use_local_policy": "Enable only for a genuine exception. House changes no longer control the locally overridden rule fields."
+        },
+        "title": "Window assignment"
+      },
+      "house_defaults": {
+        "data": {
+          "house_reference_azimuth": "Reference facade azimuth",
+          "glass_type": "Default glazing",
+          "fov_left": "Default field of view left",
+          "fov_right": "Default field of view right",
+          "reveal_left_depth": "Default left reveal depth",
+          "reveal_right_depth": "Default right reveal depth",
+          "reveal_top_depth": "Default top reveal depth",
+          "horizon_mode": "Horizon angle reference",
+          "horizon_profile": "Default horizon profile",
+          "default_percentage": "Day fallback position (% open)",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
+          "sunset_position": "Night position (% open)",
+          "weather_entity": "Temperature forecast source",
+          "use_forecast_max_temp_today": "Use today's maximum temperature",
+          "use_forecast_max_temp_tomorrow": "Use tomorrow's maximum temperature",
+          "use_open_data_solar_radiation": "Use Open-Meteo solar irradiance",
+          "solar_radiation_entity": "Local solar irradiance sensor",
+          "forecast_hot_day_threshold": "Hot day from forecast temperature",
+          "forecast_very_hot_day_threshold": "Very hot day from forecast temperature",
+          "forecast_preemptive_start_time": "Earliest forecast intervention",
+          "policy_preset": "Heat-protection preset",
+          "heat_protection_control_mode": "Heat-protection behavior",
+          "binary_close_threshold_w_m2": "Binary close threshold (W/m2 glass)",
+          "binary_close_position": "Fixed binary target (% open)",
+          "heat_power_limit_enabled": "Limit transmitted solar power continuously",
+          "max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)",
+          "enable_away_mode": "Use stricter behavior while away",
+          "away_entity": "Away entity"
+        },
+        "data_description": {
+          "house_reference_azimuth": "Compass azimuth of the reference facade, preferably the facade facing closest to north. Facade profiles store only their rotation from this axis.",
+          "horizon_profile": "JSON horizon inherited by windows that do not have a more specific facade, floor, room-wall or local horizon.",
+          "night_mode": "Time mode uses the two fixed times. Solar mode uses sunset and sunrise.",
+          "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission. Crossing it commands the fixed binary target.",
+          "binary_close_position": "Automatic open-position target after crossing the binary threshold. It does not disable manual movement; manual-override rules still apply.",
+          "max_transmitted_solar_power_w_m2": "Continuous cap for estimated transmitted solar power. The calculated open position is reduced approximately in proportion to the excess."
+        },
+        "title": "Rules and defaults for the whole house",
+        "description": "These values are inherited by every linked window unless a more specific profile explicitly overrides them."
+      },
+      "house_expert": {
+        "data": {
+          "solar_radiation_reference_w_m2": "Incoming irradiance that counts as strong sun (W/m2)",
+          "forecast_influence_strength": "Forecast influence",
+          "heat_power_outside_temp_threshold": "Continuous power cap from outside temperature",
+          "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
+          "hot_day_close_enabled": "Enable hot-day open limit",
+          "hot_day_close_threshold": "Hot-day limit from forecast temperature",
+          "hot_day_close_position": "Hot-day maximum (% open)",
+          "very_hot_day_close_position": "Very-hot-day maximum (% open)",
+          "show_expert_weights": "Use individual expert weights",
+          "weight_direct_exposure": "Weight: geometric exposure",
+          "weight_incidence": "Weight: incidence angle",
+          "weight_glazing": "Weight: glazing transmission",
+          "weight_forecast_temperature": "Weight: forecast temperature",
+          "weight_solar_radiation": "Weight: solar irradiance",
+          "partial_close_threshold": "Normalized risk where scaling starts",
+          "full_close_threshold": "Normalized risk where strict target is reached",
+          "partial_close_position": "Scaling start target (% open)",
+          "full_close_position": "Strict scaling target (% open)",
+          "away_score_multiplier": "Away risk multiplier",
+          "away_threshold_reduction": "Away threshold reduction",
+          "away_position_offset": "Away reduction (% open)",
+          "sunset_offset": "Sunset offset",
+          "sunrise_offset": "Sunrise offset"
+        },
+        "data_description": {
+          "solar_radiation_reference_w_m2": "Incoming direct irradiance before window geometry and glazing. Current W/m2 divided by this value becomes the irradiance factor; a lower value reacts more strongly.",
+          "partial_close_threshold": "Expert-only dimensionless risk index. Hidden preset mode is recommended when you do not want to tune normalized scores.",
+          "full_close_threshold": "Expert-only dimensionless risk index at which the strict scaling target is reached."
+        },
+        "title": "House expert tuning"
+      },
+      "house_facades": {
+        "data": {"profile_action": "Facade to edit"},
+        "title": "Select or add facade"
+      },
+      "house_facade_edit": {
+        "data": {
+          "profile_name": "Facade name",
+          "delete_profile": "Delete this facade",
+          "facade_offset": "Rotation from reference facade",
+          "horizon_mode": "Horizon angle reference",
+          "horizon_profile": "Facade horizon",
+          "fov_left": "Field of view left",
+          "fov_right": "Field of view right",
+          "reveal_left_depth": "Left reveal depth",
+          "reveal_right_depth": "Right reveal depth",
+          "reveal_top_depth": "Top reveal depth",
+          "policy_preset": "Heat-protection preset"
+        },
+        "data_description": {
+          "facade_offset": "Signed rotation in degrees from the house reference facade. The effective window azimuth is reference plus facade rotation plus window correction."
+        },
+        "title": "Facade defaults"
+      },
+      "house_floors": {
+        "data": {
+          "floor_name": "Home Assistant floor",
+          "delete_profile": "Delete this floor profile",
+          "horizon_mode": "Horizon angle reference",
+          "horizon_profile": "Floor horizon",
+          "policy_preset": "Heat-protection preset"
+        },
+        "title": "Floor defaults"
+      },
+      "house_rooms": {
+        "data": {
+          "room_name": "Home Assistant area / room",
+          "delete_profile": "Delete this room profile",
+          "floor_name": "Floor inherited by this room",
+          "facade_name": "Default facade for this room",
+          "policy_preset": "Heat-protection preset",
+          "has_additional_daylight_windows": "Room has daylight windows on other facades"
+        },
+        "title": "Room defaults"
+      },
+      "house_room_facades": {
+        "data": {
+          "room_name": "Home Assistant area / room",
+          "facade_name": "Facade / wall in this room",
+          "delete_profile": "Delete this room-facade profile",
+          "horizon_mode": "Horizon angle reference",
+          "horizon_profile": "Horizon for this room facade",
+          "reveal_left_depth": "Left reveal depth",
+          "reveal_right_depth": "Right reveal depth",
+          "reveal_top_depth": "Top reveal depth",
+          "fov_left": "Field of view left",
+          "fov_right": "Field of view right",
+          "policy_preset": "Heat-protection preset"
+        },
+        "title": "Room-facade / wall defaults",
+        "description": "This is the narrowest shared profile before individual window overrides. Future wall thermal mass, damping and phase-shift parameters will belong to this layer."
       },
       "automation": {
         "data": {
@@ -449,7 +651,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source"
         },
@@ -476,7 +686,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
@@ -491,7 +701,6 @@
           "outside_temp": "Outside temperature sensor (optional)",
           "temp_low": "Low temperature threshold",
           "temp_high": "High temperature threshold",
-          "transparent_blind": "Transparent blind",
           "irradiance_entity": "Irradiance sensor (optional)",
           "irradiance_threshold": "Irradiance threshold",
           "outside_threshold": "Minimum outside temperature for summer mode"
@@ -502,7 +711,6 @@
           "outside_temp": "Overrides outside temperature from weather entity if both are set",
           "temp_low": "Minimum comfortable temperature",
           "temp_high": "Maximum comfortable temperature",
-          "transparent_blind": "The blind is transparent and should always close fully when summer mode is active",
           "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
           "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
           "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
@@ -540,6 +748,9 @@
         "data": {
           "enable_heat_gain_policy": "Enable heat-gain policy",
           "policy_preset": "Preset",
+          "heat_protection_control_mode": "Heat-protection behavior",
+          "binary_close_threshold_w_m2": "Binary close threshold (W/m2 glass)",
+          "binary_close_position": "Fixed binary target (% open)",
           "has_additional_daylight_windows": "Additional daylight windows on other orientations",
           "weight_direct_exposure": "Weight: direct exposure",
           "weight_incidence": "Weight: sun angle",
@@ -568,6 +779,9 @@
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
           "policy_preset": "Preset daylight/cooling bias. In normal mode it also provides the expert weights; enable expert weights to override them manually.",
+          "heat_protection_control_mode": "Scaling derives a continuously changing target from physics and the selected preset. Binary mode compares transmitted solar power with one physical W/m2 threshold and then commands one fixed target.",
+          "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission.",
+          "binary_close_position": "Automatic target after the binary threshold is crossed, expressed as percent open. Manual override behavior remains unchanged.",
           "has_additional_daylight_windows": "If the room has relevant windows on other orientations, Solar Shading may close this window a bit more aggressively.",
           "weight_direct_exposure": "Weight of the geometric exposure factor from horizon and reveals. Set to 0 to disable this factor.",
           "weight_incidence": "Weight of the angle between sun and window normal. Set to 0 to ignore shallow-vs-direct incidence.",
@@ -627,7 +841,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source"
         },
@@ -656,7 +878,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
@@ -693,7 +915,15 @@
           "reveal_left_depth": "Left reveal depth",
           "reveal_right_depth": "Right reveal depth",
           "reveal_top_depth": "Top reveal depth",
-          "horizon_profile": "Local horizon profile",
+          "horizon_profile": "Horizon profile",
+          "horizon_mode": "Horizon angle reference",
+          "facade_offset": "Window azimuth correction",
+          "use_local_geometry": "Override inherited geometry and glazing",
+          "use_local_horizon": "Override inherited horizon only",
+          "use_local_policy": "Override inherited rules and heat protection",
+          "night_mode": "Night control",
+          "night_start_time": "Night starts",
+          "night_end_time": "Night ends",
           "glass_type": "Glass type",
           "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
@@ -722,7 +952,7 @@
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
-          "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
+          "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
@@ -781,6 +1011,30 @@
         "daylight_first_multi_aspect": "Daylight first (multi-aspect)",
         "balanced": "Balanced",
         "cooling_first": "Cooling first"
+      }
+    },
+    "entry_type": {
+      "options": {
+        "house": "House profile",
+        "window": "Window"
+      }
+    },
+    "horizon_mode": {
+      "options": {
+        "compass": "Compass azimuth (0 to 359 deg)",
+        "window": "Window view (0 left, 90 straight, 180 right)"
+      }
+    },
+    "night_mode": {
+      "options": {
+        "time": "Fixed times",
+        "solar": "Sunset and sunrise"
+      }
+    },
+    "heat_protection_control_mode": {
+      "options": {
+        "scaling": "Scaling from preset and physical input",
+        "binary": "Binary threshold and fixed target"
       }
     }
   }
