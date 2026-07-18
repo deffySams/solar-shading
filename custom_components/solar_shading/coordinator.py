@@ -79,7 +79,7 @@ from .const import (
     CONF_GLASS_TYPE,
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
-    CONF_HEAT_POWER_MAX_WATTS,
+    CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEIGHT_WIN,
@@ -97,8 +97,6 @@ from .const import (
     CONF_IRRADIANCE_ENTITY,
     CONF_IRRADIANCE_THRESHOLD,
     CONF_LENGTH_AWNING,
-    CONF_LUX_ENTITY,
-    CONF_LUX_THRESHOLD,
     CONF_MANUAL_IGNORE_INTERMEDIATE,
     CONF_MANUAL_OVERRIDE_DURATION,
     CONF_MANUAL_OVERRIDE_RESET,
@@ -141,9 +139,7 @@ from .const import (
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
-    CONF_WEIGHT_WEATHER,
     CONF_WEATHER_ENTITY,
-    CONF_WEATHER_STATE,
     CONF_SOLAR_RADIATION_ENTITY,
     CONF_SOLAR_RADIATION_REFERENCE,
     CONF_WINDOW_WIDTH,
@@ -151,6 +147,8 @@ from .const import (
     LOGGER,
 )
 from .helpers import get_datetime_from_str, get_last_updated, get_safe_state
+
+LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
 
 
 @dataclass
@@ -190,7 +188,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self._temp_toggle = None
         self._control_toggle = None
         self._manual_toggle = None
-        self._lux_toggle = None
         self._irradiance_toggle = None
         self._start_time = None
         self._sun_end_time = None
@@ -495,19 +492,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                     normal_cover.near_ir_transmittance_factor, 4
                 ),
                 "solar_gain_factor": round(normal_cover.solar_gain_factor, 4),
-                "weather_condition": normal_cover.weather_condition,
-                "weather_cloud_coverage_pct": round(
-                    normal_cover.weather_cloud_coverage, 2
-                ),
-                "weather_precipitation": normal_cover.weather_precipitation,
-                "weather_precipitation_probability_pct": (
-                    round(normal_cover.weather_precipitation_probability, 2)
-                    if normal_cover.weather_precipitation_probability is not None
-                    else None
-                ),
-                "cloud_factor": round(normal_cover.cloud_factor, 4),
-                "rain_factor": round(normal_cover.rain_factor, 4),
-                "weather_factor": round(normal_cover.weather_factor, 4),
                 "use_open_data_solar_radiation": normal_cover.use_open_data_solar_radiation,
                 "solar_radiation_entity": normal_cover.solar_radiation_entity,
                 "solar_radiation_source": normal_cover.solar_radiation_source,
@@ -542,21 +526,23 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                     if normal_cover.open_data_today_shortwave_radiation_sum is not None
                     else None
                 ),
-                "radiation_or_weather_factor": round(
-                    normal_cover.radiation_or_weather_factor, 4
+                "incoming_solar_radiation_factor": round(
+                    normal_cover.incoming_solar_radiation_factor, 4
                 ),
                 "effective_solar_gain_factor": round(
                     normal_cover.effective_solar_gain_factor, 4
                 ),
-                "estimated_solar_heat_power_source": (
-                    normal_cover.estimated_solar_heat_power_source
+                "transmitted_solar_power_source": (
+                    normal_cover.transmitted_solar_power_source
                 ),
-                "estimated_solar_heat_power_w_m2": round(
-                    normal_cover.estimated_solar_heat_power_w_m2, 2
+                "transmitted_solar_power_w_m2": (
+                    round(normal_cover.transmitted_solar_power_w_m2, 2)
+                    if normal_cover.transmitted_solar_power_w_m2 is not None
+                    else None
                 ),
-                "estimated_solar_heat_power_w": (
-                    round(normal_cover.estimated_solar_heat_power_w, 2)
-                    if normal_cover.estimated_solar_heat_power_w is not None
+                "transmitted_solar_power_w": (
+                    round(normal_cover.transmitted_solar_power_w, 2)
+                    if normal_cover.transmitted_solar_power_w is not None
                     else None
                 ),
                 "heat_power_limit_enabled": normal_cover.heat_power_limit_enabled,
@@ -571,8 +557,9 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "heat_protection_min_outside_temp": (
                     normal_cover.heat_protection_min_outside_temp
                 ),
-                "heat_power_max_w_m2": normal_cover.heat_power_max_watts,
-                "heat_power_max_watts": normal_cover.heat_power_max_watts,
+                "max_transmitted_solar_power_w_m2": (
+                    normal_cover.max_transmitted_solar_power_w_m2
+                ),
                 "heat_power_limit_active": normal_cover.heat_power_limit_active,
                 "heat_power_limit_trigger": normal_cover.heat_power_limit_trigger,
                 "heat_protection_current_temperature_allowed": (
@@ -761,9 +748,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 ),
                 "heat_gain_policy_weight_glazing": round(
                     normal_cover.policy_component_weights["glazing"], 3
-                ),
-                "heat_gain_policy_weight_weather": round(
-                    normal_cover.policy_component_weights.get("weather", 0.0), 3
                 ),
                 "heat_gain_policy_weight_solar_radiation": round(
                     normal_cover.policy_component_weights.get("solar_radiation", 0.0),
@@ -1145,13 +1129,12 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_HEAT_POWER_LIMIT_ENABLED, False),
             options.get(CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD, 24),
             options.get(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14),
-            options.get(CONF_HEAT_POWER_MAX_WATTS, 250),
+            options.get(
+                CONF_MAX_TRANSMITTED_SOLAR_POWER,
+                options.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, 250),
+            ),
             options.get(CONF_USE_FORECAST_MAX_TEMP_TODAY, False),
             options.get(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, False),
-            False,
-            False,
-            False,
-            False,
             options.get(CONF_FORECAST_HOT_DAY_THRESHOLD),
             options.get(CONF_FORECAST_VERY_HOT_DAY_THRESHOLD),
             options.get(CONF_FORECAST_PREEMPTIVE_START_TIME),
@@ -1168,17 +1151,11 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_HOT_DAY_CLOSE_THRESHOLD, 28),
             options.get(CONF_HOT_DAY_CLOSE_POSITION, 20),
             options.get(CONF_VERY_HOT_DAY_CLOSE_POSITION, 10),
-            False,
             options.get(CONF_SHOW_EXPERT_WEIGHTS, False),
             options.get(CONF_WEIGHT_DIRECT_EXPOSURE, 1.0),
             options.get(CONF_WEIGHT_INCIDENCE, 1.0),
             options.get(CONF_WEIGHT_GLAZING, 1.0),
-            options.get(CONF_WEIGHT_WEATHER, 1.0),
             options.get(CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0),
-            0.0,
-            0.0,
-            0.0,
-            0.0,
             options.get(CONF_WEIGHT_SOLAR_RADIATION, 1.0),
             options.get(CONF_PARTIAL_CLOSE_THRESHOLD, 0.35),
             options.get(CONF_FULL_CLOSE_THRESHOLD, 0.65),
@@ -1196,17 +1173,13 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_TEMP_HIGH),
             options.get(CONF_PRESENCE_ENTITY),
             options.get(CONF_WEATHER_ENTITY),
-            options.get(CONF_WEATHER_STATE),
             options.get(CONF_OUTSIDETEMP_ENTITY),
             self._temp_toggle,
             self._cover_type,
             options.get(CONF_TRANSPARENT_BLIND),
-            options.get(CONF_LUX_ENTITY),
             options.get(CONF_IRRADIANCE_ENTITY),
-            options.get(CONF_LUX_THRESHOLD),
             options.get(CONF_IRRADIANCE_THRESHOLD),
             options.get(CONF_OUTSIDE_THRESHOLD),
-            self._lux_toggle,
             self._irradiance_toggle,
         ]
 
@@ -1327,15 +1300,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
     @manual_toggle.setter
     def manual_toggle(self, value):
         self._manual_toggle = value
-
-    @property
-    def lux_toggle(self):
-        """Toggle automation."""
-        return self._lux_toggle
-
-    @lux_toggle.setter
-    def lux_toggle(self, value):
-        self._lux_toggle = value
 
     @property
     def irradiance_toggle(self):

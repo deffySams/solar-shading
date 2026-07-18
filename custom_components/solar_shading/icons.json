@@ -36,12 +36,6 @@
       "switch_mode": {
         "default": "mdi:home-thermometer-outline"
       },
-      "lux_toggle": {
-        "default": "mdi:brightness-5",
-        "state": {
-          "off": "mdi:brightness-1"
-        }
-      },
       "irradiance_toggle": {
         "default": "mdi:sun-wireless-outline",
         "state": {

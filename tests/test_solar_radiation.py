@@ -14,6 +14,9 @@ class SolarRadiationTests(unittest.TestCase):
         self.assertEqual(radiation_factor(900), 1.0)
         self.assertEqual(radiation_factor(1200), 1.0)
 
+    def test_missing_radiation_has_no_synthetic_heat(self) -> None:
+        self.assertEqual(radiation_factor(None), 0.0)
+
     def test_radiation_factor_normalizes_shortwave(self) -> None:
         """GHI/shortwave uses a slightly lower reference value."""
         self.assertAlmostEqual(radiation_factor(80, direct_normal=False), 0.1)

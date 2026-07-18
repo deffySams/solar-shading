@@ -554,7 +554,7 @@
         <details open>
           <summary>Info</summary>
           <h1>Solar Shading Simulator</h1>
-          <p>Der Simulator ist jetzt fuer echtes Feintuning gedacht: links die <strong>Einstellungen</strong>, in der Mitte <strong>Datum, Zeit, Wetter und Forecast</strong>, rechts die <strong>Ausgabe mit Piktogramm</strong>. Das Fenster bleibt beim Scrollen sichtbar.</p>
+          <p>Der Simulator ist jetzt fuer echtes Feintuning gedacht: links die <strong>Einstellungen</strong>, in der Mitte <strong>Datum, Zeit, Solarstrahlung und Temperaturprognose</strong>, rechts die <strong>Ausgabe mit Piktogramm</strong>. Das Fenster bleibt beim Scrollen sichtbar.</p>
           <p class="subtle">Wichtig: Die neue Tageslicht-Heuristik ist hier abgebildet. Innenraumtemperatur ist weiterhin noch nicht als eigener Score-Faktor drin. Import aus Home Assistant liest vorhandene <code>Solar Shading</code>-Fenster direkt aus den Sensor-Attributen.</p>
         </details>
       </section>
@@ -742,8 +742,8 @@
               </select>
             </div>
             <div class="field">
-              <label for="weatherEntityHint">Wetter-Quelle</label>
-              <input id="weatherEntityHint" type="text" value="met weather entity / manuell" readonly>
+              <label for="weatherEntityHint">Temperaturprognose-Quelle</label>
+              <input id="weatherEntityHint" type="text" value="Home Assistant Wetterdienst / manuell" readonly>
             </div>
           </div>
 
@@ -792,13 +792,6 @@
               <div class="range-row">
                 <input id="weightGlazingRange" type="range" min="0" max="3" step="0.05" value="0.80">
                 <input id="weightGlazing" type="number" min="0" max="3" step="0.05" value="0.80">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: current weather</label>
-              <div class="range-row">
-                <input id="weightWeatherRange" type="range" min="0" max="3" step="0.05" value="1.00">
-                <input id="weightWeather" type="number" min="0" max="3" step="0.05" value="1.00">
               </div>
             </div>
             <div class="field">
@@ -903,10 +896,10 @@
               </div>
             </div>
             <div class="field">
-              <label>Max. Waermeeintrag pro m2 Glas</label>
+              <label>Max. durchgelassene Solarleistung (W/m2 Glas)</label>
               <div class="range-row">
-                <input id="heatPowerMaxWattsRange" type="range" min="50" max="800" step="25" value="250">
-                <input id="heatPowerMaxWatts" type="number" min="0" max="1200" step="25" value="250">
+                <input id="maxTransmittedSolarPowerRange" type="range" min="50" max="800" step="25" value="250">
+                <input id="maxTransmittedSolarPower" type="number" min="0" max="1200" step="25" value="250">
               </div>
             </div>
           </div>
@@ -1048,31 +1041,17 @@
 
       <section class="panel">
         <details open>
-          <summary>Aktuelles Wetter</summary>
+          <summary>Solarstrahlung und Aussentemperatur</summary>
           <div class="grid">
             <div class="field">
-              <label><span class="label-main">Wolken jetzt in %</span> <button class="info-btn" type="button" data-info="0 Prozent bedeutet klarer Himmel und maximalen solaren Druck. 100 Prozent bedeutet starke Daempfung. Mehr Wolken sollen hier also zu weniger Schliessdruck fuehren, nicht zu mehr.">i</button></label>
-              <div class="range-row">
-                <input id="cloudCoverageRange" type="range" min="0" max="100" step="1" value="20">
-                <input id="cloudCoverage" type="number" min="0" max="100" step="1" value="20">
-              </div>
-            </div>
-            <div class="field">
-              <label>Niederschlag jetzt in mm</label>
-              <div class="range-row">
-                <input id="precipitationRange" type="range" min="0" max="10" step="0.1" value="0">
-                <input id="precipitation" type="number" min="0" max="10" step="0.1" value="0">
-              </div>
-            </div>
-            <div class="field">
-              <label><span class="label-main">Solarstrahlung jetzt in W/m²</span> <button class="info-btn" type="button" data-info="Einfallende Solarstrahlung als Open-Data- oder lokaler Sensorwert. Wenn aktiv, ersetzt dieser Wert die Wolken-Proxies fuer den physikalischen Strahlungsfaktor.">i</button></label>
+              <label><span class="label-main">Einfallende direkte Solarstrahlung jetzt (W/m²)</span> <button class="info-btn" type="button" data-info="Direkte Solarstrahlung vor Fenstergeometrie und Glas, aus Open-Meteo oder einem lokalen Sensor. Wolken und Niederschlag werden nicht separat verrechnet, weil sie bereits im Strahlungswert enthalten sind.">i</button></label>
               <div class="range-row">
                 <input id="solarRadiationRange" type="range" min="0" max="1000" step="10" value="700">
                 <input id="solarRadiation" type="number" min="0" max="1200" step="10" value="700">
               </div>
             </div>
             <div class="field">
-              <label><span class="label-main">Schwelle fuer starke Sonneneinstrahlung in W/m²</span> <button class="info-btn" type="button" data-info="Einfallende Solarstrahlung in W/m², ab der die Sonne als stark zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den Strahlungsfaktor vor Glas und Geometrie.">i</button></label>
+              <label><span class="label-main">Schwelle fuer starke direkte Solarstrahlung (W/m²)</span> <button class="info-btn" type="button" data-info="Einfallende direkte Solarstrahlung vor Fenstergeometrie und Glas, ab der die Sonne als stark zaehlt. Aktueller Wert geteilt durch diese Schwelle ergibt den normierten Strahlungsfaktor.">i</button></label>
               <div class="range-row">
                 <input id="solarReferenceRange" type="range" min="300" max="1600" step="50" value="900">
                 <input id="solarReference" type="number" min="300" max="2000" step="50" value="900">
@@ -1088,9 +1067,8 @@
           </div>
           <div class="checkbox-row">
             <input id="useOpenDataSolarRadiation" type="checkbox">
-            <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Data-Solarstrahlung nutzen</span><button class="info-btn" type="button" data-info="Simuliert die neue Open-Meteo-Strahlungsoption. Aktiv bedeutet: Solarstrahlung in W/m² ersetzt Wolken als direkter physikalischer Strahlungsfaktor.">i</button></label>
+            <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Meteo-Solarstrahlung nutzen</span><button class="info-btn" type="button" data-info="Nutzt direkte Solarstrahlung in W/m² vom Open-Meteo-Dienst. Wolken und Niederschlag sind bereits im gelieferten Strahlungswert enthalten.">i</button></label>
           </div>
-          <p class="tiny">Mehr Wolken bedeutet hier weniger solaren Gewinn, also normalerweise weniger Schliessdruck.</p>
         </details>
 
         <details open>
@@ -1115,7 +1093,7 @@
           </div>
           <div class="grid">
             <div class="field">
-              <label><span class="label-main">Forecast: max. Solarstrahlung in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarstrahlung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
+              <label><span class="label-main">Forecast: maximale direkte Solarstrahlung (W/m²)</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Ein strahlungsarmer Tag reduziert das Forecast-Risiko direkt; separate Wolken- oder Regenwerte werden nicht verwendet.">i</button></label>
               <div class="range-row">
                 <input id="forecastSolarMaxRange" type="range" min="0" max="1000" step="10" value="850">
                 <input id="forecastSolarMax" type="number" min="0" max="1200" step="10" value="850">
@@ -1192,13 +1170,11 @@
               <div class="metric"><div class="name">Sonne wirksam am Fenster</div><div class="val" id="effectiveSunCell"></div></div>
               <div class="metric"><div class="name">Einfallswinkel / cos</div><div class="val" id="incidenceCell"></div></div>
               <div class="metric"><div class="name">Solar-Transmission</div><div class="val" id="transmissionCell"></div></div>
-              <div class="metric"><div class="name">Wetter jetzt</div><div class="val" id="weatherNowCell"></div></div>
-              <div class="metric"><div class="name">Wetterfaktor</div><div class="val" id="weatherFactorCell"></div></div>
               <div class="metric"><div class="name">Solarstrahlung</div><div class="val" id="solarRadiationCell"></div></div>
-              <div class="metric"><div class="name">Strahlungs-/Wetterfaktor</div><div class="val" id="radiationOrWeatherCell"></div></div>
+              <div class="metric"><div class="name">Normierte Solarstrahlung</div><div class="val" id="incomingSolarRadiationFactorCell"></div></div>
               <div class="metric"><div class="name">Effektiver Solar-Gain</div><div class="val" id="effectiveGainCell"></div></div>
-              <div class="metric"><div class="name">Waermeleistung</div><div class="val" id="heatPowerCell"></div></div>
-              <div class="metric"><div class="name">Watt-Limit</div><div class="val" id="heatPowerLimitCell"></div></div>
+              <div class="metric"><div class="name">Durchgelassene Solarleistung</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Solarleistungs-Limit</div><div class="val" id="heatPowerLimitCell"></div></div>
               <div class="metric"><div class="name">Forecast heute</div><div class="val" id="forecastTodayCell"></div></div>
               <div class="metric"><div class="name">Forecast-Risiko</div><div class="val" id="forecastRiskCell"></div></div>
               <div class="metric"><div class="name">Forecast-adjusted gain</div><div class="val" id="forecastAdjustedGainCell"></div></div>
@@ -1276,19 +1252,19 @@
       custom: { scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0, weights: null },
       daylight_first_single_aspect: {
         scoreMultiplier: 0.92, thresholdShift: 0.06, positionOffset: 5,
-        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7 }
+        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, solar_radiation: 1.1, forecast_temperature: 0.7 }
       },
       daylight_first_multi_aspect: {
         scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0,
-        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85 }
+        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, solar_radiation: 1.1, forecast_temperature: 0.85 }
       },
       balanced: {
         scoreMultiplier: 1.08, thresholdShift: -0.02, positionOffset: 0,
-        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0 }
+        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, solar_radiation: 1.15, forecast_temperature: 1.0 }
       },
       cooling_first: {
         scoreMultiplier: 1.16, thresholdShift: -0.06, positionOffset: -5,
-        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35 }
+        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, solar_radiation: 1.25, forecast_temperature: 1.35 }
       }
     };
 
@@ -1303,7 +1279,6 @@
         weightDirect: 1.2,
         weightIncidence: 0.9,
         weightGlazing: 0.8,
-        weightWeather: 1.0,
         weightSolarRadiation: 1.0
       },
       outdoor_roller: {
@@ -1315,7 +1290,6 @@
         weightDirect: 1.35,
         weightIncidence: 1.0,
         weightGlazing: 0.7,
-        weightWeather: 1.1,
         weightSolarRadiation: 1.2
       },
       indoor_venetian: {
@@ -1327,7 +1301,6 @@
         weightDirect: 1.0,
         weightIncidence: 1.1,
         weightGlazing: 0.7,
-        weightWeather: 0.9,
         weightSolarRadiation: 0.9
       },
       outdoor_venetian: {
@@ -1339,7 +1312,6 @@
         weightDirect: 1.25,
         weightIncidence: 1.1,
         weightGlazing: 0.6,
-        weightWeather: 1.05,
         weightSolarRadiation: 1.25
       }
     };
@@ -1347,8 +1319,6 @@
     const rangePairs = [
       ["fovLeftRange", "fovLeft"],
       ["fovRightRange", "fovRight"],
-      ["cloudCoverageRange", "cloudCoverage"],
-      ["precipitationRange", "precipitation"],
       ["solarRadiationRange", "solarRadiation"],
       ["solarReferenceRange", "solarReference"],
       ["outsideTempRange", "outsideTemp"],
@@ -1357,7 +1327,6 @@
       ["weightDirectRange", "weightDirect"],
       ["weightIncidenceRange", "weightIncidence"],
       ["weightGlazingRange", "weightGlazing"],
-      ["weightWeatherRange", "weightWeather"],
       ["weightSolarRadiationRange", "weightSolarRadiation"],
       ["weightForecastTempRange", "weightForecastTemp"],
       ["partialThresholdRange", "partialThreshold"],
@@ -1372,7 +1341,7 @@
       ["veryHotDayClosePositionRange", "veryHotDayClosePosition"],
       ["heatPowerTempThresholdRange", "heatPowerTempThreshold"],
       ["heatProtectionMinOutsideTempRange", "heatProtectionMinOutsideTemp"],
-      ["heatPowerMaxWattsRange", "heatPowerMaxWatts"]
+      ["maxTransmittedSolarPowerRange", "maxTransmittedSolarPower"]
     ];
 
     const inputIds = [
@@ -1380,11 +1349,11 @@
       "defaultPosition", "sunsetPosition", "fovLeft", "fovRight", "minElevation", "maxElevation",
       "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
-      "revealTop", "horizonProfile", "cloudCoverage", "precipitation",
+      "revealTop", "horizonProfile",
       "solarRadiation", "solarReference", "outsideTemp",
       "forecastTodayMax", "forecastTomorrowMax", "forecastSolarMax", "hotDayThreshold",
       "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
-      "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
+      "weightDirect", "weightIncidence", "weightGlazing",
       "weightSolarRadiation",
       "weightForecastTemp", "partialThreshold",
       "fullThreshold", "partialPosition", "fullPosition", "awayScoreMultiplier",
@@ -1393,7 +1362,7 @@
       "additionalWindows", "awayActive", "devicePreset", "showExpertWeights",
       "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
       "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
-      "heatProtectionMinOutsideTemp", "heatPowerMaxWatts"
+      "heatProtectionMinOutsideTemp", "maxTransmittedSolarPower"
     ];
 
     const PRESET_STORAGE_KEY = "solar_shading_simulator_presets_v1";
@@ -1409,8 +1378,8 @@
         "showExpertWeights", "hotDayCloseEnabled",
         "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
         "heatPowerLimitEnabled", "heatPowerTempThreshold",
-        "heatProtectionMinOutsideTemp", "heatPowerMaxWatts",
-        "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
+        "heatProtectionMinOutsideTemp", "maxTransmittedSolarPower",
+        "weightDirect", "weightIncidence", "weightGlazing",
         "weightSolarRadiation", "weightForecastTemp",
         "partialThreshold", "fullThreshold", "partialPosition", "fullPosition"
       ],
@@ -1597,11 +1566,9 @@
       "Custom Tsol": "Solare Gesamttransmission deiner eigenen Glasart bei senkrechtem Einfall.",
       "Custom Rvis": "Sichtbare Reflexion deiner eigenen Glasart bei senkrechtem Einfall.",
       "Custom Rsol": "Solare Reflexion deiner eigenen Glasart bei senkrechtem Einfall.",
-      "Wetter-Quelle": "Hinweisfeld, ob Werte manuell gesetzt oder aus Home Assistant importiert wurden.",
       "Weight: direct exposure": "Expert: Gewicht der direkten Exposition aus Horizont, Sichtfeld und Laibung.",
       "Weight: incidence": "Expert: Gewicht des Einfallswinkels. Flache Sonne auf die Scheibe reduziert den Waermeeintrag stark.",
       "Weight: glazing": "Expert: Gewicht der Glas-Transmission inklusive Reflexion.",
-      "Weight: current weather": "Expert: Gewicht aktueller Wolken und Regen.",
       "Weight: forecast temp": "Expert: Gewicht des Temperatur-Forecasts im Policy-Score.",
       "Weight: forecast UV": "Expert: Gewicht des UV-Forecasts als Proxy fuer starke solare Last.",
       "Weight: forecast clouds": "Expert: Gewicht der Forecast-Wolkendaempfung.",
@@ -1743,7 +1710,6 @@
       setInputValue("weightDirect", preset.weights.direct_exposure);
       setInputValue("weightIncidence", preset.weights.incidence);
       setInputValue("weightGlazing", preset.weights.glazing);
-      setInputValue("weightWeather", preset.weights.weather);
       setInputValue("weightSolarRadiation", preset.weights.solar_radiation);
       setInputValue("weightForecastTemp", preset.weights.forecast_temperature);
     }
@@ -1864,11 +1830,10 @@
       overwrite("heatPowerLimitEnabled", attrs.heat_power_limit_enabled);
       overwrite("heatPowerTempThreshold", attrs.heat_power_outside_temp_threshold);
       overwrite("heatProtectionMinOutsideTemp", attrs.heat_protection_min_outside_temp);
-      overwrite("heatPowerMaxWatts", attrs.heat_power_max_w_m2 ?? attrs.heat_power_max_watts);
+      overwrite("maxTransmittedSolarPower", attrs.max_transmitted_solar_power_w_m2);
       overwrite("weightDirect", attrs.heat_gain_policy_weight_direct_exposure);
       overwrite("weightIncidence", attrs.heat_gain_policy_weight_incidence);
       overwrite("weightGlazing", attrs.heat_gain_policy_weight_glazing);
-      overwrite("weightWeather", attrs.heat_gain_policy_weight_weather);
       overwrite("weightSolarRadiation", attrs.heat_gain_policy_weight_solar_radiation);
       overwrite("weightForecastTemp", attrs.heat_gain_policy_weight_forecast_temperature);
       overwrite("partialThreshold", attrs.heat_gain_policy_base_partial_threshold ?? attrs.heat_gain_policy_partial_threshold);
@@ -2206,8 +2171,6 @@
         revealRight: parseNumber("revealRight"),
         revealTop: parseNumber("revealTop"),
         horizonProfile: profileText,
-        cloudCoverage: parseNumber("cloudCoverage"),
-        precipitation: parseNumber("precipitation"),
         solarRadiation: parseNumber("solarRadiation"),
         solarReference: parseNumber("solarReference"),
         outsideTemp: parseNumber("outsideTemp"),
@@ -2222,7 +2185,6 @@
         weightDirect: parseNumber("weightDirect"),
         weightIncidence: parseNumber("weightIncidence"),
         weightGlazing: parseNumber("weightGlazing"),
-        weightWeather: parseNumber("weightWeather"),
         weightSolarRadiation: parseNumber("weightSolarRadiation"),
         weightForecastTemp: parseNumber("weightForecastTemp"),
         partialThreshold: parseNumber("partialThreshold"),
@@ -2246,7 +2208,7 @@
         heatPowerLimitEnabled: parseBool("heatPowerLimitEnabled"),
         heatPowerTempThreshold: parseNumber("heatPowerTempThreshold"),
         heatProtectionMinOutsideTemp: parseNumber("heatProtectionMinOutsideTemp"),
-        heatPowerMaxWatts: parseNumber("heatPowerMaxWatts")
+        maxTransmittedSolarPower: parseNumber("maxTransmittedSolarPower")
       };
     }
 
@@ -2599,33 +2561,6 @@
 
     function clampComponent(value) {
       return clamp(value, 0, 2);
-    }
-
-    function uvRisk(uv) {
-      if (!Number.isFinite(uv)) {
-        return 0;
-      }
-      return clamp(uv / 8, 0, 1);
-    }
-
-    function precipitationProbabilityDamping(probability) {
-      if (!Number.isFinite(probability)) {
-        return 1;
-      }
-      return clamp(1 - probability / 100, 0, 1);
-    }
-
-    function precipitationAmountDamping(amount) {
-      if (!Number.isFinite(amount)) {
-        return 1;
-      }
-      return clamp(1 - amount / 10, 0, 1);
-    }
-
-    function weatherFactor(cloudCoverage, precipitation) {
-      const cloud = clamp(1 - cloudCoverage / 100, 0, 1);
-      const rain = precipitation > 0 ? 0.1 : 1;
-      return clamp(cloud * rain, 0, 1);
     }
 
     function solarRadiationFactor(value, directNormal = true, referenceOverride = null) {
@@ -3053,10 +2988,11 @@
       setText("effectiveSunCell", attrs.direct_sun_valid && attrs.direct_solar_exposure_factor > 0.001 ? "ja" : "nein");
       setText("incidenceCell", `${round(attrs.incidence_angle_deg, 1)} deg / ${round(attrs.incidence_cosine, 3)}`);
       setText("transmissionCell", `${round(attrs.solar_transmittance_factor, 3)} (R ${round(attrs.solar_reflectance_factor, 3)})`);
-      setText("weatherFactorCell", round(attrs.weather_factor, 3));
-      setText("radiationOrWeatherCell", round(attrs.radiation_or_weather_factor, 3));
+      setText("incomingSolarRadiationFactorCell", round(attrs.incoming_solar_radiation_factor, 3));
       setText("effectiveGainCell", round(attrs.effective_solar_gain_factor, 3));
-      setText("heatPowerCell", `${round(attrs.estimated_solar_heat_power_w_m2, 1)} W/m2${attrs.estimated_solar_heat_power_w === null ? "" : ` / ${round(attrs.estimated_solar_heat_power_w, 0)} W Fenster`} (HA Python)`);
+      setText("heatPowerCell", attrs.transmitted_solar_power_w_m2 === null
+        ? "kein Strahlungswert"
+        : `${round(attrs.transmitted_solar_power_w_m2, 1)} W/m2${attrs.transmitted_solar_power_w === null ? "" : ` / ${round(attrs.transmitted_solar_power_w, 0)} W Fenster`} (HA Python)`);
       setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
         ? `kein Deckel (${attrs.heat_power_limit_trigger})`
         : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
@@ -3127,7 +3063,6 @@
         const topShadow = topRevealShadow(sun.elevation, state.windowHeight, state.revealTop);
         const totalRevealShadow = clamp(1 - (1 - sideShadow) * (1 - topShadow), 0, 1);
         const directExposure = directSunVisible ? clamp(1 - totalRevealShadow, 0, 1) : 0;
-        const effectiveSunOnWindow = directSunVisible && directExposure > 0.001;
 
         const incidenceCosineRaw = Math.cos(deg2rad(sun.elevation)) * Math.cos(deg2rad(gamma));
         const incidenceAngle = rad2deg(Math.acos(clamp(incidenceCosineRaw, -1, 1)));
@@ -3137,20 +3072,22 @@
         const solarReflectance = schlickReflectance(glass.solarR, incidenceAngle);
         const solarTransmittance = angularTransmittance(glass.solarT, glass.solarR, incidenceAngle);
         const solarGain = clamp(directExposure * incidenceCosine * solarTransmittance, 0, 1);
-        const currentWeatherFactor = weatherFactor(state.cloudCoverage, state.precipitation);
         const currentSolarRadiationFactor = state.useOpenDataSolarRadiation
           ? solarRadiationFactor(state.solarRadiation, true, state.solarReference)
-          : null;
-        const radiationOrWeatherFactor = currentSolarRadiationFactor ?? currentWeatherFactor;
-        const effectiveSolarGain = clamp(solarGain * radiationOrWeatherFactor, 0, 1);
+          : 0;
+        const effectiveSunOnWindow = directSunVisible
+          && directExposure > 0.001
+          && currentSolarRadiationFactor > 0.001;
+        const effectiveSolarGain = clamp(solarGain * currentSolarRadiationFactor, 0, 1);
         const windowArea = Number.isFinite(state.windowWidth) && Number.isFinite(state.windowHeight)
           ? Math.max(0, state.windowWidth * state.windowHeight)
           : null;
-        const estimatedHeatPowerWm2 = state.useOpenDataSolarRadiation
+        const transmittedSolarPowerWm2 = state.useOpenDataSolarRadiation
           ? clamp(state.solarRadiation * solarGain, 0, 2000)
-          : clamp(state.solarReference * effectiveSolarGain, 0, 2000);
-        const estimatedHeatPowerW = windowArea !== null && windowArea > 0
-          ? estimatedHeatPowerWm2 * windowArea
+          : null;
+        const transmittedSolarPowerW = windowArea !== null && windowArea > 0
+          && transmittedSolarPowerWm2 !== null
+          ? transmittedSolarPowerWm2 * windowArea
           : null;
         const forecastTemperatureRisk = Math.max(
           state.useTodayMax ? temperatureRisk(state.forecastTodayMax, state.hotDayThreshold, state.veryHotThreshold) : 0,
@@ -3185,8 +3122,8 @@
           ? "aus"
           : !effectiveSunOnWindow
             ? "keine direkte Sonne"
-            : !(Number.isFinite(state.heatPowerMaxWatts) && state.heatPowerMaxWatts > 0)
-              ? "kein Watt-Limit"
+            : !(Number.isFinite(state.maxTransmittedSolarPower) && state.maxTransmittedSolarPower > 0)
+              ? "kein Solarleistungs-Limit"
               : !heatProtectionCurrentTemperatureAllowed
                 ? "Kälte-Sperre"
               : !heatPowerTemperatureGateActive
@@ -3200,13 +3137,13 @@
                       : "immer";
         const heatPowerLimitActive = state.heatPowerLimitEnabled
           && effectiveSunOnWindow
-          && Number.isFinite(estimatedHeatPowerWm2)
-          && estimatedHeatPowerWm2 > 0
-          && Number.isFinite(state.heatPowerMaxWatts)
-          && state.heatPowerMaxWatts > 0
+          && Number.isFinite(transmittedSolarPowerWm2)
+          && transmittedSolarPowerWm2 > 0
+          && Number.isFinite(state.maxTransmittedSolarPower)
+          && state.maxTransmittedSolarPower > 0
           && heatPowerTemperatureGateActive;
-        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerWm2 > state.heatPowerMaxWatts
-          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerWm2) * 100, 0, 100))
+        const heatPowerLimitedOpenPosition = heatPowerLimitActive && transmittedSolarPowerWm2 > state.maxTransmittedSolarPower
+          ? Math.round(clamp((state.maxTransmittedSolarPower / transmittedSolarPowerWm2) * 100, 0, 100))
           : null;
         const forecastRisk = forecastPreemptiveActive
           ? clamp(
@@ -3240,7 +3177,6 @@
           direct_exposure: directExposure,
           incidence: incidenceCosine,
           glazing: solarTransmittance,
-          weather: currentSolarRadiationFactor === null ? currentWeatherFactor : null,
           solar_radiation: state.useOpenDataSolarRadiation ? currentSolarRadiationFactor : null,
           forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null
         };
@@ -3248,7 +3184,6 @@
           direct_exposure: state.weightDirect,
           incidence: state.weightIncidence,
           glazing: state.weightGlazing,
-          weather: state.weightWeather,
           solar_radiation: state.weightSolarRadiation,
           forecast_temperature: state.weightForecastTemp
         };
@@ -3362,18 +3297,18 @@
         setText("effectiveSunCell", effectiveSunOnWindow ? "ja" : "nein");
         setText("incidenceCell", `${round(incidenceAngle, 1)} deg / ${round(incidenceCosine, 3)}`);
         setText("transmissionCell", `${round(solarTransmittance, 3)} (R ${round(solarReflectance, 3)})`);
-        setText("weatherNowCell", `${state.cloudCoverage.toFixed(0)} % Wolken, ${round(state.precipitation, 1)} mm Regen`);
-        setText("weatherFactorCell", round(currentWeatherFactor, 3));
         setText("solarRadiationCell", state.useOpenDataSolarRadiation
           ? `${round(state.solarRadiation, 0)} / ${round(state.solarReference, 0)} W/m² -> ${factorPercent(currentSolarRadiationFactor)}`
           : "aus");
-        setText("radiationOrWeatherCell", `${factorPercent(radiationOrWeatherFactor)} (${state.useOpenDataSolarRadiation ? "Solarstrahlung" : "Wetter"})`);
+        setText("incomingSolarRadiationFactorCell", factorPercent(currentSolarRadiationFactor));
         setText("effectiveGainCell", round(effectiveSolarGain, 3));
-        setText("heatPowerCell", `${round(estimatedHeatPowerWm2, 1)} W/m2${estimatedHeatPowerW === null ? "" : ` / ${round(estimatedHeatPowerW, 0)} W Fenster`} (${state.useOpenDataSolarRadiation ? "Solarwert" : "Referenz/Wetter"})`);
+        setText("heatPowerCell", transmittedSolarPowerWm2 === null
+          ? "kein Strahlungswert"
+          : `${round(transmittedSolarPowerWm2, 1)} W/m2${transmittedSolarPowerW === null ? "" : ` / ${round(transmittedSolarPowerW, 0)} W Fenster`}`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
-            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2)`
-            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2 > ${round(state.heatPowerMaxWatts, 0)} W/m2)`)
+            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(transmittedSolarPowerWm2, 0)} W/m2, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2)`
+            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(transmittedSolarPowerWm2, 0)} W/m2 > ${round(state.maxTransmittedSolarPower, 0)} W/m2)`)
           : "aus");
         setText(
           "forecastTodayCell",
@@ -3409,10 +3344,10 @@
           ? `Hot-Day-Override: ${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} begrenzt zusaetzlich auf max. ${activeHotDayClosePosition} % offen.`
           : "Hot-Day-Override: aus oder nicht getriggert.";
         const heatPowerLine = heatPowerLimitedOpenPosition !== null
-          ? `W/m2-Limit: ${round(estimatedHeatPowerWm2, 0)} W/m2 geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2 -> max. ${heatPowerLimitedOpenPosition} % offen.`
+          ? `Solarleistungs-Limit: ${round(transmittedSolarPowerWm2, 0)} W/m2 durchgelassen, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2 -> max. ${heatPowerLimitedOpenPosition} % offen.`
           : state.heatPowerLimitEnabled
-            ? `W/m2-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${round(estimatedHeatPowerWm2, 0)} W/m2.`
-            : "W/m2-Limit: aus.";
+            ? `Solarleistungs-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${round(transmittedSolarPowerWm2, 0)} W/m2.`
+            : "Solarleistungs-Limit: aus.";
         const temperatureBand = !heatProtectionTemperatureAllowed
           ? "below_hot"
           : hotDaySignal >= state.veryHotThreshold

@@ -97,25 +97,20 @@ Retire       Remove or migrate away.
 | `blind_spot_right` | Right edge of excluded sun angle. | Expert / Room facade |
 | `blind_spot_elevation` | Optional elevation for the blind spot rule. | Expert / Room facade |
 
-## Weather, Solar Radiation, And Forecast
+## Solar Radiation And Temperature Forecast
 
 | Setting | Meaning | Target |
 | --- | --- | --- |
-| `weather_entity` | Weather entity, mainly for temperature forecast. | House |
-| `weather_state` | Legacy list of sunny/weather states. | Legacy / Retire from heat policy |
-| `use_open_data_solar_radiation` | Fetch Open-Meteo/OpenSolar radiation. | House |
+| `weather_entity` | Source for outside temperature and today's/tomorrow's maximum temperature. | House |
+| `use_open_data_solar_radiation` | Fetch Open-Meteo solar radiation. | House |
 | `solar_radiation_entity` | Local irradiance sensor override. | House / Window override |
-| `solar_radiation_reference_w_m2` | Incoming radiation threshold where sun counts as strong. | House, rename to Schwelle fuer starke Sonneneinstrahlung |
+| `solar_radiation_reference_w_m2` | Incoming direct irradiance threshold where sun counts as strong, before geometry and glass. | House |
 | `use_forecast_max_temp_today` | Use today's max temperature forecast. | House |
 | `use_forecast_max_temp_tomorrow` | Use tomorrow's max temperature forecast. | House |
 | `forecast_hot_day_threshold` | Temperature where heat protection starts to care. | House |
 | `forecast_very_hot_day_threshold` | Temperature where very-hot pressure saturates. | House |
 | `forecast_preemptive_start_time` | Earliest time forecast can act preemptively. | House |
 | `forecast_influence_strength` | Forecast pressure multiplier. | House preset, Expert numeric |
-| `use_forecast_cloud_coverage` | Legacy forecast cloud toggle, currently not active. | Retire |
-| `use_forecast_precipitation_probability` | Legacy rain-probability toggle, currently not active. | Retire |
-| `use_forecast_precipitation_amount` | Legacy rain amount toggle, currently not active. | Retire |
-| `use_forecast_uv_index` | Legacy UV toggle, currently not active. | Retire |
 
 ## Heat Protection Policy
 
@@ -132,21 +127,15 @@ Retire       Remove or migrate away.
 | `weight_direct_exposure` | Weight of direct solar exposure. | Expert / House |
 | `weight_incidence` | Weight of incidence angle. | Expert / House |
 | `weight_glazing` | Weight of glass transmission. | Expert / House |
-| `weight_weather` | Weight of old weather proxy. | Retire |
 | `weight_solar_radiation` | Weight of measured/open solar radiation. | Expert / House |
 | `weight_forecast_temperature` | Weight of temperature forecast pressure. | Expert / House |
-| `weight_forecast_uv` | Legacy UV weight, currently not active. | Retire |
-| `weight_forecast_clouds` | Legacy cloud weight, currently not active. | Retire |
-| `weight_forecast_precipitation_probability` | Legacy rain probability weight. | Retire |
-| `weight_forecast_precipitation_amount` | Legacy rain amount weight. | Retire |
-| `enable_legacy_basic_shading` | Legacy flag currently hardcoded inactive. | Retire |
 
 ## Heat Cap And Away Mode
 
 | Setting | Meaning | Target |
 | --- | --- | --- |
 | `heat_power_limit_enabled` | Enables hard cap by transmitted solar heat. | House |
-| `heat_power_max_watts` | Actually max transmitted heat in W/m2. | House, rename |
+| `max_transmitted_solar_power_w_m2` | Maximum solar power transmitted through one square meter of glass. | House |
 | `heat_power_outside_temp_threshold` | Outside temperature gate for hard heat cap. | House |
 | `heat_protection_min_outside_temp` | Minimum outside temperature for heat protection. | House |
 | `hot_day_close_enabled` | Separate hot-day position cap. | Merge into heat preset |
@@ -170,11 +159,16 @@ Retire       Remove or migrate away.
 | `outside_temp` | Outside temperature sensor. | Legacy / House if kept |
 | `outside_threshold` | Outside temperature threshold for summer mode. | Legacy |
 | `presence_entity` | Presence source for old comfort logic. | Legacy |
-| `lux_entity` | Brightness sensor for old logic. | Legacy / Retire |
-| `lux_threshold` | Brightness threshold for old logic. | Legacy / Retire |
 | `irradiance_entity` | Irradiance sensor for old logic. | Legacy |
 | `irradiance_threshold` | Irradiance threshold for old logic. | Legacy |
 | `transparent_blind` | Old binary transparent-cover summer close rule. | Replace with cover effect + binary/scaling mode |
+
+## Removed In 0.3.0b41
+
+The active model and simulator no longer expose or calculate Lux, weather-state,
+cloud, precipitation, UV, or weather-weight inputs. Existing stored keys are
+discarded when options are next saved. The old `heat_power_max_watts` value is
+migrated to `max_transmitted_solar_power_w_m2`.
 
 ## Other Constants
 

@@ -65,7 +65,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet"
+          "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
@@ -92,7 +92,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung."
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Vertikales Cover"
@@ -101,26 +101,22 @@
         "data": {
           "temp_entity": "Innensensor f?r Temperatur",
           "presence_entity": "Pr?senzsensor (optional)",
-          "weather_entity": "Wetter-Entit?t (optional)",
+          "weather_entity": "Quelle fuer Temperaturprognose (optional)",
           "outside_temp": "Au?entemperatur-Sensor (optional)",
           "temp_low": "Untere Temperaturschwelle",
           "temp_high": "Obere Temperaturschwelle",
           "transparent_blind": "Transparentes Cover",
-          "lux_entity": "Lux-Sensor (optional)",
-          "lux_threshold": "Lux-Schwelle",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
           "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
           "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
         },
         "data_description": {
           "presence_entity": "Entit?t f?r den Anwesenheitsstatus im Raum oder Haus",
-          "weather_entity": "?berwacht Wetterbedingungen und Au?entemperatur",
+          "weather_entity": "Liefert nur Aussentemperatur sowie Tagesmaximum heute und morgen",
           "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
           "temp_low": "Mindesttemperatur f?r Komfort",
           "temp_high": "H?chsttemperatur f?r Komfort",
           "transparent_blind": "Das Cover ist transparent und sollte im Sommermodus vollst?ndig schlie?en",
-          "lux_entity": "Lux-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
-          "lux_threshold": "Schwellenwert f?r den Lux-Sensor; oberhalb sollte Blendung reduziert werden",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
           "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
           "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
@@ -130,39 +126,29 @@
       },
       "weather": {
         "data": {
-          "weather_state": "Wetterbedingungen",
           "use_forecast_max_temp_today": "Forecast Tagesmaximum heute nutzen",
           "use_forecast_max_temp_tomorrow": "Forecast Tagesmaximum morgen nutzen",
-          "use_forecast_cloud_coverage": "Forecast Bew?lkung nutzen",
-          "use_forecast_precipitation_probability": "Forecast Regenwahrscheinlichkeit nutzen",
-          "use_forecast_precipitation_amount": "Forecast Niederschlagsmenge nutzen",
-          "use_forecast_uv_index": "Forecast UV-Index nutzen",
           "forecast_hot_day_threshold": "Schwelle hei?er Tag",
           "forecast_very_hot_day_threshold": "Schwelle sehr hei?er Tag",
           "forecast_preemptive_start_time": "Fr?hester Startzeitpunkt",
           "forecast_influence_strength": "Forecast-Einflussst?rke",
-          "use_open_data_solar_radiation": "Open-Data-Solarstrahlung nutzen",
+          "use_open_data_solar_radiation": "Open-Meteo-Solarstrahlung nutzen",
           "solar_radiation_entity": "Lokaler Solarstrahlungs-Sensor",
-          "solar_radiation_reference_w_m2": "Schwelle fuer starke Sonneneinstrahlung (W/m2)"
+          "solar_radiation_reference_w_m2": "Schwelle fuer starke direkte Solarstrahlung (W/m2)"
         },
         "data_description": {
-          "weather_state": "W?hle Wetterzust?nde, die grunds?tzlich auf m?gliche direkte Sonne hindeuten.",
           "use_forecast_max_temp_today": "Heutiges vorhergesagtes Tagesmaximum als Ausl?ser f?r hei?e Tage verwenden",
           "use_forecast_max_temp_tomorrow": "Morgiges vorhergesagtes Tagesmaximum als fr?hes Signal f?r hei?e Tage verwenden",
-          "use_forecast_cloud_coverage": "Vorhergesagte Bew?lkung zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_precipitation_probability": "Vorhergesagte Regenwahrscheinlichkeit zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_precipitation_amount": "Vorhergesagte Niederschlagsmenge zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_uv_index": "Vorhergesagten UV-Index als zus?tzliches Signal f?r hei?e Tage verwenden",
           "forecast_hot_day_threshold": "Vorhergesagtes Tagesmaximum, ab dem die pr?ventive Hot-Day-Logik beginnt",
           "forecast_very_hot_day_threshold": "Vorhergesagtes Tagesmaximum, bei dem das Hot-Day-Risiko maximal wird",
           "forecast_preemptive_start_time": "Fr?heste lokale Uhrzeit, ab der forecast-basierte pr?ventive Verschattung aktiv werden darf",
           "forecast_influence_strength": "Wie stark das Forecast-Risiko den effektiven solaren Gewinnfaktor verst?rken darf",
-          "use_open_data_solar_radiation": "Ruft Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Strahlungsfaktor.",
+          "use_open_data_solar_radiation": "Ruft direkte Solarstrahlung in W/m2 von Open-Meteo fuer den Home-Assistant-Standort ab. Wolken und Niederschlag stecken bereits im Strahlungswert und werden nicht separat bewertet.",
           "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Strahlungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
-          "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung am Fenster in W/m2, die vor Glas- und Geometriefaktoren als starke Sonne zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den 0..1-Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
+          "solar_radiation_reference_w_m2": "Einfallende direkte Solarstrahlung vor Fenstergeometrie und Glas, die als starke Sonne zaehlt. Aktuelle W/m2 geteilt durch diese Schwelle ergeben den normierten Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
         },
-        "title": "Wetterbedingungen",
-        "description": "Hier legst du fest, welche Forecast-Signale und Wetterfaktoren in die Bewertung einfliessen."
+        "title": "Solarstrahlung und Temperaturprognose",
+        "description": "Solarstrahlung bestimmt den aktuellen Waermeeintrag. Aus der Wetterprognose bleiben nur die Tagesmaxima heute und morgen."
       },
       "policy": {
         "data": {
@@ -172,12 +158,7 @@
           "weight_direct_exposure": "Gewicht: direkte Exposition",
           "weight_incidence": "Gewicht: Sonnenwinkel",
           "weight_glazing": "Gewicht: Glas-Transmission",
-          "weight_weather": "Gewicht: aktuelles Wetter",
           "weight_forecast_temperature": "Gewicht: Forecast-Temperatur",
-          "weight_forecast_uv": "Gewicht: Forecast-UV",
-          "weight_forecast_clouds": "Gewicht: Forecast-Wolken",
-          "weight_forecast_precipitation_probability": "Gewicht: Forecast-Regenwahrscheinlichkeit",
-          "weight_forecast_precipitation_amount": "Gewicht: Forecast-Regenmenge",
           "partial_close_threshold": "Schwelle fuer teilweisen Waermeschutz",
           "full_close_threshold": "Schwelle fuer strengen Waermeschutz",
           "partial_close_position": "Teilziel (% offen)",
@@ -191,13 +172,12 @@
           "hot_day_close_threshold": "Heiss-Tag-Schwelle",
           "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
           "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
-          "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
-          "heat_power_max_watts": "Maximaler Waermeeintrag pro m2 Glas"
+          "max_transmitted_solar_power_w_m2": "Max. durchgelassene Solarleistung (W/m2 Glas)"
         },
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
@@ -206,12 +186,7 @@
           "weight_direct_exposure": "Gewichtung des geometrischen Expositionsfaktors aus Horizont und Laibungen. 0 deaktiviert diesen Faktor.",
           "weight_incidence": "Gewichtung des Einfallswinkels zwischen Sonne und Fensternormale. 0 ignoriert den Winkel-Effekt.",
           "weight_glazing": "Gewichtung des Glas-Transmissionsmodells. 0 ignoriert Unterschiede der Verglasung.",
-          "weight_weather": "Gewichtung der aktuellen Wetterdaempfung aus Bewoelkung und Regen. 0 ignoriert den aktuellen Wetterfaktor.",
           "weight_forecast_temperature": "Expert-Gewichtung des Hot-Day-Forecasts als Verstaerker. Unterhalb der Heiss-Tag-Schwelle ist sie neutral und deaktiviert den Waermeschutz nicht mehr allein.",
-          "weight_forecast_uv": "Gewichtung des Forecast-UV-Beitrags. 0 deaktiviert den UV-Einfluss.",
-          "weight_forecast_clouds": "Gewichtung der Forecast-Wolkendaempfung. 0 ignoriert die Forecast-Bewoelkung.",
-          "weight_forecast_precipitation_probability": "Gewichtung der Forecast-Regenwahrscheinlichkeit. 0 ignoriert diesen Forecast-Faktor.",
-          "weight_forecast_precipitation_amount": "Gewichtung der Forecast-Regenmenge. 0 ignoriert diesen Forecast-Faktor.",
           "partial_close_threshold": "Gewichteter Waermeeintrags-Score, ab dem das Cover weniger offen als die Basisberechnung fahren darf.",
           "full_close_threshold": "Gewichteter Waermeeintrags-Score, ab dem das strengere Offen-Ziel greifen soll.",
           "partial_close_position": "Offen-Ziel ab der Teil-Schwelle. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -225,15 +200,14 @@
           "hot_day_close_threshold": "Forecast-Temperatur, ab der der Tag generell als heiss behandelt wird.",
           "hot_day_close_position": "Maximal erlaubte Offenposition an einem generell heissen Tag. Niedrigere Werte bedeuten mehr Verschattung.",
           "very_hot_day_close_position": "Maximal erlaubte Offenposition ab der Sehr-heiss-Schwelle. Niedriger als das Heiss-Tag-Maximum setzen, damit der Unterschied sichtbar wird.",
-          "enable_legacy_basic_shading": "Wendet zusaetzlich die alte Adaptive-Cover-Geometrie an. Das kann bei direkter Sonne leicht schliessen, z.B. gegen Blendung am Schreibtisch, auch wenn die Waermeschutz-Policy inaktiv ist.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
-          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und deckelt die Offenposition, sobald das konfigurierte W/m2-Limit an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
+          "heat_power_limit_enabled": "Berechnet die durchgelassene Solarleistung aus einfallender Strahlung, Geometrie, Einfallswinkel und Glas. Bei Ueberschreitung des W/m2-Limits wird die Offenposition begrenzt.",
           "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
-          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag pro m2 Glas. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
+          "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung, die durch einen Quadratmeter Fensterglas gelangt. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
-        "title": "W?rmeschutz-Gewichte & Schwellen (NEU)",
+        "title": "Hitzeschutz-Presets und Feinabstimmung",
         "description": "Hier liegen alle Gewichte, Waermeschutz-Schwellen, Ziele in % offen und die strengere Abwesenheits-Logik. Gewicht 0 deaktiviert den jeweiligen Faktor. Simulator zum Feintuning: /local/solar_shading_simulator.html"
       },
       "horizontal": {
@@ -269,7 +243,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet"
+          "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
@@ -298,7 +272,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung."
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Horizontales Cover"
@@ -335,7 +309,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet",
+          "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
         },
         "data_description": {
@@ -364,7 +338,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung.",
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
@@ -477,7 +451,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet"
+          "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
@@ -504,7 +478,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung."
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Vertikales Cover"
@@ -513,26 +487,22 @@
         "data": {
           "temp_entity": "Innensensor f?r Temperatur",
           "presence_entity": "Pr?senzsensor (optional)",
-          "weather_entity": "Wetter-Entit?t (optional)",
+          "weather_entity": "Quelle fuer Temperaturprognose (optional)",
           "outside_temp": "Au?entemperatur-Sensor (optional)",
           "temp_low": "Untere Temperaturschwelle",
           "temp_high": "Obere Temperaturschwelle",
           "transparent_blind": "Transparentes Cover",
-          "lux_entity": "Lux-Sensor (optional)",
-          "lux_threshold": "Lux-Schwelle",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
           "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
           "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
         },
         "data_description": {
           "presence_entity": "Entit?t f?r den Anwesenheitsstatus im Raum oder Haus",
-          "weather_entity": "?berwacht Wetterbedingungen und Au?entemperatur",
+          "weather_entity": "Liefert nur Aussentemperatur sowie Tagesmaximum heute und morgen",
           "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
           "temp_low": "Mindesttemperatur f?r Komfort",
           "temp_high": "H?chsttemperatur f?r Komfort",
           "transparent_blind": "Das Cover ist transparent und sollte im Sommermodus vollst?ndig schlie?en",
-          "lux_entity": "Lux-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
-          "lux_threshold": "Schwellenwert f?r den Lux-Sensor; oberhalb sollte Blendung reduziert werden",
           "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
           "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
           "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
@@ -542,39 +512,29 @@
       },
       "weather": {
         "data": {
-          "weather_state": "Wetterbedingungen",
           "use_forecast_max_temp_today": "Forecast Tagesmaximum heute nutzen",
           "use_forecast_max_temp_tomorrow": "Forecast Tagesmaximum morgen nutzen",
-          "use_forecast_cloud_coverage": "Forecast Bew?lkung nutzen",
-          "use_forecast_precipitation_probability": "Forecast Regenwahrscheinlichkeit nutzen",
-          "use_forecast_precipitation_amount": "Forecast Niederschlagsmenge nutzen",
-          "use_forecast_uv_index": "Forecast UV-Index nutzen",
           "forecast_hot_day_threshold": "Schwelle hei?er Tag",
           "forecast_very_hot_day_threshold": "Schwelle sehr hei?er Tag",
           "forecast_preemptive_start_time": "Fr?hester Startzeitpunkt",
           "forecast_influence_strength": "Forecast-Einflussst?rke",
-          "use_open_data_solar_radiation": "Open-Data-Solarstrahlung nutzen",
+          "use_open_data_solar_radiation": "Open-Meteo-Solarstrahlung nutzen",
           "solar_radiation_entity": "Lokaler Solarstrahlungs-Sensor",
-          "solar_radiation_reference_w_m2": "Schwelle fuer starke Sonneneinstrahlung (W/m2)"
+          "solar_radiation_reference_w_m2": "Schwelle fuer starke direkte Solarstrahlung (W/m2)"
         },
         "data_description": {
-          "weather_state": "W?hle Wetterzust?nde, die grunds?tzlich auf m?gliche direkte Sonne hindeuten.",
           "use_forecast_max_temp_today": "Heutiges vorhergesagtes Tagesmaximum als Ausl?ser f?r hei?e Tage verwenden",
           "use_forecast_max_temp_tomorrow": "Morgiges vorhergesagtes Tagesmaximum als fr?hes Signal f?r hei?e Tage verwenden",
-          "use_forecast_cloud_coverage": "Vorhergesagte Bew?lkung zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_precipitation_probability": "Vorhergesagte Regenwahrscheinlichkeit zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_precipitation_amount": "Vorhergesagte Niederschlagsmenge zur D?mpfung der pr?ventiven Verschattung verwenden",
-          "use_forecast_uv_index": "Vorhergesagten UV-Index als zus?tzliches Signal f?r hei?e Tage verwenden",
           "forecast_hot_day_threshold": "Vorhergesagtes Tagesmaximum, ab dem die pr?ventive Hot-Day-Logik beginnt",
           "forecast_very_hot_day_threshold": "Vorhergesagtes Tagesmaximum, bei dem das Hot-Day-Risiko maximal wird",
           "forecast_preemptive_start_time": "Fr?heste lokale Uhrzeit, ab der forecast-basierte pr?ventive Verschattung aktiv werden darf",
           "forecast_influence_strength": "Wie stark das Forecast-Risiko den effektiven solaren Gewinnfaktor verst?rken darf",
-          "use_open_data_solar_radiation": "Ruft Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Strahlungsfaktor.",
+          "use_open_data_solar_radiation": "Ruft direkte Solarstrahlung in W/m2 von Open-Meteo fuer den Home-Assistant-Standort ab. Wolken und Niederschlag stecken bereits im Strahlungswert und werden nicht separat bewertet.",
           "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Strahlungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
-          "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung am Fenster in W/m2, die vor Glas- und Geometriefaktoren als starke Sonne zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den 0..1-Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
+          "solar_radiation_reference_w_m2": "Einfallende direkte Solarstrahlung vor Fenstergeometrie und Glas, die als starke Sonne zaehlt. Aktuelle W/m2 geteilt durch diese Schwelle ergeben den normierten Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
         },
-        "title": "Wetterbedingungen",
-        "description": "Hier legst du fest, welche Forecast-Signale und Wetterfaktoren in die Bewertung einfliessen."
+        "title": "Solarstrahlung und Temperaturprognose",
+        "description": "Solarstrahlung bestimmt den aktuellen Waermeeintrag. Aus der Wetterprognose bleiben nur die Tagesmaxima heute und morgen."
       },
       "policy": {
         "data": {
@@ -584,12 +544,7 @@
           "weight_direct_exposure": "Gewicht: direkte Exposition",
           "weight_incidence": "Gewicht: Sonnenwinkel",
           "weight_glazing": "Gewicht: Glas-Transmission",
-          "weight_weather": "Gewicht: aktuelles Wetter",
           "weight_forecast_temperature": "Gewicht: Forecast-Temperatur",
-          "weight_forecast_uv": "Gewicht: Forecast-UV",
-          "weight_forecast_clouds": "Gewicht: Forecast-Wolken",
-          "weight_forecast_precipitation_probability": "Gewicht: Forecast-Regenwahrscheinlichkeit",
-          "weight_forecast_precipitation_amount": "Gewicht: Forecast-Regenmenge",
           "partial_close_threshold": "Schwelle fuer teilweisen Waermeschutz",
           "full_close_threshold": "Schwelle fuer strengen Waermeschutz",
           "partial_close_position": "Teilziel (% offen)",
@@ -603,13 +558,12 @@
           "hot_day_close_threshold": "Heiss-Tag-Schwelle",
           "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
           "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
-          "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
-          "heat_power_max_watts": "Maximaler Waermeeintrag pro m2 Glas"
+          "max_transmitted_solar_power_w_m2": "Max. durchgelassene Solarleistung (W/m2 Glas)"
         },
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
@@ -618,12 +572,7 @@
           "weight_direct_exposure": "Gewichtung des geometrischen Expositionsfaktors aus Horizont und Laibungen. 0 deaktiviert diesen Faktor.",
           "weight_incidence": "Gewichtung des Einfallswinkels zwischen Sonne und Fensternormale. 0 ignoriert den Winkel-Effekt.",
           "weight_glazing": "Gewichtung des Glas-Transmissionsmodells. 0 ignoriert Unterschiede der Verglasung.",
-          "weight_weather": "Gewichtung der aktuellen Wetterdaempfung aus Bewoelkung und Regen. 0 ignoriert den aktuellen Wetterfaktor.",
           "weight_forecast_temperature": "Expert-Gewichtung des Hot-Day-Forecasts als Verstaerker. Unterhalb der Heiss-Tag-Schwelle ist sie neutral und deaktiviert den Waermeschutz nicht mehr allein.",
-          "weight_forecast_uv": "Gewichtung des Forecast-UV-Beitrags. 0 deaktiviert den UV-Einfluss.",
-          "weight_forecast_clouds": "Gewichtung der Forecast-Wolkendaempfung. 0 ignoriert die Forecast-Bewoelkung.",
-          "weight_forecast_precipitation_probability": "Gewichtung der Forecast-Regenwahrscheinlichkeit. 0 ignoriert diesen Forecast-Faktor.",
-          "weight_forecast_precipitation_amount": "Gewichtung der Forecast-Regenmenge. 0 ignoriert diesen Forecast-Faktor.",
           "partial_close_threshold": "Gewichteter Waermeeintrags-Score, ab dem das Cover weniger offen als die Basisberechnung fahren darf.",
           "full_close_threshold": "Gewichteter Waermeeintrags-Score, ab dem das strengere Offen-Ziel greifen soll.",
           "partial_close_position": "Offen-Ziel ab der Teil-Schwelle. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -637,15 +586,14 @@
           "hot_day_close_threshold": "Forecast-Temperatur, ab der der Tag generell als heiss behandelt wird.",
           "hot_day_close_position": "Maximal erlaubte Offenposition an einem generell heissen Tag. Niedrigere Werte bedeuten mehr Verschattung.",
           "very_hot_day_close_position": "Maximal erlaubte Offenposition ab der Sehr-heiss-Schwelle. Niedriger als das Heiss-Tag-Maximum setzen, damit der Unterschied sichtbar wird.",
-          "enable_legacy_basic_shading": "Wendet zusaetzlich die alte Adaptive-Cover-Geometrie an. Das kann bei direkter Sonne leicht schliessen, z.B. gegen Blendung am Schreibtisch, auch wenn die Waermeschutz-Policy inaktiv ist.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
-          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und deckelt die Offenposition, sobald das konfigurierte W/m2-Limit an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
+          "heat_power_limit_enabled": "Berechnet die durchgelassene Solarleistung aus einfallender Strahlung, Geometrie, Einfallswinkel und Glas. Bei Ueberschreitung des W/m2-Limits wird die Offenposition begrenzt.",
           "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
-          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag pro m2 Glas. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
+          "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung, die durch einen Quadratmeter Fensterglas gelangt. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
-        "title": "W?rmeschutz-Gewichte & Schwellen (NEU)",
+        "title": "Hitzeschutz-Presets und Feinabstimmung",
         "description": "Hier liegen alle Gewichte, Waermeschutz-Schwellen, Ziele in % offen und die strengere Abwesenheits-Logik. Gewicht 0 deaktiviert den jeweiligen Faktor. Simulator zum Feintuning: /local/solar_shading_simulator.html"
       },
       "horizontal": {
@@ -681,7 +629,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet"
+          "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
@@ -710,7 +658,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung."
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Horizontales Cover"
@@ -747,7 +695,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Lokales Horizontprofil",
           "glass_type": "Glasart",
-          "weather_entity": "Wetter-Entitaet",
+          "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
         },
         "data_description": {
@@ -776,7 +724,7 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Liste lokaler Himmelsgrenzen von 0 bis 180 Grad. Zum Zeichnen den Horizont-Zeichner unter /local/solar_shading_horizon_preview.html oder den integrierten Zeichner im Simulator /local/solar_shading_simulator.html verwenden und das JSON hier einfuegen.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
-          "weather_entity": "Wetter-Entitaet fuer Bewoelkung, Regen und Forecast-Daempfung.",
+          "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",

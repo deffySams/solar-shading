@@ -27,11 +27,11 @@ daily maximum temperatures, but its condition/cloud/rain fields should no
 longer drive solar gain. Current rain or cloud state is irrelevant once real
 solar radiation is available.
 
-Code consequence:
+Implemented in `0.3.0b41`:
 
 ```text
 weather_factor, forecast_cloud_damping, forecast_precipitation_*_damping,
-forecast_uv_risk and their weights should be retired from the heat-gain policy.
+forecast_uv_risk, Lux and their weights are removed from the active policy.
 ```
 
 If no measured/open solar radiation is available, the UI should make that
@@ -118,25 +118,19 @@ When this threshold is reached, nothing directly "locks" the cover. The solar
 radiation component simply saturates at 1.0 and cannot increase the policy
 pressure further.
 
-### `heat_power_max_watts`
+### `max_transmitted_solar_power_w_m2`
 
 Current meaning:
 
 ```text
-estimated_heat_power_w_m2 = solar_radiation_value_w_m2 * solar_gain_factor
-```
-
-or without measured/open solar radiation:
-
-```text
-estimated_heat_power_w_m2 = reference_w_m2 * effective_solar_gain_factor
+transmitted_solar_power_w_m2 = solar_radiation_value_w_m2 * solar_gain_factor
 ```
 
 If enabled and temperature-gated:
 
 ```text
-if estimated_heat_power_w_m2 > heat_power_max_watts:
-    heat_power_limited_open_position = round(heat_power_max_watts / estimated_heat_power_w_m2 * 100)
+if transmitted_solar_power_w_m2 > max_transmitted_solar_power_w_m2:
+    limited_open_position = round(max_transmitted_solar_power_w_m2 / transmitted_solar_power_w_m2 * 100)
 ```
 
 This is actually a W/m2 glass-area limit, not plain watts.
@@ -147,11 +141,8 @@ Better UI name:
 Max. Waermeeintrag durch Glas
 ```
 
-Better config name later:
-
-```text
-max_transmitted_solar_heat_w_m2
-```
+Without a measured or Open-Meteo radiation value, transmitted solar power is
+unknown and no weather-based replacement value is fabricated.
 
 What happens when it is exceeded:
 
@@ -263,8 +254,8 @@ flowchart TD
   PolicyTarget --> HeatTarget["heat_gain_target = min(policy_target, hot_day_cap if active)"]
   HotCap --> HeatTarget
 
-  HeatLimit["heat_power_limit_enabled, heat_power_outside_temp_threshold, heat_protection_min_outside_temp, heat_power_max_watts"] --> HeatCap
-  SolarGain --> HeatPower["estimated_heat_power_w_m2"]
+  HeatLimit["heat_power_limit_enabled, heat_power_outside_temp_threshold, heat_protection_min_outside_temp, max_transmitted_solar_power_w_m2"] --> HeatCap
+  SolarGain --> HeatPower["transmitted_solar_power_w_m2"]
   RadValue --> HeatPower
   EffectiveGain --> HeatPower
   HeatPower --> HeatCap["heat_power_limited_open_position = round(limit / heat_power * 100)"]
@@ -275,7 +266,7 @@ flowchart TD
   HeatCap --> NormalState["state = min(state, heat_power_limited_open_position)"]
   MinMax["min_position/max_position + enable flags"] --> NormalState
   NormalState --> Climate["optional climate mode may replace normal state"]
-  ClimateSettings["temp_entity, temp_low/high, outside_temp, outside_threshold, presence_entity, lux/irradiance thresholds, transparent_blind, weather_state"] --> Climate
+  ClimateSettings["temp_entity, temp_low/high, outside_temp, outside_threshold, presence_entity, irradiance threshold, transparent_blind"] --> Climate
   Climate --> Interp["optional interpolation/inverse"]
   InterpSettings["interp, interp_start/end/list, inverse_state"] --> Interp
   Interp --> Automation["delta_position, delta_time, start/end time/entity, manual override settings"]
@@ -305,7 +296,7 @@ flowchart TD
 | Setting | Current role | Recommendation |
 | --- | --- | --- |
 | `solar_radiation_reference_w_m2` | Calibration for "strong sun" before glass. | Rename to "Schwelle fuer starke Sonneneinstrahlung"; house-profile default. |
-| `heat_power_max_watts` | W/m2 glass heat cap despite name. | Rename to "Max. Waermeeintrag durch Glas" and config-name later. |
+| `max_transmitted_solar_power_w_m2` | W/m2 glass power cap. | Keep as "Max. durchgelassene Solarleistung". |
 | `forecast_hot_day_threshold` | Forecast temperature where heat protection is allowed. | House profile. |
 | `forecast_very_hot_day_threshold` | Temperature where very-hot pressure saturates. | House profile. |
 | `forecast_preemptive_start_time` | Earliest time forecast pressure may act. | House profile. |

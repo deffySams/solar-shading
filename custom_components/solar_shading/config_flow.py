@@ -50,7 +50,7 @@ from .const import (
     CONF_GLASS_TYPE,
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
-    CONF_HEAT_POWER_MAX_WATTS,
+    CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEIGHT_WIN,
@@ -68,8 +68,6 @@ from .const import (
     CONF_IRRADIANCE_ENTITY,
     CONF_IRRADIANCE_THRESHOLD,
     CONF_LENGTH_AWNING,
-    CONF_LUX_ENTITY,
-    CONF_LUX_THRESHOLD,
     CONF_MANUAL_IGNORE_INTERMEDIATE,
     CONF_MANUAL_OVERRIDE_DURATION,
     CONF_MANUAL_OVERRIDE_RESET,
@@ -113,9 +111,7 @@ from .const import (
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
-    CONF_WEIGHT_WEATHER,
     CONF_WEATHER_ENTITY,
-    CONF_WEATHER_STATE,
     CONF_OUTSIDE_THRESHOLD,
     CONF_SOLAR_RADIATION_ENTITY,
     CONF_SOLAR_RADIATION_REFERENCE,
@@ -128,6 +124,36 @@ from .const import (
     CONF_ENABLE_MAX_POSITION,
     CONF_ENABLE_MIN_POSITION,
 )
+
+LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
+RETIRED_OPTION_KEYS = {
+    "enable_legacy_basic_shading",
+    "lux_entity",
+    "lux_threshold",
+    "use_forecast_cloud_coverage",
+    "use_forecast_precipitation_probability",
+    "use_forecast_precipitation_amount",
+    "use_forecast_uv_index",
+    "weather_state",
+    "weight_weather",
+    "weight_forecast_uv",
+    "weight_forecast_clouds",
+    "weight_forecast_precipitation_probability",
+    "weight_forecast_precipitation_amount",
+}
+
+
+def _migrate_retired_options(options: dict[str, Any]) -> dict[str, Any]:
+    """Move the one renamed value and discard options no longer used."""
+    migrated = dict(options)
+    if CONF_MAX_TRANSMITTED_SOLAR_POWER not in migrated:
+        legacy_limit = migrated.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER)
+        if legacy_limit is not None:
+            migrated[CONF_MAX_TRANSMITTED_SOLAR_POWER] = legacy_limit
+    migrated.pop(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, None)
+    for key in RETIRED_OPTION_KEYS:
+        migrated.pop(key, None)
+    return migrated
 
 # DEFAULT_NAME = "Adaptive Cover"
 
@@ -409,14 +435,6 @@ CLIMATE_OPTIONS = vol.Schema(
                 domain=["device_tracker", "zone", "binary_sensor", "input_boolean"]
             )
         ),
-        vol.Optional(CONF_LUX_ENTITY, default=vol.UNDEFINED): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(
-                domain=["sensor"], device_class="illuminance"
-            )
-        ),
-        vol.Optional(CONF_LUX_THRESHOLD, default=1000): selector.NumberSelector(
-            selector.NumberSelectorConfig(mode="box", unit_of_measurement="lux")
-        ),
         vol.Optional(
             CONF_IRRADIANCE_ENTITY, default=vol.UNDEFINED
         ): selector.EntitySelector(
@@ -433,32 +451,6 @@ CLIMATE_OPTIONS = vol.Schema(
 
 WEATHER_OPTIONS = vol.Schema(
     {
-        vol.Optional(
-            CONF_WEATHER_STATE, default=["sunny", "partlycloudy", "cloudy", "clear"]
-        ): selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                multiple=True,
-                sort=False,
-                options=[
-                    "clear-night",
-                    "clear",
-                    "cloudy",
-                    "fog",
-                    "hail",
-                    "lightning",
-                    "lightning-rainy",
-                    "partlycloudy",
-                    "pouring",
-                    "rainy",
-                    "snowy",
-                    "snowy-rainy",
-                    "sunny",
-                    "windy",
-                    "windy-variant",
-                    "exceptional",
-                ],
-            )
-        ),
         vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TODAY, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=False): selector.BooleanSelector(),
@@ -553,7 +545,9 @@ POLICY_OPTIONS = vol.Schema(
                 min=-20, max=30, step=0.5, mode="slider", unit_of_measurement="Ã‚Â°C"
             )
         ),
-        vol.Optional(CONF_HEAT_POWER_MAX_WATTS, default=250): selector.NumberSelector(
+        vol.Optional(
+            CONF_MAX_TRANSMITTED_SOLAR_POWER, default=250
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=50, max=800, step=25, mode="slider", unit_of_measurement="W/m2"
             )
@@ -566,9 +560,6 @@ POLICY_OPTIONS = vol.Schema(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
         vol.Optional(CONF_WEIGHT_GLAZING, default=0.8): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
-        ),
-        vol.Optional(CONF_WEIGHT_WEATHER, default=1.0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
         vol.Optional(
@@ -1072,7 +1063,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_TEMP_HIGH: self.config.get(CONF_TEMP_HIGH),
                 CONF_OUTSIDETEMP_ENTITY: self.config.get(CONF_OUTSIDETEMP_ENTITY),
                 CONF_CLIMATE_MODE: self.config.get(CONF_CLIMATE_MODE),
-                CONF_WEATHER_STATE: self.config.get(CONF_WEATHER_STATE),
                 CONF_DELTA_POSITION: self.config.get(CONF_DELTA_POSITION),
                 CONF_DELTA_TIME: self.config.get(CONF_DELTA_TIME),
                 CONF_START_TIME: self.config.get(CONF_START_TIME),
@@ -1104,8 +1094,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_REVEAL_LEFT: self.config.get(CONF_REVEAL_LEFT),
                 CONF_REVEAL_RIGHT: self.config.get(CONF_REVEAL_RIGHT),
                 CONF_REVEAL_TOP: self.config.get(CONF_REVEAL_TOP),
-                CONF_LUX_ENTITY: self.config.get(CONF_LUX_ENTITY),
-                CONF_LUX_THRESHOLD: self.config.get(CONF_LUX_THRESHOLD),
                 CONF_IRRADIANCE_ENTITY: self.config.get(CONF_IRRADIANCE_ENTITY),
                 CONF_IRRADIANCE_THRESHOLD: self.config.get(CONF_IRRADIANCE_THRESHOLD),
                 CONF_OUTSIDE_THRESHOLD: self.config.get(CONF_OUTSIDE_THRESHOLD),
@@ -1177,8 +1165,9 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP: self.config.get(
                     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14
                 ),
-                CONF_HEAT_POWER_MAX_WATTS: self.config.get(
-                    CONF_HEAT_POWER_MAX_WATTS, 250
+                CONF_MAX_TRANSMITTED_SOLAR_POWER: self.config.get(
+                    CONF_MAX_TRANSMITTED_SOLAR_POWER,
+                    self.config.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, 250),
                 ),
                 CONF_SHOW_EXPERT_WEIGHTS: self.config.get(
                     CONF_SHOW_EXPERT_WEIGHTS, False
@@ -1188,7 +1177,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 ),
                 CONF_WEIGHT_INCIDENCE: self.config.get(CONF_WEIGHT_INCIDENCE, 0.9),
                 CONF_WEIGHT_GLAZING: self.config.get(CONF_WEIGHT_GLAZING, 0.8),
-                CONF_WEIGHT_WEATHER: self.config.get(CONF_WEIGHT_WEATHER, 1.0),
                 CONF_WEIGHT_FORECAST_TEMPERATURE: self.config.get(
                     CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0
                 ),
@@ -1217,7 +1205,7 @@ class OptionsFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
         self.current_config: dict = dict(config_entry.data)
-        self.options = dict(config_entry.options)
+        self.options = _migrate_retired_options(dict(config_entry.options))
         self.sensor_type: SensorType = (
             self.current_config.get(CONF_SENSOR_TYPE) or SensorType.BLIND
         )
@@ -1459,7 +1447,6 @@ class OptionsFlowHandler(OptionsFlow):
             entities = [
                 CONF_OUTSIDETEMP_ENTITY,
                 CONF_PRESENCE_ENTITY,
-                CONF_LUX_ENTITY,
                 CONF_IRRADIANCE_ENTITY,
             ]
             self.optional_entities(entities, user_input)

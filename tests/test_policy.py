@@ -29,28 +29,28 @@ class TestPolicyHelpers(unittest.TestCase):
         score = weighted_risk_score(
             {
                 "direct_exposure": 0.8,
-                "weather": 0.6,
-                "forecast_uv": None,
+                "solar_radiation": 0.6,
+                "forecast_temperature": None,
             },
             {
                 "direct_exposure": 2.0,
-                "weather": 1.0,
-                "forecast_uv": 3.0,
+                "solar_radiation": 1.0,
+                "forecast_temperature": 3.0,
             },
         )
         self.assertAlmostEqual(score, (0.8 ** (2.0 / 3.0)) * (0.6 ** (1.0 / 3.0)), places=6)
 
     def test_weighted_risk_score_collapses_when_required_factor_is_zero(self):
-        """Multiplicative scoring must not invent heat gain at night or in clouds."""
+        """Multiplicative scoring must not invent heat without irradiance."""
         score = weighted_risk_score(
             {
                 "direct_exposure": 0.0,
-                "weather": 1.0,
+                "solar_radiation": 0.0,
                 "forecast_temperature": 1.0,
             },
             {
                 "direct_exposure": 1.0,
-                "weather": 1.0,
+                "solar_radiation": 1.0,
                 "forecast_temperature": 1.0,
             },
         )

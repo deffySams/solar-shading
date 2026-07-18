@@ -22,7 +22,7 @@ def radiation_factor(
 ) -> float:
     """Normalize irradiance in W/m2 into a 0..1 heat-gain factor."""
     if value is None:
-        return 1.0
+        return 0.0
     default_reference = DNI_REFERENCE_W_M2 if direct_normal else GHI_REFERENCE_W_M2
     reference_value = float(reference or default_reference)
     if reference_value <= 0:

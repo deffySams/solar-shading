@@ -65,7 +65,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity"
+          "weather_entity": "Temperature forecast source"
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
@@ -92,7 +92,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping."
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Vertical cover"
@@ -101,26 +101,22 @@
         "data": {
           "temp_entity": "Inside temperature entity",
           "presence_entity": "Presence entity (optional)",
-          "weather_entity": "Weather entity (optional)",
+          "weather_entity": "Temperature forecast source (optional)",
           "outside_temp": "Outside temperature sensor (optional)",
           "temp_low": "Low temperature threshold",
           "temp_high": "High temperature threshold",
           "transparent_blind": "Transparent blind",
-          "lux_entity": "Lux sensor (optional)",
-          "lux_threshold": "Lux threshold",
           "irradiance_entity": "Irradiance sensor (optional)",
           "irradiance_threshold": "Irradiance threshold",
           "outside_threshold": "Minimum outside temperature for summer mode"
         },
         "data_description": {
           "presence_entity": "Entity representing room or home presence status",
-          "weather_entity": "Monitors weather conditions, and outside temperature",
+          "weather_entity": "Provides outside temperature and today's/tomorrow's maximum temperature forecast only",
           "outside_temp": "Overrides outside temperature from weather entity if both are set",
           "temp_low": "Minimum comfortable temperature",
           "temp_high": "Maximum comfortable temperature",
           "transparent_blind": "The blind is transparent and should always close fully when summer mode is active",
-          "lux_entity": "Use lux sensor to determine if cover should reduce glare in presence mode",
-          "lux_threshold": "Threshold for lux sensor, above this value glare should be reduced",
           "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
           "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
           "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
@@ -130,39 +126,29 @@
       },
       "weather": {
         "data": {
-          "weather_state": "Weather Conditions",
           "use_forecast_max_temp_today": "Use forecast max temp today",
           "use_forecast_max_temp_tomorrow": "Use forecast max temp tomorrow",
-          "use_forecast_cloud_coverage": "Use forecast cloud coverage",
-          "use_forecast_precipitation_probability": "Use forecast precipitation probability",
-          "use_forecast_precipitation_amount": "Use forecast precipitation amount",
-          "use_forecast_uv_index": "Use forecast UV index",
           "forecast_hot_day_threshold": "Hot day threshold",
           "forecast_very_hot_day_threshold": "Very hot day threshold",
           "forecast_preemptive_start_time": "Preemptive start time",
           "forecast_influence_strength": "Forecast influence strength",
-          "use_open_data_solar_radiation": "Use open-data solar irradiance",
+          "use_open_data_solar_radiation": "Use Open-Meteo solar irradiance",
           "solar_radiation_entity": "Local solar irradiance sensor",
-          "solar_radiation_reference_w_m2": "Strong-sun irradiance threshold (W/m2)"
+          "solar_radiation_reference_w_m2": "Strong direct-solar irradiance threshold (W/m2)"
         },
         "data_description": {
-          "weather_state": "Choose weather conditions that indicate the possibility of direct sunlight.",
           "use_forecast_max_temp_today": "Enable today's forecast maximum temperature as a hot-day trigger",
           "use_forecast_max_temp_tomorrow": "Enable tomorrow's forecast maximum temperature as an early hot-day signal",
-          "use_forecast_cloud_coverage": "Use forecast cloud coverage to damp preemptive shading",
-          "use_forecast_precipitation_probability": "Use forecast precipitation probability to damp preemptive shading",
-          "use_forecast_precipitation_amount": "Use forecast precipitation amount to damp preemptive shading",
-          "use_forecast_uv_index": "Use forecast UV index as an additional hot-day signal",
           "forecast_hot_day_threshold": "Forecast maximum temperature where preemptive hot-day handling begins",
           "forecast_very_hot_day_threshold": "Forecast maximum temperature where hot-day risk reaches its maximum",
           "forecast_preemptive_start_time": "Earliest local time when forecast-based preemptive shading may activate",
           "forecast_influence_strength": "How strongly the forecast risk can amplify the effective solar gain factor",
-          "use_open_data_solar_radiation": "Fetch Open-Meteo irradiance in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct irradiance factor.",
+          "use_open_data_solar_radiation": "Fetch direct solar irradiance in W/m2 from Open-Meteo for the Home Assistant location. Clouds and precipitation are already reflected in the irradiance and are not scored separately.",
           "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current irradiance factor; Open-Meteo can still provide forecast radiation.",
-          "solar_radiation_reference_w_m2": "Incoming irradiance at the window in W/m2 that counts as strong sun before glass and geometry factors. Current irradiance divided by this threshold becomes the 0..1 irradiance factor; lower values react more aggressively."
+          "solar_radiation_reference_w_m2": "Incoming direct irradiance before window geometry and glazing that counts as strong sun. Current W/m2 divided by this threshold becomes the normalized irradiance factor; lower values react more aggressively."
         },
-        "title": "Weather Conditions",
-        "description": "This is where you decide which forecast and weather signals may influence the evaluation."
+        "title": "Solar irradiance and temperature forecast",
+        "description": "Solar irradiance drives the current heat input. Only today's and tomorrow's maximum temperatures are retained from the weather forecast."
       },
       "policy": {
         "data": {
@@ -172,12 +158,7 @@
           "weight_direct_exposure": "Weight: direct exposure",
           "weight_incidence": "Weight: sun angle",
           "weight_glazing": "Weight: glazing transmission",
-          "weight_weather": "Weight: current weather",
           "weight_forecast_temperature": "Weight: forecast temperature",
-          "weight_forecast_uv": "Weight: forecast UV",
-          "weight_forecast_clouds": "Weight: forecast clouds",
-          "weight_forecast_precipitation_probability": "Weight: forecast rain probability",
-          "weight_forecast_precipitation_amount": "Weight: forecast rain amount",
           "partial_close_threshold": "Threshold for partial heat protection",
           "full_close_threshold": "Threshold for strict heat protection",
           "partial_close_position": "Partial target (% open)",
@@ -191,13 +172,12 @@
           "hot_day_close_threshold": "Hot-day threshold",
           "hot_day_close_position": "Hot-day max position (% open)",
           "very_hot_day_close_position": "Very-hot-day max position (% open)",
-          "enable_legacy_basic_shading": "Enable legacy desk/glare protection",
           "show_expert_weights": "Show expert weights",
           "weight_solar_radiation": "Weight: solar radiation",
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
           "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
-          "heat_power_max_watts": "Maximum heat gain per m2 glass"
+          "max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)"
         },
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
@@ -206,12 +186,7 @@
           "weight_direct_exposure": "Weight of the geometric exposure factor from horizon and reveals. Set to 0 to disable this factor.",
           "weight_incidence": "Weight of the angle between sun and window normal. Set to 0 to ignore shallow-vs-direct incidence.",
           "weight_glazing": "Weight of the glazing transmission model. Set to 0 to ignore glass-related differences.",
-          "weight_weather": "Weight of the current weather damping from cloud cover and rain. Set to 0 to ignore the current weather factor.",
           "weight_forecast_temperature": "Expert weight for hot-day forecast as a boost. Below the hot-day threshold it is neutral and no longer disables heat protection by itself.",
-          "weight_forecast_uv": "Weight of the forecast UV contribution. Set to 0 to disable forecast UV influence.",
-          "weight_forecast_clouds": "Weight of the forecast cloud damping. Set to 0 to ignore forecast cloud coverage.",
-          "weight_forecast_precipitation_probability": "Weight of the forecast precipitation probability damping. Set to 0 to ignore forecast rain probability.",
-          "weight_forecast_precipitation_amount": "Weight of the forecast precipitation amount damping. Set to 0 to ignore forecast rain amount.",
           "partial_close_threshold": "Weighted heat-gain score above which the cover may become less open than the base calculation.",
           "full_close_threshold": "Weighted heat-gain score above which the cover should move to the stricter open target.",
           "partial_close_position": "Open-position target at the partial threshold. 100% open is fully open, 0% open is closed.",
@@ -225,15 +200,14 @@
           "hot_day_close_threshold": "Forecast temperature above which the day is treated as generally hot.",
           "hot_day_close_position": "Maximum open position allowed on a generally hot day. Lower values mean more shading.",
           "very_hot_day_close_position": "Maximum open position allowed once the forecast reaches the very-hot threshold. Use a lower value than the hot-day maximum for visibly stricter behavior.",
-          "enable_legacy_basic_shading": "Also apply the old Adaptive Cover geometry rule, which can close slightly for glare or a desk even when heat-gain policy is inactive.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
-          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and caps the open position when the configured W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
+          "heat_power_limit_enabled": "When enabled, Solar Shading calculates transmitted solar power from incoming irradiance, geometry, incidence angle and glazing. It caps the open position when the W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
           "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
-          "heat_power_max_watts": "Maximum allowed estimated solar heat gain per m2 glass. The open position is reduced approximately linearly to stay below this value."
+          "max_transmitted_solar_power_w_m2": "Maximum allowed solar power transmitted through one square meter of window glass. The open position is reduced approximately linearly to stay below this value."
         },
-        "title": "Heat-Gain Weights & Thresholds (NEW)",
+        "title": "Heat protection presets and fine tuning",
         "description": "All weights, heat thresholds, % open targets, and stricter away-from-home behavior for the daylight-aware heat-gain overlay live here. Weight 0 disables an individual factor. Simulator for fine-tuning: /local/solar_shading_simulator.html"
       },
       "horizontal": {
@@ -269,7 +243,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity"
+          "weather_entity": "Temperature forecast source"
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
@@ -298,7 +272,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping."
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Horizontal cover"
@@ -335,7 +309,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity",
+          "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
         },
         "data_description": {
@@ -364,7 +338,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping.",
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
@@ -477,7 +451,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity"
+          "weather_entity": "Temperature forecast source"
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
@@ -504,7 +478,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping."
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Vertical cover"
@@ -513,26 +487,22 @@
         "data": {
           "temp_entity": "Inside temperature entity",
           "presence_entity": "Presence entity (optional)",
-          "weather_entity": "Weather entity (optional)",
+          "weather_entity": "Temperature forecast source (optional)",
           "outside_temp": "Outside temperature sensor (optional)",
           "temp_low": "Low temperature threshold",
           "temp_high": "High temperature threshold",
           "transparent_blind": "Transparent blind",
-          "lux_entity": "Lux sensor (optional)",
-          "lux_threshold": "Lux threshold",
           "irradiance_entity": "Irradiance sensor (optional)",
           "irradiance_threshold": "Irradiance threshold",
           "outside_threshold": "Minimum outside temperature for summer mode"
         },
         "data_description": {
           "presence_entity": "Entity representing room or home presence status",
-          "weather_entity": "Monitors weather conditions, and outside temperature",
+          "weather_entity": "Provides outside temperature and today's/tomorrow's maximum temperature forecast only",
           "outside_temp": "Overrides outside temperature from weather entity if both are set",
           "temp_low": "Minimum comfortable temperature",
           "temp_high": "Maximum comfortable temperature",
           "transparent_blind": "The blind is transparent and should always close fully when summer mode is active",
-          "lux_entity": "Use lux sensor to determine if cover should reduce glare in presence mode",
-          "lux_threshold": "Threshold for lux sensor, above this value glare should be reduced",
           "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
           "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
           "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
@@ -542,39 +512,29 @@
       },
       "weather": {
         "data": {
-          "weather_state": "Weather Conditions",
           "use_forecast_max_temp_today": "Use forecast max temp today",
           "use_forecast_max_temp_tomorrow": "Use forecast max temp tomorrow",
-          "use_forecast_cloud_coverage": "Use forecast cloud coverage",
-          "use_forecast_precipitation_probability": "Use forecast precipitation probability",
-          "use_forecast_precipitation_amount": "Use forecast precipitation amount",
-          "use_forecast_uv_index": "Use forecast UV index",
           "forecast_hot_day_threshold": "Hot day threshold",
           "forecast_very_hot_day_threshold": "Very hot day threshold",
           "forecast_preemptive_start_time": "Preemptive start time",
           "forecast_influence_strength": "Forecast influence strength",
-          "use_open_data_solar_radiation": "Use open-data solar irradiance",
+          "use_open_data_solar_radiation": "Use Open-Meteo solar irradiance",
           "solar_radiation_entity": "Local solar irradiance sensor",
-          "solar_radiation_reference_w_m2": "Strong-sun irradiance threshold (W/m2)"
+          "solar_radiation_reference_w_m2": "Strong direct-solar irradiance threshold (W/m2)"
         },
         "data_description": {
-          "weather_state": "Choose weather conditions that indicate the possibility of direct sunlight.",
           "use_forecast_max_temp_today": "Enable today's forecast maximum temperature as a hot-day trigger",
           "use_forecast_max_temp_tomorrow": "Enable tomorrow's forecast maximum temperature as an early hot-day signal",
-          "use_forecast_cloud_coverage": "Use forecast cloud coverage to damp preemptive shading",
-          "use_forecast_precipitation_probability": "Use forecast precipitation probability to damp preemptive shading",
-          "use_forecast_precipitation_amount": "Use forecast precipitation amount to damp preemptive shading",
-          "use_forecast_uv_index": "Use forecast UV index as an additional hot-day signal",
           "forecast_hot_day_threshold": "Forecast maximum temperature where preemptive hot-day handling begins",
           "forecast_very_hot_day_threshold": "Forecast maximum temperature where hot-day risk reaches its maximum",
           "forecast_preemptive_start_time": "Earliest local time when forecast-based preemptive shading may activate",
           "forecast_influence_strength": "How strongly the forecast risk can amplify the effective solar gain factor",
-          "use_open_data_solar_radiation": "Fetch Open-Meteo irradiance in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct irradiance factor.",
+          "use_open_data_solar_radiation": "Fetch direct solar irradiance in W/m2 from Open-Meteo for the Home Assistant location. Clouds and precipitation are already reflected in the irradiance and are not scored separately.",
           "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current irradiance factor; Open-Meteo can still provide forecast radiation.",
-          "solar_radiation_reference_w_m2": "Incoming irradiance at the window in W/m2 that counts as strong sun before glass and geometry factors. Current irradiance divided by this threshold becomes the 0..1 irradiance factor; lower values react more aggressively."
+          "solar_radiation_reference_w_m2": "Incoming direct irradiance before window geometry and glazing that counts as strong sun. Current W/m2 divided by this threshold becomes the normalized irradiance factor; lower values react more aggressively."
         },
-        "title": "Weather Conditions",
-        "description": "This is where you decide which forecast and weather signals may influence the evaluation."
+        "title": "Solar irradiance and temperature forecast",
+        "description": "Solar irradiance drives the current heat input. Only today's and tomorrow's maximum temperatures are retained from the weather forecast."
       },
       "policy": {
         "data": {
@@ -584,12 +544,7 @@
           "weight_direct_exposure": "Weight: direct exposure",
           "weight_incidence": "Weight: sun angle",
           "weight_glazing": "Weight: glazing transmission",
-          "weight_weather": "Weight: current weather",
           "weight_forecast_temperature": "Weight: forecast temperature",
-          "weight_forecast_uv": "Weight: forecast UV",
-          "weight_forecast_clouds": "Weight: forecast clouds",
-          "weight_forecast_precipitation_probability": "Weight: forecast rain probability",
-          "weight_forecast_precipitation_amount": "Weight: forecast rain amount",
           "partial_close_threshold": "Threshold for partial heat protection",
           "full_close_threshold": "Threshold for strict heat protection",
           "partial_close_position": "Partial target (% open)",
@@ -603,13 +558,12 @@
           "hot_day_close_threshold": "Hot-day threshold",
           "hot_day_close_position": "Hot-day max position (% open)",
           "very_hot_day_close_position": "Very-hot-day max position (% open)",
-          "enable_legacy_basic_shading": "Enable legacy desk/glare protection",
           "show_expert_weights": "Show expert weights",
           "weight_solar_radiation": "Weight: solar radiation",
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
           "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
-          "heat_power_max_watts": "Maximum heat gain per m2 glass"
+          "max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)"
         },
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
@@ -618,12 +572,7 @@
           "weight_direct_exposure": "Weight of the geometric exposure factor from horizon and reveals. Set to 0 to disable this factor.",
           "weight_incidence": "Weight of the angle between sun and window normal. Set to 0 to ignore shallow-vs-direct incidence.",
           "weight_glazing": "Weight of the glazing transmission model. Set to 0 to ignore glass-related differences.",
-          "weight_weather": "Weight of the current weather damping from cloud cover and rain. Set to 0 to ignore the current weather factor.",
           "weight_forecast_temperature": "Expert weight for hot-day forecast as a boost. Below the hot-day threshold it is neutral and no longer disables heat protection by itself.",
-          "weight_forecast_uv": "Weight of the forecast UV contribution. Set to 0 to disable forecast UV influence.",
-          "weight_forecast_clouds": "Weight of the forecast cloud damping. Set to 0 to ignore forecast cloud coverage.",
-          "weight_forecast_precipitation_probability": "Weight of the forecast precipitation probability damping. Set to 0 to ignore forecast rain probability.",
-          "weight_forecast_precipitation_amount": "Weight of the forecast precipitation amount damping. Set to 0 to ignore forecast rain amount.",
           "partial_close_threshold": "Weighted heat-gain score above which the cover may become less open than the base calculation.",
           "full_close_threshold": "Weighted heat-gain score above which the cover should move to the stricter open target.",
           "partial_close_position": "Open-position target at the partial threshold. 100% open is fully open, 0% open is closed.",
@@ -637,15 +586,14 @@
           "hot_day_close_threshold": "Forecast temperature above which the day is treated as generally hot.",
           "hot_day_close_position": "Maximum open position allowed on a generally hot day. Lower values mean more shading.",
           "very_hot_day_close_position": "Maximum open position allowed once the forecast reaches the very-hot threshold. Use a lower value than the hot-day maximum for visibly stricter behavior.",
-          "enable_legacy_basic_shading": "Also apply the old Adaptive Cover geometry rule, which can close slightly for glare or a desk even when heat-gain policy is inactive.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
-          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and caps the open position when the configured W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
+          "heat_power_limit_enabled": "When enabled, Solar Shading calculates transmitted solar power from incoming irradiance, geometry, incidence angle and glazing. It caps the open position when the W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
           "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
-          "heat_power_max_watts": "Maximum allowed estimated solar heat gain per m2 glass. The open position is reduced approximately linearly to stay below this value."
+          "max_transmitted_solar_power_w_m2": "Maximum allowed solar power transmitted through one square meter of window glass. The open position is reduced approximately linearly to stay below this value."
         },
-        "title": "Heat-Gain Weights & Thresholds (NEW)",
+        "title": "Heat protection presets and fine tuning",
         "description": "All weights, heat thresholds, % open targets, and stricter away-from-home behavior for the daylight-aware heat-gain overlay live here. Weight 0 disables an individual factor. Simulator for fine-tuning: /local/solar_shading_simulator.html"
       },
       "horizontal": {
@@ -681,7 +629,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity"
+          "weather_entity": "Temperature forecast source"
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
@@ -710,7 +658,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping."
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Horizontal cover"
@@ -747,7 +695,7 @@
           "reveal_top_depth": "Top reveal depth",
           "horizon_profile": "Local horizon profile",
           "glass_type": "Glass type",
-          "weather_entity": "Weather entity",
+          "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
         },
         "data_description": {
@@ -776,7 +724,7 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON list of local sky limits from 0 to 180 degrees. Open the horizon drawer/preview at /local/solar_shading_horizon_preview.html or use the integrated drawer in /local/solar_shading_simulator.html, then paste the JSON here.",
           "glass_type": "Glazing preset used for reflection and transmission.",
-          "weather_entity": "Weather entity used for cloud, rain, and forecast damping.",
+          "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",

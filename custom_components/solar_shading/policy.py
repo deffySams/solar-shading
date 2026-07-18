@@ -27,7 +27,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "direct_exposure": 1.25,
             "incidence": 1.0,
             "glazing": 0.75,
-            "weather": 1.15,
             "solar_radiation": 1.1,
             "forecast_temperature": 0.7,
         },
@@ -40,7 +39,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "direct_exposure": 1.3,
             "incidence": 1.05,
             "glazing": 0.8,
-            "weather": 1.1,
             "solar_radiation": 1.1,
             "forecast_temperature": 0.85,
         },
@@ -53,7 +51,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "direct_exposure": 1.2,
             "incidence": 0.95,
             "glazing": 0.8,
-            "weather": 1.0,
             "solar_radiation": 1.15,
             "forecast_temperature": 1.0,
         },
@@ -66,7 +63,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "direct_exposure": 1.35,
             "incidence": 1.1,
             "glazing": 0.75,
-            "weather": 0.9,
             "solar_radiation": 1.25,
             "forecast_temperature": 1.35,
         },
@@ -147,7 +143,7 @@ def weighted_risk_score(components: dict[str, float | None], weights: dict[str, 
     """Return a weighted multiplicative score for all active components.
 
     A heat-gain model should collapse when a physically required factor is 0:
-    no sun, blocked horizon, heavy clouds, grazing incidence, or opaque glazing
+    no sun, blocked horizon, missing irradiance, grazing incidence, or opaque glazing
     must not be averaged away by unrelated forecast factors.
     """
     active_values: list[tuple[float, float]] = []
@@ -176,7 +172,7 @@ def gain_limited_policy_score(weighted_score: float, heat_gain_response: float) 
     """Limit policy aggressiveness by the physical heat-gain response.
 
     Forecast and comfort weights may raise or lower the relative risk, but they
-    must not invent heat when the window geometry, reflection, weather, or
+    must not invent heat when the window geometry, reflection, irradiance, or
     shading already reduce the physical solar gain to near zero.
     """
     return min(clamp01(weighted_score), clamp01(heat_gain_response))

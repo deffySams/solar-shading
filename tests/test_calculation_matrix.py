@@ -110,26 +110,21 @@ def make_cover(**overrides):
         "weather_entity": None,
         "forecast_summary": {
             "today_max_temp": 30.0,
-            "today_cloud_coverage": 0.0,
-            "today_precipitation_probability": 0.0,
-            "today_precipitation_amount": 0.0,
-            "today_uv_index": 8.0,
             "tomorrow_max_temp": None,
         },
-        "solar_radiation_summary": None,
-        "use_open_data_solar_radiation": False,
+        "solar_radiation_summary": {
+            "current_direct_normal_irradiance": 810.0,
+            "today_max_direct_normal_irradiance": 850.0,
+        },
+        "use_open_data_solar_radiation": True,
         "solar_radiation_entity": None,
         "solar_radiation_reference": 900.0,
         "heat_power_limit_enabled": False,
         "heat_power_outside_temp_threshold": 24.0,
         "heat_protection_min_outside_temp": 14.0,
-        "heat_power_max_watts": 250.0,
+        "max_transmitted_solar_power_w_m2": 250.0,
         "use_forecast_max_temp_today": True,
         "use_forecast_max_temp_tomorrow": False,
-        "use_forecast_cloud_coverage": True,
-        "use_forecast_precipitation_probability": True,
-        "use_forecast_precipitation_amount": True,
-        "use_forecast_uv_index": True,
         "forecast_hot_day_threshold": 26.0,
         "forecast_very_hot_day_threshold": 30.0,
         "forecast_preemptive_start_time": "00:00:00",
@@ -146,17 +141,11 @@ def make_cover(**overrides):
         "hot_day_close_threshold": 30.0,
         "hot_day_close_position": 20,
         "very_hot_day_close_position": 10,
-        "enable_legacy_basic_shading": False,
         "show_expert_weights": False,
         "weight_direct_exposure": 1.0,
         "weight_incidence": 1.0,
         "weight_glazing": 1.0,
-        "weight_weather": 1.0,
         "weight_forecast_temperature": 1.0,
-        "weight_forecast_uv": 0.5,
-        "weight_forecast_clouds": 0.5,
-        "weight_forecast_precipitation_probability": 0.5,
-        "weight_forecast_precipitation_amount": 0.5,
         "weight_solar_radiation": 1.0,
         "partial_close_threshold": 0.35,
         "full_close_threshold": 0.65,
@@ -184,10 +173,6 @@ class CalculationMatrixTests(unittest.TestCase):
         cover = make_cover(
             forecast_summary={
                 "today_max_temp": 20.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             }
         )
 
@@ -201,19 +186,11 @@ class CalculationMatrixTests(unittest.TestCase):
         hot = make_cover(
             forecast_summary={
                 "today_max_temp": 26.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             }
         )
         very_hot = make_cover(
             forecast_summary={
                 "today_max_temp": 30.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             }
         )
 
@@ -242,25 +219,23 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertEqual(cover.forecast_temperature_policy_pressure, 0.0)
         self.assertEqual(cover.forecast_gain_uplift_factor, 1.0)
 
-    def test_more_current_clouds_reduce_effective_gain_and_closing(self):
-        """Current clouds should reduce physical gain and never increase closing."""
-        sunny_hass = FakeHass(
-            {"weather.test": FakeState("sunny", {"cloud_coverage": 0.0})}
-        )
-        cloudy_hass = FakeHass(
-            {"weather.test": FakeState("cloudy", {"cloud_coverage": 90.0})}
-        )
-        sunny = make_cover(hass=sunny_hass, weather_entity="weather.test")
-        cloudy = make_cover(hass=cloudy_hass, weather_entity="weather.test")
-
-        self.assertGreater(sunny.weather_factor, cloudy.weather_factor)
-        self.assertGreater(sunny.effective_solar_gain_factor, cloudy.effective_solar_gain_factor)
-        self.assertLessEqual(
-            NormalCoverState(sunny).get_state(),
-            NormalCoverState(cloudy).get_state(),
+    def test_missing_solar_radiation_does_not_invent_heat_from_weather(self):
+        """Missing irradiance must not fall back to cloud or rain proxies."""
+        cover = make_cover(
+            use_open_data_solar_radiation=False,
+            solar_radiation_summary=None,
+            weather_entity="weather.test",
+            hass=FakeHass({"weather.test": FakeState("sunny")}),
+            hot_day_close_enabled=True,
         )
 
-    def test_open_data_solar_radiation_replaces_cloud_proxy_for_physics(self):
+        self.assertEqual(cover.incoming_solar_radiation_factor, 0.0)
+        self.assertEqual(cover.effective_solar_gain_factor, 0.0)
+        self.assertIsNone(cover.transmitted_solar_power_w_m2)
+        self.assertFalse(cover.hot_day_override_active)
+        self.assertEqual(NormalCoverState(cover).get_state(), 100)
+
+    def test_open_data_solar_radiation_scales_physical_gain(self):
         """Open-data radiation should directly scale the physical solar gain."""
         low_radiation = make_cover(
             use_open_data_solar_radiation=True,
@@ -307,19 +282,19 @@ class CalculationMatrixTests(unittest.TestCase):
         )
         self.assertAlmostEqual(high_reference.solar_radiation_factor, 0.2)
 
-    def test_estimated_heat_power_and_watt_limit_can_cap_position(self):
-        """Heat power cap should translate window watts into a max open position."""
+    def test_transmitted_solar_power_limit_can_cap_position(self):
+        """Transmitted solar power should translate into a max open position."""
         cover = make_cover(
             enable_heat_gain_policy=False,
             use_open_data_solar_radiation=True,
             solar_radiation_summary={"current_direct_normal_irradiance": 900.0},
             heat_power_limit_enabled=True,
             heat_power_outside_temp_threshold=24.0,
-            heat_power_max_watts=200.0,
+            max_transmitted_solar_power_w_m2=200.0,
         )
 
-        self.assertIsNotNone(cover.estimated_solar_heat_power_w)
-        self.assertGreater(cover.estimated_solar_heat_power_w, 200.0)
+        self.assertIsNotNone(cover.transmitted_solar_power_w)
+        self.assertGreater(cover.transmitted_solar_power_w, 200.0)
         self.assertTrue(cover.heat_power_limit_active)
         self.assertIsNotNone(cover.heat_power_limited_open_position)
         self.assertEqual(
@@ -335,14 +310,10 @@ class CalculationMatrixTests(unittest.TestCase):
             solar_radiation_summary={"current_direct_normal_irradiance": 900.0},
             forecast_summary={
                 "today_max_temp": 30.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             },
             heat_power_limit_enabled=True,
             heat_power_outside_temp_threshold=35.0,
-            heat_power_max_watts=200.0,
+            max_transmitted_solar_power_w_m2=200.0,
         )
 
         self.assertTrue(cover.heat_power_limit_active)
@@ -361,14 +332,10 @@ class CalculationMatrixTests(unittest.TestCase):
             solar_radiation_summary={"current_direct_normal_irradiance": 900.0},
             forecast_summary={
                 "today_max_temp": 15.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             },
             heat_power_limit_enabled=True,
             heat_power_outside_temp_threshold=24.0,
-            heat_power_max_watts=200.0,
+            max_transmitted_solar_power_w_m2=200.0,
         )
 
         self.assertFalse(cover.heat_power_limit_active)
@@ -386,15 +353,11 @@ class CalculationMatrixTests(unittest.TestCase):
             solar_radiation_summary={"current_direct_normal_irradiance": 900.0},
             forecast_summary={
                 "today_max_temp": 35.0,
-                "today_cloud_coverage": 0.0,
-                "today_precipitation_probability": 0.0,
-                "today_precipitation_amount": 0.0,
-                "today_uv_index": 8.0,
             },
             heat_power_limit_enabled=True,
             heat_power_outside_temp_threshold=24.0,
             heat_protection_min_outside_temp=10.0,
-            heat_power_max_watts=200.0,
+            max_transmitted_solar_power_w_m2=200.0,
             hot_day_close_enabled=True,
             hot_day_close_threshold=29.0,
             hot_day_close_position=30,

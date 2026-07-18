@@ -139,15 +139,11 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         else None
     )
     away_entity = "input_boolean.solar_shading_simulator_away"
-    precipitation = _float(values, "precipitation", 0.0) or 0.0
-    cloud_coverage = _float(values, "cloudCoverage", 0.0) or 0.0
     fake_states = {
         weather_entity: _SimulationState(
-            "rainy" if precipitation > 0 else "partlycloudy",
+            "unknown",
             {
                 "temperature": _float(values, "outsideTemp"),
-                "cloud_coverage": cloud_coverage,
-                "precipitation": precipitation,
             },
         ),
         away_entity: _SimulationState(
@@ -195,10 +191,6 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         weather_entity=weather_entity,
         forecast_summary={
             "today_max_temp": _float(values, "forecastTodayMax"),
-            "today_cloud_coverage": _float(values, "forecastCloudCoverage"),
-            "today_precipitation_probability": _float(values, "forecastRainProb"),
-            "today_precipitation_amount": _float(values, "forecastRainAmount"),
-            "today_uv_index": _float(values, "forecastUv"),
             "tomorrow_max_temp": _float(values, "forecastTomorrowMax"),
         },
         solar_radiation_summary={
@@ -213,13 +205,11 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         heat_power_limit_enabled=_bool(values, "heatPowerLimitEnabled"),
         heat_power_outside_temp_threshold=_float(values, "heatPowerTempThreshold"),
         heat_protection_min_outside_temp=_float(values, "heatProtectionMinOutsideTemp"),
-        heat_power_max_watts=_float(values, "heatPowerMaxWatts"),
+        max_transmitted_solar_power_w_m2=_float(
+            values, "maxTransmittedSolarPower"
+        ),
         use_forecast_max_temp_today=_bool(values, "useTodayMax", True),
         use_forecast_max_temp_tomorrow=_bool(values, "useTomorrowMax"),
-        use_forecast_cloud_coverage=False,
-        use_forecast_precipitation_probability=False,
-        use_forecast_precipitation_amount=False,
-        use_forecast_uv_index=False,
         forecast_hot_day_threshold=_float(values, "hotDayThreshold"),
         forecast_very_hot_day_threshold=_float(values, "veryHotThreshold"),
         forecast_preemptive_start_time=str(values.get("preemptiveStart") or "00:00"),
@@ -236,17 +226,11 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         hot_day_close_threshold=_float(values, "hotDayCloseThreshold"),
         hot_day_close_position=_int(values, "hotDayClosePosition", 30),
         very_hot_day_close_position=_int(values, "veryHotDayClosePosition", 15),
-        enable_legacy_basic_shading=False,
         show_expert_weights=_bool(values, "showExpertWeights"),
         weight_direct_exposure=_float(values, "weightDirect"),
         weight_incidence=_float(values, "weightIncidence"),
         weight_glazing=_float(values, "weightGlazing"),
-        weight_weather=_float(values, "weightWeather"),
         weight_forecast_temperature=_float(values, "weightForecastTemp"),
-        weight_forecast_uv=0.0,
-        weight_forecast_clouds=0.0,
-        weight_forecast_precipitation_probability=0.0,
-        weight_forecast_precipitation_amount=0.0,
         weight_solar_radiation=_float(values, "weightSolarRadiation"),
         partial_close_threshold=_float(values, "partialThreshold"),
         full_close_threshold=_float(values, "fullThreshold"),
@@ -273,12 +257,15 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "incidence_cosine": _round(cover.incidence_cosine),
         "solar_transmittance_factor": _round(cover.solar_transmittance_factor),
         "solar_reflectance_factor": _round(cover.solar_reflectance_factor),
-        "weather_factor": _round(cover.weather_factor),
         "solar_radiation_factor": _round(cover.solar_radiation_factor),
-        "radiation_or_weather_factor": _round(cover.radiation_or_weather_factor),
+        "incoming_solar_radiation_factor": _round(
+            cover.incoming_solar_radiation_factor
+        ),
         "effective_solar_gain_factor": _round(cover.effective_solar_gain_factor),
-        "estimated_solar_heat_power_w_m2": _round(cover.estimated_solar_heat_power_w_m2, 2),
-        "estimated_solar_heat_power_w": _round(cover.estimated_solar_heat_power_w, 2),
+        "transmitted_solar_power_w_m2": _round(
+            cover.transmitted_solar_power_w_m2, 2
+        ),
+        "transmitted_solar_power_w": _round(cover.transmitted_solar_power_w, 2),
         "heat_power_limit_active": cover.heat_power_limit_active,
         "heat_power_limit_trigger": cover.heat_power_limit_trigger,
         "heat_power_limited_open_position": cover.heat_power_limited_open_position,

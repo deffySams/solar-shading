@@ -13,10 +13,7 @@ from numpy import radians as rad
 from .compat import state_attr
 from .forecast import (
     after_preemptive_start,
-    precipitation_amount_damping,
-    precipitation_probability_damping,
     temperature_risk,
-    uv_risk,
 )
 from .helpers import get_domain, get_safe_state
 from .sun import SunData
@@ -56,12 +53,6 @@ from .policy import (
     weighted_risk_score,
 )
 from .solar_radiation import radiation_factor
-from .weather import (
-    cloud_attenuation_factor,
-    normalized_cloud_coverage,
-    rain_attenuation_factor,
-    weather_attenuation_factor,
-)
 
 HEAT_GAIN_RESPONSE_START = 0.06
 HEAT_GAIN_RESPONSE_FULL = 0.32
@@ -119,13 +110,9 @@ class AdaptiveGeneralCover(ABC):
     heat_power_limit_enabled: bool
     heat_power_outside_temp_threshold: float | None
     heat_protection_min_outside_temp: float | None
-    heat_power_max_watts: float | None
+    max_transmitted_solar_power_w_m2: float | None
     use_forecast_max_temp_today: bool
     use_forecast_max_temp_tomorrow: bool
-    use_forecast_cloud_coverage: bool
-    use_forecast_precipitation_probability: bool
-    use_forecast_precipitation_amount: bool
-    use_forecast_uv_index: bool
     forecast_hot_day_threshold: float | None
     forecast_very_hot_day_threshold: float | None
     forecast_preemptive_start_time: str | None
@@ -142,17 +129,11 @@ class AdaptiveGeneralCover(ABC):
     hot_day_close_threshold: float | None
     hot_day_close_position: int | None
     very_hot_day_close_position: int | None
-    enable_legacy_basic_shading: bool
     show_expert_weights: bool
     weight_direct_exposure: float | None
     weight_incidence: float | None
     weight_glazing: float | None
-    weight_weather: float | None
     weight_forecast_temperature: float | None
-    weight_forecast_uv: float | None
-    weight_forecast_clouds: float | None
-    weight_forecast_precipitation_probability: float | None
-    weight_forecast_precipitation_amount: float | None
     weight_solar_radiation: float | None
     partial_close_threshold: float | None
     full_close_threshold: float | None
@@ -430,68 +411,6 @@ class AdaptiveGeneralCover(ABC):
         )
 
     @property
-    def weather_condition(self) -> str | None:
-        """Return the current weather condition."""
-        if not self.weather_entity:
-            return None
-        return get_safe_state(self.hass, self.weather_entity)
-
-    @property
-    def weather_cloud_coverage(self) -> float:
-        """Return the cloud coverage percentage."""
-        if not self.weather_entity:
-            return 0.0
-        reported = state_attr(self.hass, self.weather_entity, "cloud_coverage")
-        return normalized_cloud_coverage(reported, self.weather_condition)
-
-    @property
-    def weather_precipitation(self) -> float | None:
-        """Return the current precipitation value from the weather entity."""
-        if not self.weather_entity:
-            return None
-        precipitation = state_attr(self.hass, self.weather_entity, "precipitation")
-        if precipitation is None:
-            return None
-        return float(precipitation)
-
-    @property
-    def weather_precipitation_probability(self) -> float | None:
-        """Return the current precipitation probability."""
-        if not self.weather_entity:
-            return None
-        probability = state_attr(
-            self.hass, self.weather_entity, "precipitation_probability"
-        )
-        if probability is None:
-            return None
-        return float(probability)
-
-    @property
-    def cloud_factor(self) -> float:
-        """Return the cloud attenuation factor."""
-        return cloud_attenuation_factor(
-            self.weather_cloud_coverage,
-            self.weather_condition,
-        )
-
-    @property
-    def rain_factor(self) -> float:
-        """Return the rain attenuation factor."""
-        return rain_attenuation_factor(
-            self.weather_condition,
-            self.weather_precipitation,
-        )
-
-    @property
-    def weather_factor(self) -> float:
-        """Return the combined weather attenuation factor."""
-        return weather_attenuation_factor(
-            self.weather_cloud_coverage,
-            self.weather_condition,
-            self.weather_precipitation,
-        )
-
-    @property
     def open_data_current_direct_normal_irradiance(self) -> float | None:
         """Return current Open-Meteo DNI in W/m2."""
         value = (self.solar_radiation_summary or {}).get(
@@ -591,17 +510,19 @@ class AdaptiveGeneralCover(ABC):
         )
 
     @property
-    def radiation_or_weather_factor(self) -> float:
-        """Prefer radiation data over cloud proxies when available."""
-        if self.solar_radiation_factor is not None:
-            return self.solar_radiation_factor
-        return self.weather_factor
+    def incoming_solar_radiation_factor(self) -> float:
+        """Return normalized incoming irradiance, or zero when it is unavailable."""
+        return float(self.solar_radiation_factor or 0.0)
 
     @property
     def effective_solar_gain_factor(self) -> float:
-        """Return the geometry, glazing, and weather adjusted solar gain factor."""
+        """Return the irradiance, geometry, and glazing adjusted solar gain factor."""
         return float(
-            np.clip(self.solar_gain_factor * self.radiation_or_weather_factor, 0.0, 1.0)
+            np.clip(
+                self.solar_gain_factor * self.incoming_solar_radiation_factor,
+                0.0,
+                1.0,
+            )
         )
 
     @property
@@ -618,28 +539,24 @@ class AdaptiveGeneralCover(ABC):
         return area if area > 0 else None
 
     @property
-    def estimated_solar_heat_power_source(self) -> str:
-        """Return the source used for heat-power estimation."""
-        if self.solar_radiation_value is not None:
-            return self.solar_radiation_source or "sensor"
-        return "reference_weather_proxy"
+    def transmitted_solar_power_source(self) -> str | None:
+        """Return the source used for transmitted solar power."""
+        return self.solar_radiation_source
 
     @property
-    def estimated_solar_heat_power_w_m2(self) -> float:
-        """Estimate transmitted solar heat power per square meter of glass."""
-        if self.solar_radiation_value is not None:
-            power = self.solar_radiation_value * self.solar_gain_factor
-        else:
-            reference = float(self.solar_radiation_reference or 900)
-            power = reference * self.effective_solar_gain_factor
+    def transmitted_solar_power_w_m2(self) -> float | None:
+        """Return transmitted solar power per square meter of window glass."""
+        if self.solar_radiation_value is None:
+            return None
+        power = self.solar_radiation_value * self.solar_gain_factor
         return float(np.clip(power, 0.0, 2000.0))
 
     @property
-    def estimated_solar_heat_power_w(self) -> float | None:
-        """Estimate transmitted solar heat power for the configured window area."""
-        if self.window_area is None:
+    def transmitted_solar_power_w(self) -> float | None:
+        """Return transmitted solar power for the configured window area."""
+        if self.window_area is None or self.transmitted_solar_power_w_m2 is None:
             return None
-        return self.estimated_solar_heat_power_w_m2 * self.window_area
+        return self.transmitted_solar_power_w_m2 * self.window_area
 
     @property
     def heat_power_outside_temperature(self) -> float | None:
@@ -660,7 +577,10 @@ class AdaptiveGeneralCover(ABC):
             return False
         if not self.direct_sun_valid:
             return False
-        if self.heat_power_max_watts is None or self.heat_power_max_watts <= 0:
+        if (
+            self.max_transmitted_solar_power_w_m2 is None
+            or self.max_transmitted_solar_power_w_m2 <= 0
+        ):
             return False
         return self.heat_power_temperature_gate_active
 
@@ -698,7 +618,10 @@ class AdaptiveGeneralCover(ABC):
             return "disabled"
         if not self.direct_sun_valid:
             return "no_direct_sun"
-        if self.heat_power_max_watts is None or self.heat_power_max_watts <= 0:
+        if (
+            self.max_transmitted_solar_power_w_m2 is None
+            or self.max_transmitted_solar_power_w_m2 <= 0
+        ):
             return "no_watt_limit"
         threshold = self.heat_power_outside_temp_threshold
         if threshold is None:
@@ -739,10 +662,10 @@ class AdaptiveGeneralCover(ABC):
         """Return max open position needed to stay below configured W/m2 cap."""
         if not self.heat_power_limit_active:
             return None
-        power = self.estimated_solar_heat_power_w_m2
+        power = self.transmitted_solar_power_w_m2
         if power is None or power <= 0:
             return None
-        limit = float(self.heat_power_max_watts)
+        limit = float(self.max_transmitted_solar_power_w_m2)
         if power <= limit:
             return None
         return int(np.clip(round((limit / power) * 100), 0, 100))
@@ -757,30 +680,6 @@ class AdaptiveGeneralCover(ABC):
     def forecast_tomorrow_max_temp(self) -> float | None:
         """Return tomorrow's forecast maximum temperature."""
         value = (self.forecast_summary or {}).get("tomorrow_max_temp")
-        return None if value is None else float(value)
-
-    @property
-    def forecast_cloud_coverage(self) -> float | None:
-        """Return today's forecast cloud coverage."""
-        value = (self.forecast_summary or {}).get("today_cloud_coverage")
-        return None if value is None else float(value)
-
-    @property
-    def forecast_precipitation_probability(self) -> float | None:
-        """Return today's forecast precipitation probability."""
-        value = (self.forecast_summary or {}).get("today_precipitation_probability")
-        return None if value is None else float(value)
-
-    @property
-    def forecast_precipitation_amount(self) -> float | None:
-        """Return today's forecast precipitation amount."""
-        value = (self.forecast_summary or {}).get("today_precipitation_amount")
-        return None if value is None else float(value)
-
-    @property
-    def forecast_uv_index(self) -> float | None:
-        """Return today's forecast UV index."""
-        value = (self.forecast_summary or {}).get("today_uv_index")
         return None if value is None else float(value)
 
     @property
@@ -804,38 +703,6 @@ class AdaptiveGeneralCover(ABC):
                 )
             )
         return max(risks)
-
-    @property
-    def forecast_uv_risk(self) -> float:
-        """Return the forecast UV risk."""
-        if not self.use_forecast_uv_index:
-            return 1.0
-        return uv_risk(self.forecast_uv_index)
-
-    @property
-    def forecast_cloud_damping(self) -> float:
-        """Return the forecast cloud damping factor."""
-        if not self.use_forecast_cloud_coverage:
-            return 1.0
-        if self.forecast_cloud_coverage is None:
-            return 1.0
-        return float(np.clip(1.0 - (self.forecast_cloud_coverage / 100.0), 0.0, 1.0))
-
-    @property
-    def forecast_precipitation_probability_damping(self) -> float:
-        """Return the forecast precipitation-probability damping factor."""
-        if not self.use_forecast_precipitation_probability:
-            return 1.0
-        return precipitation_probability_damping(
-            self.forecast_precipitation_probability
-        )
-
-    @property
-    def forecast_precipitation_amount_damping(self) -> float:
-        """Return the forecast precipitation-amount damping factor."""
-        if not self.use_forecast_precipitation_amount:
-            return 1.0
-        return precipitation_amount_damping(self.forecast_precipitation_amount)
 
     @property
     def forecast_preemptive_active(self) -> bool:
@@ -1013,7 +880,11 @@ class AdaptiveGeneralCover(ABC):
             return False
         if self.sunset_valid or not self.forecast_preemptive_active:
             return False
-        if not self.direct_sun_valid or self.direct_solar_exposure_factor <= 0.001:
+        if (
+            not self.direct_sun_valid
+            or self.direct_solar_exposure_factor <= 0.001
+            or self.incoming_solar_radiation_factor <= 0.001
+        ):
             return False
         if not self.heat_protection_current_temperature_allowed:
             return False
@@ -1048,11 +919,6 @@ class AdaptiveGeneralCover(ABC):
             "direct_exposure": self.direct_solar_exposure_factor,
             "incidence": self.incidence_cosine,
             "glazing": self.solar_transmittance_factor,
-            "weather": (
-                self.weather_factor
-                if self.weather_entity is not None and self.solar_radiation_factor is None
-                else None
-            ),
             "solar_radiation": (
                 self.solar_radiation_factor
                 if (
@@ -1082,7 +948,6 @@ class AdaptiveGeneralCover(ABC):
             "direct_exposure": float(self.weight_direct_exposure or 0.0),
             "incidence": float(self.weight_incidence or 0.0),
             "glazing": float(self.weight_glazing or 0.0),
-            "weather": float(self.weight_weather or 0.0),
             "solar_radiation": float(self.weight_solar_radiation or 0.0),
             "forecast_temperature": float(self.weight_forecast_temperature or 0.0),
         }
@@ -1406,8 +1271,8 @@ class NormalCoverState:
                 self.cover.logger.debug(
                     "Heat-power cap reduced open position to %s (%.1f W/m2 estimated, %.1f W/m2 limit)",
                     state,
-                    self.cover.estimated_solar_heat_power_w_m2,
-                    self.cover.heat_power_max_watts,
+                    self.cover.transmitted_solar_power_w_m2,
+                    self.cover.max_transmitted_solar_power_w_m2,
                 )
         else:
             state = self.cover.default
@@ -1432,17 +1297,13 @@ class ClimateCoverData:
     temp_high: float
     presence_entity: str
     weather_entity: str
-    weather_condition: list[str]
     outside_entity: str
     temp_switch: bool
     blind_type: str
     transparent_blind: bool
-    lux_entity: str
     irradiance_entity: str
-    lux_threshold: int
     irradiance_threshold: int
     temp_summer_outside: float
-    _use_lux: bool
     _use_irradiance: bool
 
     @property
@@ -1541,30 +1402,6 @@ class ClimateCoverData:
         return is_it
 
     @property
-    def is_sunny(self) -> bool:
-        """Check if condition can contain radiation in winter."""
-        weather_state = None
-        if self.weather_entity is not None:
-            weather_state = get_safe_state(self.hass, self.weather_entity)
-        else:
-            self.logger.debug("is_sunny(): No weather entity defined")
-            return True
-        if self.weather_condition is not None:
-            matches = weather_state in self.weather_condition
-            self.logger.debug("is_sunny(): Weather: %s = %s", weather_state, matches)
-            return matches
-
-    @property
-    def lux(self) -> bool:
-        """Get lux value and compare to threshold."""
-        if not self._use_lux:
-            return False
-        if self.lux_entity is not None and self.lux_threshold is not None:
-            value = get_safe_state(self.hass, self.lux_entity)
-            return float(value) <= self.lux_threshold
-        return False
-
-    @property
     def irradiance(self) -> bool:
         """Get irradiance value and compare to threshold."""
         if not self._use_irradiance:
@@ -1596,12 +1433,8 @@ class ClimateCoverState(NormalCoverState):
 
         is_summer = self.climate_data.is_summer
 
-        # Check if it's not summer and either lux, irradiance or sunny weather is present
-        if not is_summer and (
-            self.climate_data.lux
-            or self.climate_data.irradiance
-            or not self.climate_data.is_sunny
-        ):
+        # A local irradiance sensor may still open the cover on low-radiation days.
+        if not is_summer and self.climate_data.irradiance:
             # If it's winter and the cover is valid, return 100
             if self.climate_data.is_winter and self.cover.valid:
                 self.cover.logger.debug(
@@ -1610,7 +1443,7 @@ class ClimateCoverState(NormalCoverState):
                 return 100
             # Otherwise, return the default cover state
             self.cover.logger.debug(
-                "n_w_p(): it's not summer and sunny weather is not present = use default"
+                "n_w_p(): low irradiance outside summer = use default"
             )
             return self.cover.default
 
@@ -1634,9 +1467,7 @@ class ClimateCoverState(NormalCoverState):
     def tilt_with_presence(self, degrees: int) -> int:
         """Determine state for tilted blinds with occupants."""
         if self.cover.valid and (
-            self.climate_data.lux
-            or self.climate_data.irradiance
-            or not self.climate_data.is_sunny
+            self.climate_data.irradiance
         ):
             if self.climate_data.is_summer:
                 # If it's summer, return 45 degrees
