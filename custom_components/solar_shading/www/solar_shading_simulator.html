@@ -577,7 +577,7 @@
               <input id="defaultPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
             <div class="field">
-              <label for="sunsetPosition"><span class="label-main">Nacht-/Sunset-Position (% offen)</span> <button class="info-btn" type="button" data-info="Position, die im Nachtmodus verwendet wird. In der echten Integration gelten Sonnenuntergang/Sonnenaufgang plus Offset; der Simulator nutzt dafuer den berechneten Sonnenstand.">i</button></label>
+              <label for="sunsetPosition"><span class="label-main">Ruhe-/Nachtposition nach Zeit (% offen)</span> <button class="info-btn" type="button" data-info="Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergang/Sonnenaufgang plus Offset bestimmen, wann diese Ruheposition gilt.">i</button></label>
               <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
           </div>
@@ -1065,14 +1065,14 @@
               </div>
             </div>
             <div class="field">
-              <label><span class="label-main">Solarleistung jetzt in W/m²</span> <button class="info-btn" type="button" data-info="Direkte Solarstrahlung als Open-Data- oder lokaler Sensorwert. Wenn aktiv, ersetzt dieser Wert die Wolken-Proxies fuer den physikalischen Waermeeintrag.">i</button></label>
+              <label><span class="label-main">Solarstrahlung jetzt in W/m²</span> <button class="info-btn" type="button" data-info="Einfallende Solarstrahlung als Open-Data- oder lokaler Sensorwert. Wenn aktiv, ersetzt dieser Wert die Wolken-Proxies fuer den physikalischen Strahlungsfaktor.">i</button></label>
               <div class="range-row">
                 <input id="solarRadiationRange" type="range" min="0" max="1000" step="10" value="700">
                 <input id="solarRadiation" type="number" min="0" max="1200" step="10" value="700">
               </div>
             </div>
             <div class="field">
-              <label><span class="label-main">Solarleistung Vollskala in W/m²</span> <button class="info-btn" type="button" data-info="Dieser Wert ist die einfache Prozent-Skalierung: aktuelle Solarleistung geteilt durch diese Referenz ergibt den Solarleistungs-Prozentwert.">i</button></label>
+              <label><span class="label-main">Schwelle fuer starke Sonneneinstrahlung in W/m²</span> <button class="info-btn" type="button" data-info="Einfallende Solarstrahlung in W/m², ab der die Sonne als stark zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den Strahlungsfaktor vor Glas und Geometrie.">i</button></label>
               <div class="range-row">
                 <input id="solarReferenceRange" type="range" min="300" max="1600" step="50" value="900">
                 <input id="solarReference" type="number" min="300" max="2000" step="50" value="900">
@@ -1088,7 +1088,7 @@
           </div>
           <div class="checkbox-row">
             <input id="useOpenDataSolarRadiation" type="checkbox">
-            <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Data-Solarleistung nutzen</span><button class="info-btn" type="button" data-info="Simuliert die neue Open-Meteo-Strahlungsoption. Aktiv bedeutet: Solarleistung in W/m² ersetzt Wolken als direkter physikalischer Daempfungsfaktor.">i</button></label>
+            <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Data-Solarstrahlung nutzen</span><button class="info-btn" type="button" data-info="Simuliert die neue Open-Meteo-Strahlungsoption. Aktiv bedeutet: Solarstrahlung in W/m² ersetzt Wolken als direkter physikalischer Strahlungsfaktor.">i</button></label>
           </div>
           <p class="tiny">Mehr Wolken bedeutet hier weniger solaren Gewinn, also normalerweise weniger Schliessdruck.</p>
         </details>
@@ -1115,7 +1115,7 @@
           </div>
           <div class="grid">
             <div class="field">
-              <label><span class="label-main">Forecast Solar max in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarleistung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
+              <label><span class="label-main">Forecast: max. Solarstrahlung in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarstrahlung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
               <div class="range-row">
                 <input id="forecastSolarMaxRange" type="range" min="0" max="1000" step="10" value="850">
                 <input id="forecastSolarMax" type="number" min="0" max="1200" step="10" value="850">
@@ -1194,7 +1194,7 @@
               <div class="metric"><div class="name">Solar-Transmission</div><div class="val" id="transmissionCell"></div></div>
               <div class="metric"><div class="name">Wetter jetzt</div><div class="val" id="weatherNowCell"></div></div>
               <div class="metric"><div class="name">Wetterfaktor</div><div class="val" id="weatherFactorCell"></div></div>
-              <div class="metric"><div class="name">Solarleistung</div><div class="val" id="solarRadiationCell"></div></div>
+              <div class="metric"><div class="name">Solarstrahlung</div><div class="val" id="solarRadiationCell"></div></div>
               <div class="metric"><div class="name">Strahlungs-/Wetterfaktor</div><div class="val" id="radiationOrWeatherCell"></div></div>
               <div class="metric"><div class="name">Effektiver Solar-Gain</div><div class="val" id="effectiveGainCell"></div></div>
               <div class="metric"><div class="name">Waermeleistung</div><div class="val" id="heatPowerCell"></div></div>
@@ -1621,12 +1621,12 @@
       "Breitengrad": "Standort-Breitengrad fuer die Sonnenstandsberechnung.",
       "Laengengrad": "Standort-Laengengrad fuer die Sonnenstandsberechnung.",
       "Niederschlag jetzt in mm": "Aktueller Niederschlag daempft die direkte solare Last.",
-      "Solarleistung jetzt in W/m²": "Aktuelle Solarstrahlung in W/m². Mit Open-Data-Solarleistung aktiv ersetzt sie Wolken als physikalische Daempfung.",
-      "Solarleistung Vollskala in W/m²": "Einfache Prozent-Skalierung der Solarwerte: aktuelle W/m² geteilt durch diese Referenz ergibt den Solarleistungs-Prozentwert.",
+      "Solarstrahlung jetzt in W/m²": "Aktuelle Solarstrahlung in W/m². Mit Open-Data-Solarstrahlung aktiv ersetzt sie Wolken als physikalische Daempfung.",
+      "Schwelle fuer starke Sonneneinstrahlung in W/m²": "Schwelle fuer starke Sonne: aktuelle W/m² geteilt durch diese Schwelle ergibt den Strahlungsfaktor.",
       "Forecast Tmax heute": "Vorhergesagtes Tagesmaximum fuer heute.",
       "Forecast Tmax morgen": "Vorhergesagtes Tagesmaximum fuer morgen.",
       "Forecast-UV": "Vorhergesagter UV-Index.",
-      "Forecast Solar max in W/m²": "Tagesmaximum der Solarstrahlung in W/m² aus Open Data oder Sensor-Simulation.",
+      "Forecast: max. Solarstrahlung in W/m²": "Tagesmaximum der Solarstrahlung in W/m² aus Open Data oder Sensor-Simulation.",
       "Forecast Regenwahr. in %": "Vorhergesagte Regenwahrscheinlichkeit. Hohe Werte daempfen Forecast-Risiko.",
       "Forecast Regenmenge in mm": "Vorhergesagte Regenmenge. Hohe Werte daempfen Forecast-Risiko.",
       "Hot-Day-Schwelle": "Temperatur, ab der Forecast-Risiko beginnt.",
@@ -3367,7 +3367,7 @@
         setText("solarRadiationCell", state.useOpenDataSolarRadiation
           ? `${round(state.solarRadiation, 0)} / ${round(state.solarReference, 0)} W/m² -> ${factorPercent(currentSolarRadiationFactor)}`
           : "aus");
-        setText("radiationOrWeatherCell", `${factorPercent(radiationOrWeatherFactor)} (${state.useOpenDataSolarRadiation ? "Solarleistung" : "Wetter"})`);
+        setText("radiationOrWeatherCell", `${factorPercent(radiationOrWeatherFactor)} (${state.useOpenDataSolarRadiation ? "Solarstrahlung" : "Wetter"})`);
         setText("effectiveGainCell", round(effectiveSolarGain, 3));
         setText("heatPowerCell", `${round(estimatedHeatPowerWm2, 1)} W/m2${estimatedHeatPowerW === null ? "" : ` / ${round(estimatedHeatPowerW, 0)} W Fenster`} (${state.useOpenDataSolarRadiation ? "Solarwert" : "Referenz/Wetter"})`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled

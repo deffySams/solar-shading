@@ -203,6 +203,15 @@ def _template_options(hass, entry_id: str | None) -> dict[str, Any]:
             return options
     return {}
 
+
+def _ha_selector_or_text(name: str):
+    """Use HA-native selectors when available, otherwise keep the flow usable."""
+    selector_class = getattr(selector, name, None)
+    if selector_class is None:
+        return selector.TextSelector()
+    return selector_class()
+
+
 CLIMATE_MODE = vol.Schema(
     {
         vol.Optional(CONF_CLIMATE_MODE, default=False): selector.BooleanSelector(),
@@ -212,8 +221,8 @@ CLIMATE_MODE = vol.Schema(
 OPTIONS = vol.Schema(
     {
         vol.Optional(CONF_FACADE_NAME): selector.TextSelector(),
-        vol.Optional(CONF_FLOOR_NAME): selector.TextSelector(),
-        vol.Optional(CONF_ROOM_NAME): selector.TextSelector(),
+        vol.Optional(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+        vol.Optional(CONF_ROOM_NAME): _ha_selector_or_text("AreaSelector"),
         vol.Optional(CONF_USE_FACADE_AZIMUTH, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_FACADE_REFERENCE_AZIMUTH, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(

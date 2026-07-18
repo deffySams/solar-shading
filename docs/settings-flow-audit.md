@@ -102,7 +102,7 @@ incoming solar radiation before the glass/geometry model.
 Better UI name:
 
 ```text
-Solarstrahlung fuer starke Sonne
+Schwelle fuer starke Sonneneinstrahlung
 ```
 
 Better help text:
@@ -304,7 +304,7 @@ flowchart TD
 
 | Setting | Current role | Recommendation |
 | --- | --- | --- |
-| `solar_radiation_reference_w_m2` | Calibration for "strong sun" before glass. | Rename to "Solarstrahlung fuer starke Sonne"; house-profile default. |
+| `solar_radiation_reference_w_m2` | Calibration for "strong sun" before glass. | Rename to "Schwelle fuer starke Sonneneinstrahlung"; house-profile default. |
 | `heat_power_max_watts` | W/m2 glass heat cap despite name. | Rename to "Max. Waermeeintrag durch Glas" and config-name later. |
 | `forecast_hot_day_threshold` | Forecast temperature where heat protection is allowed. | House profile. |
 | `forecast_very_hot_day_threshold` | Temperature where very-hot pressure saturates. | House profile. |
@@ -324,7 +324,7 @@ flowchart TD
 | --- | --- | --- |
 | `group` | Controlled cover entities. | Keep. |
 | `default_percentage` | Base open position while sun is relevant / default fallback. | Rename to "Normale Offenposition". |
-| `sunset_position`, `sunset_offset`, `sunrise_offset` | Night/default timing. | Keep but simplify labels. |
+| `sunset_position`, `sunset_offset`, `sunrise_offset` | Night/default timing. | Replace normal UI with simple time-guided "Ruhe-/Nachtposition"; keep sun offsets only as expert mode. |
 | `delta_position`, `delta_time` | Avoid frequent small service calls. | Advanced automation. |
 | `start_time`, `start_entity`, `end_time`, `end_entity`, `return_sunset` | Active control window. | Automation advanced. |
 | `manual_override_duration`, `manual_override_reset`, `manual_threshold`, `manual_ignore_intermediate` | Manual override handling. | Keep advanced. |
@@ -370,16 +370,55 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  House["Hausprofil"] --> Facade["Fassade"]
-  House --> RoomWall["Raumwand / Stockwerk"]
-  Facade --> RoomWall
-  RoomWall --> Window["Fenster"]
+  House["1. Hausprofil"] --> Room["2. Raum"]
+  House --> HouseDefaults["Defaults: Fensterart, Glasart, Standard-Laibung, Standard-FOV, Hitzeschutz, Solarstrahlung, Waermeeintrag, Forecast, Abwesenheit, Gewichtungen"]
+  House --> HouseGeometry["Hausachse: Referenzfassade, Fassadenausrichtungen, Stockwerke"]
+  Room --> RoomDefaults["Raum: Stockwerk, Hauptfassade, raumweite Preset-Overrides"]
+  Room --> RoomFacade["3. Raum-Fassade / Raumwand"]
+  RoomFacade --> WallDefaults["Wand/Fassade im Raum: konkrete Fassade, optional Horizont, Laibung, FOV, Preset-Overrides fuer alle Fenster dieser Wand"]
+  RoomFacade --> Window["4. Fenster"]
+  Window --> WindowDetails["Fenster: Cover-Entity, Masse, lokaler Horizont, lokale Laibung, lokale Sonderregeln"]
+```
 
-  House --> H1["Defaults: Glasart, Solarstrahlung fuer starke Sonne, Max. Waermeeintrag, Forecast, Abwesenheit, Hitzeschutzprofil"]
-  Facade --> F1["Referenzfassade + Offset: Fenster-Azimut wird abgeleitet"]
-  Facade --> F2["Optional: Standard-Laibung, Standard-FOV, Standard-Horizont"]
-  RoomWall --> R1["Optional: eigener Horizont fuer Stockwerk/Raumwand"]
-  Window --> W1["Nur Abweichungen: konkrete Masse, Laibung, Horizont, Azimut-Override"]
+Next iteration target:
+
+```text
+effective_config =
+  built_in_defaults
+  + house_profile
+  + floor_profile
+  + facade_profile
+  + room_profile
+  + room_facade_profile
+  + window_override
+```
+
+Fine-grained settings override coarse settings. The user should normally set
+the physics and control rules once on the house, then only assign rooms,
+facades, floors, and window geometry. Window-specific settings are for real
+exceptions such as local horizon, special reveal geometry, or a different cover
+entity.
+
+Settings ownership for the next implementation:
+
+| Level | Owns | Typical overrides |
+| --- | --- | --- |
+| House | Rules that should make all windows behave similarly. | Glass default, cover effect, heat-protection preset, solar radiation reference, max transmitted heat, forecast behaviour, away behaviour, expert weights, standard reveal/FOV, house reference axis, facade list, floor list. |
+| Room | Group-level setup for all windows in one room. | Home Assistant area/room dropdown, Home Assistant floor dropdown, main facade, room daylight context, room-level stronger/weaker heat protection. |
+| Room facade / wall | All windows on one wall of a room. | Concrete facade, horizon profile, reveal/FOV defaults, facade-specific heat-protection override. |
+| Window | Physical and automation endpoint details. | Cover entity, exact dimensions, local horizon, local reveal, local azimuth override, compatibility/output limits. |
+
+Room and floor selection decision:
+
+```text
+Raeume und Stockwerke sollen nicht als Freitext gepflegt werden.
+Die UI soll die bestehende Home-Assistant-Gebaeudestruktur verwenden:
+
+- Raum: Home Assistant Area dropdown
+- Stockwerk: Home Assistant Floor dropdown, if available
+
+Nur wenn HA keine Stockwerke liefert, darf ein manueller Fallback angeboten
+werden. Ziel ist: keine zweite Raum-/Stockwerksverwaltung in Solar Shading.
 ```
 
 Recommended wording for reference facade:

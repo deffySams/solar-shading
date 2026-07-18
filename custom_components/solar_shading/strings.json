@@ -37,6 +37,9 @@
       "vertical": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "window_height": "Window Height",
           "distance_shaded_area": "Legacy glare / protection depth",
           "default_percentage": "Default open position (% open)",
@@ -48,7 +51,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -66,6 +69,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "window_height": "Specify window height in meters",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later.",
           "default_percentage": "Fallback cover position, where 100% open means fully open and 0% open means closed.",
@@ -76,7 +82,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -135,9 +141,9 @@
           "forecast_very_hot_day_threshold": "Very hot day threshold",
           "forecast_preemptive_start_time": "Preemptive start time",
           "forecast_influence_strength": "Forecast influence strength",
-          "use_open_data_solar_radiation": "Use open-data solar radiation",
-          "solar_radiation_entity": "Local solar radiation sensor",
-          "solar_radiation_reference_w_m2": "Solar radiation full-scale reference"
+          "use_open_data_solar_radiation": "Use open-data solar irradiance",
+          "solar_radiation_entity": "Local solar irradiance sensor",
+          "solar_radiation_reference_w_m2": "Strong-sun irradiance threshold (W/m2)"
         },
         "data_description": {
           "weather_state": "Choose weather conditions that indicate the possibility of direct sunlight.",
@@ -151,9 +157,9 @@
           "forecast_very_hot_day_threshold": "Forecast maximum temperature where hot-day risk reaches its maximum",
           "forecast_preemptive_start_time": "Earliest local time when forecast-based preemptive shading may activate",
           "forecast_influence_strength": "How strongly the forecast risk can amplify the effective solar gain factor",
-          "use_open_data_solar_radiation": "Fetch open Open-Meteo irradiance data in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct solar-power factor.",
-          "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current solar-power factor; Open-Meteo can still provide forecast radiation.",
-          "solar_radiation_reference_w_m2": "Irradiance in W/m2 that counts as 100% solar radiation. Increase this if moderate values such as 300 W/m2 already cause too much closing."
+          "use_open_data_solar_radiation": "Fetch Open-Meteo irradiance in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct irradiance factor.",
+          "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current irradiance factor; Open-Meteo can still provide forecast radiation.",
+          "solar_radiation_reference_w_m2": "Incoming irradiance at the window in W/m2 that counts as strong sun before glass and geometry factors. Current irradiance divided by this threshold becomes the 0..1 irradiance factor; lower values react more aggressively."
         },
         "title": "Weather Conditions",
         "description": "This is where you decide which forecast and weather signals may influence the evaluation."
@@ -233,6 +239,9 @@
       "horizontal": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "length_awning": "Awning Span Length",
           "window_height": "Awning Height",
           "angle": "Awning Angle",
@@ -246,7 +255,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -264,6 +273,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "window_height": "Adjust the height of the awning from the protected reference level",
           "length_awning": "Total span length in meters",
           "angle": "Angle of the attached awning measured perpendicular from the wall to the ground",
@@ -276,7 +288,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -294,6 +306,9 @@
       "tilt": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "slat_depth": "Slat Depth",
           "slat_distance": "Slat Spacing",
           "default_percentage": "Default open position (% open)",
@@ -305,7 +320,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -325,6 +340,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "slat_depth": "Depth of each individual slat in centimeters",
           "slat_distance": "Vertical distance between two slats in centimeters",
           "default_percentage": "Fallback cover position, where 100% open means fully open and 0% open means closed.",
@@ -335,7 +353,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -431,6 +449,9 @@
       "vertical": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "window_height": "Window Height",
           "distance_shaded_area": "Legacy glare / protection depth",
           "default_percentage": "Default open position (% open)",
@@ -442,7 +463,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -460,6 +481,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "window_height": "Specify window height in meters",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later.",
           "default_percentage": "Fallback cover position, where 100% open means fully open and 0% open means closed.",
@@ -470,7 +494,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -529,9 +553,9 @@
           "forecast_very_hot_day_threshold": "Very hot day threshold",
           "forecast_preemptive_start_time": "Preemptive start time",
           "forecast_influence_strength": "Forecast influence strength",
-          "use_open_data_solar_radiation": "Use open-data solar radiation",
-          "solar_radiation_entity": "Local solar radiation sensor",
-          "solar_radiation_reference_w_m2": "Solar radiation full-scale reference"
+          "use_open_data_solar_radiation": "Use open-data solar irradiance",
+          "solar_radiation_entity": "Local solar irradiance sensor",
+          "solar_radiation_reference_w_m2": "Strong-sun irradiance threshold (W/m2)"
         },
         "data_description": {
           "weather_state": "Choose weather conditions that indicate the possibility of direct sunlight.",
@@ -545,9 +569,9 @@
           "forecast_very_hot_day_threshold": "Forecast maximum temperature where hot-day risk reaches its maximum",
           "forecast_preemptive_start_time": "Earliest local time when forecast-based preemptive shading may activate",
           "forecast_influence_strength": "How strongly the forecast risk can amplify the effective solar gain factor",
-          "use_open_data_solar_radiation": "Fetch open Open-Meteo irradiance data in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct solar-power factor.",
-          "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current solar-power factor; Open-Meteo can still provide forecast radiation.",
-          "solar_radiation_reference_w_m2": "Irradiance in W/m2 that counts as 100% solar radiation. Increase this if moderate values such as 300 W/m2 already cause too much closing."
+          "use_open_data_solar_radiation": "Fetch Open-Meteo irradiance in W/m2 for the Home Assistant location. When available, this replaces cloud-percentage damping with a direct irradiance factor.",
+          "solar_radiation_entity": "Optional local irradiance sensor in W/m2. If set, it overrides Open-Meteo for the current irradiance factor; Open-Meteo can still provide forecast radiation.",
+          "solar_radiation_reference_w_m2": "Incoming irradiance at the window in W/m2 that counts as strong sun before glass and geometry factors. Current irradiance divided by this threshold becomes the 0..1 irradiance factor; lower values react more aggressively."
         },
         "title": "Weather Conditions",
         "description": "This is where you decide which forecast and weather signals may influence the evaluation."
@@ -627,6 +651,9 @@
       "horizontal": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "length_awning": "Awning Span Length",
           "window_height": "Awning Height",
           "angle": "Awning Angle",
@@ -640,7 +667,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -658,6 +685,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "window_height": "Adjust the height of the awning from the protected reference level",
           "length_awning": "Total span length in meters",
           "angle": "Angle of the attached awning measured perpendicular from the wall to the ground",
@@ -670,7 +700,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -688,6 +718,9 @@
       "tilt": {
         "data": {
           "set_azimuth": "Window Azimuth",
+          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor",
+          "room_name": "Home Assistant area / room",
           "slat_depth": "Slat Depth",
           "slat_distance": "Slat Spacing",
           "default_percentage": "Default open position (% open)",
@@ -699,7 +732,7 @@
           "fov_right": "Field of view right",
           "group": "Cover Entities",
           "inverse_state": "Inverse the state (needed for some covers that don't follow HA guidelines)",
-          "sunset_position": "Sunset open position (% open)",
+          "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
           "climate_mode": "Climate Mode",
@@ -719,6 +752,9 @@
         },
         "data_description": {
           "set_azimuth": "Adjust Azimuth",
+          "facade_name": "Facade or house preset group for this window.",
+          "floor_name": "Select the Home Assistant floor. Used for house-level defaults and later grouped edits.",
+          "room_name": "Select the Home Assistant area/room. Used for room-level defaults and later grouped edits.",
           "slat_depth": "Depth of each individual slat in centimeters",
           "slat_distance": "Vertical distance between two slats in centimeters",
           "default_percentage": "Fallback cover position, where 100% open means fully open and 0% open means closed.",
@@ -729,7 +765,7 @@
           "fov_left": "Field of view angle to the left of the window center",
           "fov_right": "Field of view angle to the right of the window center",
           "group": "Select entities to control via integration",
-          "sunset_position": "Open position after sunset. Set to 100% open if the cover should stay open at night.",
+          "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
           "climate_mode": "Configure variables for climate mode",
@@ -801,3 +837,8 @@
     }
   }
 }
+
+
+
+
+

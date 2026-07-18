@@ -5,38 +5,41 @@
       "user": {
         "data": {
           "name": "Name",
-          "blueprint": "Blueprint zu HomeAssistant hinzufÃƒÂ¼gen",
+          "blueprint": "Blueprint zu HomeAssistant hinzufÃ¼gen",
           "mode": "Typ der Abdeckung"
         }
       },
       "automation": {
         "data": {
           "delta_position": "Minimale Positionsanpassung",
-          "delta_time": "Minimales Intervall zwischen PositionsÃƒÂ¤nderungen",
+          "delta_time": "Minimales Intervall zwischen PositionsÃ¤nderungen",
           "start_time": "Startzeit",
-          "start_entity": "EntitÃƒÂ¤t zur Angabe der Startzeit",
+          "start_entity": "EntitÃ¤t zur Angabe der Startzeit",
           "manual_override_duration": "Dauer der manuellen Steuerung",
-          "manual_override_reset": "Manuelle Steuerungsdauer zurÃƒÂ¼cksetzen",
+          "manual_override_reset": "Manuelle Steuerungsdauer zurÃ¼cksetzen",
           "end_time": "Endzeit",
-          "end_entity": "EntitÃƒÂ¤t zur Angabe der Endzeit",
-          "manual_threshold": "Schwellenwert fÃƒÂ¼r manuelle Steuerung",
-          "manual_ignore_intermediate": "Zwischenpositionen wÃƒÂ¤hrend der manuellen Steuerung ignorieren (Ãƒâ€“ffnen und SchlieÃƒÅ¸en)",
-          "return_sunset": "Position zum Sonnenuntergangs-Standardwert anpassen, wenn die Endzeit vor dem tatsÃƒÂ¤chlichen Sonnenuntergang liegt"
+          "end_entity": "EntitÃ¤t zur Angabe der Endzeit",
+          "manual_threshold": "Schwellenwert fÃ¼r manuelle Steuerung",
+          "manual_ignore_intermediate": "Zwischenpositionen wÃ¤hrend der manuellen Steuerung ignorieren (Ã–ffnen und SchlieÃŸen)",
+          "return_sunset": "Position zum Sonnenuntergangs-Standardwert anpassen, wenn die Endzeit vor dem tatsÃ¤chlichen Sonnenuntergang liegt"
         },
         "data_description": {
-          "delta_position": "Minimale PositionsÃƒÂ¤nderung, die erforderlich ist, bevor die Abdeckung angepasst wird",
-          "delta_time": "Mindestzeitintervall zwischen PositionsÃƒÂ¤nderungen; mindestens 2 Minuten",
-          "start_time": "Startzeit fÃƒÂ¼r jeden Tag; vor dieser Zeit bleibt die Abdeckung unbewegt",
-          "start_entity": "EntitÃƒÂ¤t, die den Startzeitstatus angibt und die feste Startzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung der Startzeit mit einer EntitÃƒÂ¤t",
-          "manual_override_duration": "Dauer der manuellen Steuerung, bevor zur automatischen Steuerung zurÃƒÂ¼ckgekehrt wird",
-          "manual_override_reset": "Option, um die manuelle Steuerungsdauer nach jeder manuellen Anpassung zurÃƒÂ¼ckzusetzen. Falls deaktiviert, gilt die Dauer nur fÃƒÂ¼r die erste manuelle Anpassung",
-          "end_time": "Endzeit fÃƒÂ¼r jeden Tag; nach dieser Zeit bleibt die Abdeckung unbewegt",
-          "end_entity": "EntitÃƒÂ¤t, die den Endzeitstatus angibt und die feste Endzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung der Endzeit mit einer EntitÃƒÂ¤t"
+          "delta_position": "Minimale PositionsÃ¤nderung, die erforderlich ist, bevor die Abdeckung angepasst wird",
+          "delta_time": "Mindestzeitintervall zwischen PositionsÃ¤nderungen; mindestens 2 Minuten",
+          "start_time": "Startzeit fÃ¼r jeden Tag; vor dieser Zeit bleibt die Abdeckung unbewegt",
+          "start_entity": "EntitÃ¤t, die den Startzeitstatus angibt und die feste Startzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung der Startzeit mit einer EntitÃ¤t",
+          "manual_override_duration": "Dauer der manuellen Steuerung, bevor zur automatischen Steuerung zurÃ¼ckgekehrt wird",
+          "manual_override_reset": "Option, um die manuelle Steuerungsdauer nach jeder manuellen Anpassung zurÃ¼ckzusetzen. Falls deaktiviert, gilt die Dauer nur fÃ¼r die erste manuelle Anpassung",
+          "end_time": "Endzeit fÃ¼r jeden Tag; nach dieser Zeit bleibt die Abdeckung unbewegt",
+          "end_entity": "EntitÃ¤t, die den Endzeitstatus angibt und die feste Endzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung der Endzeit mit einer EntitÃ¤t"
         }
       },
       "vertical": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "window_height": "Fensterh?he",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe",
           "default_percentage": "Standardposition (% offen)",
@@ -48,7 +51,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -66,6 +69,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "window_height": "Fensterh?he in Metern angeben",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt.",
           "default_percentage": "Fallback-Position des Covers. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -76,7 +82,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -135,9 +141,9 @@
           "forecast_very_hot_day_threshold": "Schwelle sehr hei?er Tag",
           "forecast_preemptive_start_time": "Fr?hester Startzeitpunkt",
           "forecast_influence_strength": "Forecast-Einflussst?rke",
-          "use_open_data_solar_radiation": "Open-Data-Solarleistung nutzen",
-          "solar_radiation_entity": "Lokaler Solarleistungs-Sensor",
-          "solar_radiation_reference_w_m2": "Solarleistung Vollskala"
+          "use_open_data_solar_radiation": "Open-Data-Solarstrahlung nutzen",
+          "solar_radiation_entity": "Lokaler Solarstrahlungs-Sensor",
+          "solar_radiation_reference_w_m2": "Schwelle fuer starke Sonneneinstrahlung (W/m2)"
         },
         "data_description": {
           "weather_state": "W?hle Wetterzust?nde, die grunds?tzlich auf m?gliche direkte Sonne hindeuten.",
@@ -151,9 +157,9 @@
           "forecast_very_hot_day_threshold": "Vorhergesagtes Tagesmaximum, bei dem das Hot-Day-Risiko maximal wird",
           "forecast_preemptive_start_time": "Fr?heste lokale Uhrzeit, ab der forecast-basierte pr?ventive Verschattung aktiv werden darf",
           "forecast_influence_strength": "Wie stark das Forecast-Risiko den effektiven solaren Gewinnfaktor verst?rken darf",
-          "use_open_data_solar_radiation": "Ruft offene Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Solarleistungsfaktor.",
-          "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Solarleistungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
-          "solar_radiation_reference_w_m2": "Solarstrahlung in W/m2, die als 100% Solarleistung gilt. Erhoehe diesen Wert, wenn moderate Werte wie 300 W/m2 schon zu stark schliessen."
+          "use_open_data_solar_radiation": "Ruft Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Strahlungsfaktor.",
+          "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Strahlungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
+          "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung am Fenster in W/m2, die vor Glas- und Geometriefaktoren als starke Sonne zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den 0..1-Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
         },
         "title": "Wetterbedingungen",
         "description": "Hier legst du fest, welche Forecast-Signale und Wetterfaktoren in die Bewertung einfliessen."
@@ -187,7 +193,7 @@
           "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
           "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
-          "weight_solar_radiation": "Gewicht: Solarleistung",
+          "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
@@ -233,6 +239,9 @@
       "horizontal": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "length_awning": "Markisen-Spannweite",
           "window_height": "Markisenh?he",
           "angle": "Markisenwinkel",
@@ -246,7 +255,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -264,6 +273,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "window_height": "H?he der Markise vom gesch?tzten Bezugspunkt aus angeben",
           "length_awning": "Gesamte Spannweite der Markise in Metern",
           "angle": "Winkel der befestigten Markise, senkrecht von der Wand zum Boden gemessen",
@@ -276,7 +288,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -294,6 +306,9 @@
       "tilt": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "slat_depth": "Lamellentiefe",
           "slat_distance": "Lamellenabstand",
           "default_percentage": "Standardposition (% offen)",
@@ -305,7 +320,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -325,6 +340,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "slat_depth": "Tiefe jeder einzelnen Lamelle in Zentimetern",
           "slat_distance": "Vertikaler Abstand zwischen zwei Lamellen in Zentimetern",
           "default_percentage": "Fallback-Position des Covers. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -335,7 +353,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -356,29 +374,29 @@
         "data": {
           "blind_spot_left": "Start der blinden Zone links",
           "blind_spot_right": "Ende der blinden Zone rechts",
-          "blind_spot_elevation": "ElevationshÃƒÂ¶he der blinden Zone"
+          "blind_spot_elevation": "ElevationshÃ¶he der blinden Zone"
         },
         "data_description": {
           "blind_spot_left": "Linke Kante der blinden Zone",
           "blind_spot_right": "Rechte Kante der blinden Zone",
-          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃƒÂ¼tzlich, wenn die Sonne ÃƒÂ¼ber ein Objekt in der blinden Zone scheinen kann"
+          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃ¼tzlich, wenn die Sonne Ã¼ber ein Objekt in der blinden Zone scheinen kann"
         },
         "title": "Blinde Zone",
-        "description": "Blinde Zone fÃƒÂ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
+        "description": "Blinde Zone fÃ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
       },
       "interp": {
         "data": {
-          "interp_start": "Wert, bei dem die Ãƒâ€“ffnung beginnt",
-          "interp_end": "Wert, bei dem das SchlieÃƒÅ¸en beginnt",
+          "interp_start": "Wert, bei dem die Ã–ffnung beginnt",
+          "interp_end": "Wert, bei dem das SchlieÃŸen beginnt",
           "interp_list": "Liste der Interpolationen",
           "interp_list_new": "Benutzerdefinierte Interpolationsliste"
         },
         "data_description": {
-          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃƒÂ¤ndig geschlossen und 100 vollstÃƒÂ¤ndig offen ist",
+          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃ¤ndig geschlossen und 100 vollstÃ¤ndig offen ist",
           "interp_list_new": "Benutzerdefinierter Bereich von Interpolationswerten, wobei der Beginn geschlossen und das Ende offen darstellen sollte"
         },
         "title": "Bereichsanpassung",
-        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv ÃƒÂ¶ffnet oder schlieÃƒÅ¸t. Ideal fÃƒÂ¼r Abdeckungen, die nicht vollstÃƒÂ¤ndig bei 0% ÃƒÂ¶ffnen oder bei 100% schlieÃƒÅ¸en. \n Die ersten beiden Schieberegler sind fÃƒÂ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃƒÂ¼r eine Mehrpunkt-Anpassung."
+        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv Ã¶ffnet oder schlieÃŸt. Ideal fÃ¼r Abdeckungen, die nicht vollstÃ¤ndig bei 0% Ã¶ffnen oder bei 100% schlieÃŸen. \n Die ersten beiden Schieberegler sind fÃ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃ¼r eine Mehrpunkt-Anpassung."
       }
     }
   },
@@ -394,7 +412,7 @@
     "step": {
       "init": {
         "menu_options": {
-          "automation": "Automatisierungskonfiguration ÃƒÂ¤ndern",
+          "automation": "Automatisierungskonfiguration Ã¤ndern",
           "blind": "Jalousien-Einstellungen anpassen",
           "climate": "Klimakonfiguration bearbeiten",
           "weather": "Wetterkonfiguration bearbeiten",
@@ -405,32 +423,35 @@
       },
       "automation": {
         "data": {
-          "delta_position": "Minimale PositionsÃƒÂ¤nderung",
-          "delta_time": "Minimales Intervall zwischen PositionsÃƒÂ¤nderungen",
+          "delta_position": "Minimale PositionsÃ¤nderung",
+          "delta_time": "Minimales Intervall zwischen PositionsÃ¤nderungen",
           "start_time": "Startzeit",
-          "start_entity": "EntitÃƒÂ¤t zur Bestimmung der Startzeit",
-          "manual_override_duration": "Dauer der manuellen ÃƒÅ“bersteuerung",
-          "manual_override_reset": "Manuelle ÃƒÅ“bersteuerungsdauer zurÃƒÂ¼cksetzen",
+          "start_entity": "EntitÃ¤t zur Bestimmung der Startzeit",
+          "manual_override_duration": "Dauer der manuellen Ãœbersteuerung",
+          "manual_override_reset": "Manuelle Ãœbersteuerungsdauer zurÃ¼cksetzen",
           "end_time": "Endzeit",
-          "end_entity": "EntitÃƒÂ¤t zur Bestimmung der Endzeit",
-          "manual_threshold": "Schwellenwert fÃƒÂ¼r manuelle ÃƒÅ“bersteuerung",
-          "manual_ignore_intermediate": "Zwischenpositionen wÃƒÂ¤hrend manueller ÃƒÅ“bersteuerung ignorieren (Ãƒâ€“ffnen und SchlieÃƒÅ¸en)",
-          "return_sunset": "Immer zur Standard-Sonnenuntergangsposition zurÃƒÂ¼ckkehren; nÃƒÂ¼tzlich, wenn die Endzeit vor Sonnenuntergang liegt"
+          "end_entity": "EntitÃ¤t zur Bestimmung der Endzeit",
+          "manual_threshold": "Schwellenwert fÃ¼r manuelle Ãœbersteuerung",
+          "manual_ignore_intermediate": "Zwischenpositionen wÃ¤hrend manueller Ãœbersteuerung ignorieren (Ã–ffnen und SchlieÃŸen)",
+          "return_sunset": "Immer zur Ruhe-/Nachtposition zurÃ¼ckkehren; nÃ¼tzlich, wenn die Endzeit vor Sonnenuntergang liegt"
         },
         "data_description": {
-          "delta_position": "Minimale Ãƒâ€žnderung der Position, bevor die Jalousie angepasst wird",
-          "delta_time": "Minimales Zeitintervall zwischen PositionsÃƒÂ¤nderungen; mindestens 2 Minuten",
-          "start_time": "Startzeit fÃƒÂ¼r jeden Tag; davor bleibt die Jalousie unverÃƒÂ¤ndert",
-          "start_entity": "EntitÃƒÂ¤t, die die Startzeit bestimmt und die feste Startzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung mit einer EntitÃƒÂ¤t",
-          "manual_override_duration": "Dauer der manuellen Steuerung, bevor die Automatik zurÃƒÂ¼ckgesetzt wird",
-          "manual_override_reset": "Option zum ZurÃƒÂ¼cksetzen der manuellen ÃƒÅ“bersteuerungsdauer nach jeder manuellen Anpassung; wenn deaktiviert, gilt die Dauer nur fÃƒÂ¼r die erste manuelle Anpassung",
-          "end_time": "Endzeit fÃƒÂ¼r jeden Tag; danach bleibt die Jalousie unverÃƒÂ¤ndert",
-          "end_entity": "Stellt sicher, dass die Position bis zur Endzeit auf die Standard-Sonnenuntergangseinstellung zurÃƒÂ¼ckgesetzt wird, insbesondere wenn die Endzeit vor dem tatsÃƒÂ¤chlichen Sonnenuntergang liegt"
+          "delta_position": "Minimale Ã„nderung der Position, bevor die Jalousie angepasst wird",
+          "delta_time": "Minimales Zeitintervall zwischen PositionsÃ¤nderungen; mindestens 2 Minuten",
+          "start_time": "Startzeit fÃ¼r jeden Tag; davor bleibt die Jalousie unverÃ¤ndert",
+          "start_entity": "EntitÃ¤t, die die Startzeit bestimmt und die feste Startzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung mit einer EntitÃ¤t",
+          "manual_override_duration": "Dauer der manuellen Steuerung, bevor die Automatik zurÃ¼ckgesetzt wird",
+          "manual_override_reset": "Option zum ZurÃ¼cksetzen der manuellen Ãœbersteuerungsdauer nach jeder manuellen Anpassung; wenn deaktiviert, gilt die Dauer nur fÃ¼r die erste manuelle Anpassung",
+          "end_time": "Endzeit fÃ¼r jeden Tag; danach bleibt die Jalousie unverÃ¤ndert",
+          "end_entity": "Stellt sicher, dass die Position bis zur Endzeit auf die Standard-Sonnenuntergangseinstellung zurÃ¼ckgesetzt wird, insbesondere wenn die Endzeit vor dem tatsÃ¤chlichen Sonnenuntergang liegt"
         }
       },
       "vertical": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "window_height": "Fensterh?he",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe",
           "default_percentage": "Standardposition (% offen)",
@@ -442,7 +463,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -460,6 +481,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "window_height": "Fensterh?he in Metern angeben",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt.",
           "default_percentage": "Fallback-Position des Covers. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -470,7 +494,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -529,9 +553,9 @@
           "forecast_very_hot_day_threshold": "Schwelle sehr hei?er Tag",
           "forecast_preemptive_start_time": "Fr?hester Startzeitpunkt",
           "forecast_influence_strength": "Forecast-Einflussst?rke",
-          "use_open_data_solar_radiation": "Open-Data-Solarleistung nutzen",
-          "solar_radiation_entity": "Lokaler Solarleistungs-Sensor",
-          "solar_radiation_reference_w_m2": "Solarleistung Vollskala"
+          "use_open_data_solar_radiation": "Open-Data-Solarstrahlung nutzen",
+          "solar_radiation_entity": "Lokaler Solarstrahlungs-Sensor",
+          "solar_radiation_reference_w_m2": "Schwelle fuer starke Sonneneinstrahlung (W/m2)"
         },
         "data_description": {
           "weather_state": "W?hle Wetterzust?nde, die grunds?tzlich auf m?gliche direkte Sonne hindeuten.",
@@ -545,9 +569,9 @@
           "forecast_very_hot_day_threshold": "Vorhergesagtes Tagesmaximum, bei dem das Hot-Day-Risiko maximal wird",
           "forecast_preemptive_start_time": "Fr?heste lokale Uhrzeit, ab der forecast-basierte pr?ventive Verschattung aktiv werden darf",
           "forecast_influence_strength": "Wie stark das Forecast-Risiko den effektiven solaren Gewinnfaktor verst?rken darf",
-          "use_open_data_solar_radiation": "Ruft offene Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Solarleistungsfaktor.",
-          "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Solarleistungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
-          "solar_radiation_reference_w_m2": "Solarstrahlung in W/m2, die als 100% Solarleistung gilt. Erhoehe diesen Wert, wenn moderate Werte wie 300 W/m2 schon zu stark schliessen."
+          "use_open_data_solar_radiation": "Ruft Open-Meteo-Strahlungsdaten in W/m2 fuer den Home-Assistant-Standort ab. Wenn verfuegbar, ersetzt dies die Wolken-Daempfung durch einen direkten Strahlungsfaktor.",
+          "solar_radiation_entity": "Optionaler lokaler Strahlungs-/Irradiance-Sensor in W/m2. Wenn gesetzt, ueberschreibt er Open-Meteo fuer den aktuellen Strahlungsfaktor; Open-Meteo kann weiter Forecast-Strahlung liefern.",
+          "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung am Fenster in W/m2, die vor Glas- und Geometriefaktoren als starke Sonne zaehlt. Aktuelle Solarstrahlung geteilt durch diese Schwelle ergibt den 0..1-Strahlungsfaktor; niedrigere Werte reagieren aggressiver."
         },
         "title": "Wetterbedingungen",
         "description": "Hier legst du fest, welche Forecast-Signale und Wetterfaktoren in die Bewertung einfliessen."
@@ -581,7 +605,7 @@
           "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
           "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
-          "weight_solar_radiation": "Gewicht: Solarleistung",
+          "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
@@ -627,6 +651,9 @@
       "horizontal": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "length_awning": "Markisen-Spannweite",
           "window_height": "Markisenh?he",
           "angle": "Markisenwinkel",
@@ -640,7 +667,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -658,6 +685,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "window_height": "H?he der Markise vom gesch?tzten Bezugspunkt aus angeben",
           "length_awning": "Gesamte Spannweite der Markise in Metern",
           "angle": "Winkel der befestigten Markise, senkrecht von der Wand zum Boden gemessen",
@@ -670,7 +700,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -688,6 +718,9 @@
       "tilt": {
         "data": {
           "set_azimuth": "Fenster-Azimut",
+          "facade_name": "Fassade",
+          "floor_name": "Stockwerk (Home Assistant)",
+          "room_name": "Raum (Home Assistant Bereich)",
           "slat_depth": "Lamellentiefe",
           "slat_distance": "Lamellenabstand",
           "default_percentage": "Standardposition (% offen)",
@@ -699,7 +732,7 @@
           "fov_right": "Sichtfeld rechts",
           "group": "Cover-Entit?ten",
           "inverse_state": "Zustand umkehren (n?tig f?r manche Cover, die nicht den HA-Richtlinien folgen)",
-          "sunset_position": "Sonnenuntergangsposition (% offen)",
+          "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
           "climate_mode": "Klima-Modus",
@@ -719,6 +752,9 @@
         },
         "data_description": {
           "set_azimuth": "Azimut des Fensters angeben",
+          "facade_name": "Fassade oder Haus-Preset-Gruppe fuer dieses Fenster.",
+          "floor_name": "Home-Assistant-Stockwerk auswaehlen. Wird fuer Haus-Defaults und spaetere Gruppenbearbeitung genutzt.",
+          "room_name": "Home-Assistant-Bereich/Raum auswaehlen. Wird fuer Raum-Defaults und spaetere Gruppenbearbeitung genutzt.",
           "slat_depth": "Tiefe jeder einzelnen Lamelle in Zentimetern",
           "slat_distance": "Vertikaler Abstand zwischen zwei Lamellen in Zentimetern",
           "default_percentage": "Fallback-Position des Covers. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
@@ -729,7 +765,7 @@
           "fov_left": "Sichtfeldwinkel links vom Fenstermittelpunkt",
           "fov_right": "Sichtfeldwinkel rechts vom Fenstermittelpunkt",
           "group": "Entit?ten ausw?hlen, die ?ber die Integration gesteuert werden sollen",
-          "sunset_position": "Offenposition nach Sonnenuntergang. Auf 100% offen setzen, wenn das Cover nachts offen bleiben soll.",
+          "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
           "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
@@ -750,29 +786,29 @@
         "data": {
           "blind_spot_left": "Start der blinden Zone links",
           "blind_spot_right": "Ende der blinden Zone rechts",
-          "blind_spot_elevation": "ElevationshÃƒÂ¶he der blinden Zone"
+          "blind_spot_elevation": "ElevationshÃ¶he der blinden Zone"
         },
         "data_description": {
           "blind_spot_left": "Linke Kante der blinden Zone",
           "blind_spot_right": "Rechte Kante der blinden Zone",
-          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃƒÂ¼tzlich, wenn die Sonne ÃƒÂ¼ber ein Objekt in der blinden Zone scheinen kann"
+          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃ¼tzlich, wenn die Sonne Ã¼ber ein Objekt in der blinden Zone scheinen kann"
         },
         "title": "Blinde Zone",
-        "description": "Blinde Zone fÃƒÂ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
+        "description": "Blinde Zone fÃ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
       },
       "interp": {
         "data": {
-          "interp_start": "Wert, bei dem die Ãƒâ€“ffnung beginnt",
-          "interp_end": "Wert, bei dem das SchlieÃƒÅ¸en beginnt",
+          "interp_start": "Wert, bei dem die Ã–ffnung beginnt",
+          "interp_end": "Wert, bei dem das SchlieÃŸen beginnt",
           "interp_list": "Liste der Interpolationen",
           "interp_list_new": "Benutzerdefinierte Interpolationsliste"
         },
         "data_description": {
-          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃƒÂ¤ndig geschlossen und 100 vollstÃƒÂ¤ndig offen ist",
+          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃ¤ndig geschlossen und 100 vollstÃ¤ndig offen ist",
           "interp_list_new": "Benutzerdefinierter Bereich von Interpolationswerten, wobei der Beginn geschlossen und das Ende offen darstellen sollte"
         },
         "title": "Bereichsanpassung",
-        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv ÃƒÂ¶ffnet oder schlieÃƒÅ¸t. Ideal fÃƒÂ¼r Abdeckungen, die nicht vollstÃƒÂ¤ndig bei 0% ÃƒÂ¶ffnen oder bei 100% schlieÃƒÅ¸en. \n Die ersten beiden Schieberegler sind fÃƒÂ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃƒÂ¼r eine Mehrpunkt-Anpassung."
+        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv Ã¶ffnet oder schlieÃŸt. Ideal fÃ¼r Abdeckungen, die nicht vollstÃ¤ndig bei 0% Ã¶ffnen oder bei 100% schlieÃŸen. \n Die ersten beiden Schieberegler sind fÃ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃ¼r eine Mehrpunkt-Anpassung."
       }
     }
   },
@@ -801,3 +837,8 @@
     }
   }
 }
+
+
+
+
+
