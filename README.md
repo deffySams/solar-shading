@@ -50,10 +50,16 @@ The goal is understandable and adjustable behavior, not a certified building-phy
 
 ## TODO / Later
 
+- Change the hard heat-power cap from `W per window` to `W/m2 glass` for per-cover shading decisions. Keep `W per window` as a diagnostic value and later use it for room-level heat budgets.
+- Keep the next product pass sensor-light: no new indoor/window/ventilation sensor workflow yet; focus first on simpler heat-gain decisions and clearer settings.
+- Product settings cleanup: do not remove useful control. Hide only obsolete proxy settings and inactive dependent settings, so the UI stays precise but shows only inputs that can currently affect the decision.
+- Keep threshold/gate consolidation for later; first retire obsolete proxy inputs without changing the meaning of the remaining controls.
 - Room-level heat balance across multiple windows, so one darkened facade can be offset by daylight from other orientations.
 - Optional air-conditioner capacity input, to avoid allowing more solar heat gain than the AC can realistically remove.
-- Wall/room envelope estimate using total outside wall area, window area and simplified thermal inertia.
+- Wall/room envelope estimate using total outside wall area, window area and simplified thermal inertia. Prefer importing user-entered results from the Ubakus U-value calculator (`https://www.ubakus.de/u-wert-rechner/`) instead of rebuilding wall physics ourselves.
+- Wall and roof heat delay / phase-shift model as a simple correction factor from Ubakus-style inputs such as U-value, phase shift in hours, and temperature amplitude damping, not a full building-physics simulation.
 - Group-level optimizer that balances `do not overload cooling` against `keep enough daylight`.
+- Retire older proxy features from the heat-gain policy: UV, forecast cloud coverage, rain probability and rain amount. Use absolute solar radiation in `W/m2` as the current/forecast heat signal, keep rain only as a top-level no-solar/safety gate, and keep glazing/reflection plus solar radiation as core physics.
 
 ## Original Adaptive Cover Documentation
 

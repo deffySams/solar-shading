@@ -30,10 +30,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "weather": 1.15,
             "solar_radiation": 1.1,
             "forecast_temperature": 0.7,
-            "forecast_uv": 0.35,
-            "forecast_clouds": 0.8,
-            "forecast_precipitation_probability": 0.5,
-            "forecast_precipitation_amount": 0.5,
         },
     ),
     "daylight_first_multi_aspect": PolicyPreset(
@@ -47,10 +43,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "weather": 1.1,
             "solar_radiation": 1.1,
             "forecast_temperature": 0.85,
-            "forecast_uv": 0.45,
-            "forecast_clouds": 0.75,
-            "forecast_precipitation_probability": 0.45,
-            "forecast_precipitation_amount": 0.45,
         },
     ),
     "balanced": PolicyPreset(
@@ -64,10 +56,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "weather": 1.0,
             "solar_radiation": 1.15,
             "forecast_temperature": 1.0,
-            "forecast_uv": 0.55,
-            "forecast_clouds": 0.65,
-            "forecast_precipitation_probability": 0.4,
-            "forecast_precipitation_amount": 0.4,
         },
     ),
     "cooling_first": PolicyPreset(
@@ -81,10 +69,6 @@ POLICY_PRESETS: dict[str, PolicyPreset] = {
             "weather": 0.9,
             "solar_radiation": 1.25,
             "forecast_temperature": 1.35,
-            "forecast_uv": 0.75,
-            "forecast_clouds": 0.45,
-            "forecast_precipitation_probability": 0.25,
-            "forecast_precipitation_amount": 0.25,
         },
     ),
 }

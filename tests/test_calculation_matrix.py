@@ -436,8 +436,8 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertEqual(full_reveal.direct_solar_exposure_factor, 0.0)
         self.assertEqual(full_reveal.policy_score, 0.0)
 
-    def test_hot_day_override_can_close_without_direct_sun_but_not_at_night(self):
-        """Hot-day override may protect proactively during day, not at night."""
+    def test_hot_day_override_opens_when_sun_is_not_on_window(self):
+        """Hot-day override should not shade once the sun is out of the window."""
         no_direct_sun = make_cover(
             sol_azi=270,
             hot_day_close_enabled=True,
@@ -447,8 +447,8 @@ class CalculationMatrixTests(unittest.TestCase):
         )
 
         self.assertFalse(no_direct_sun.direct_sun_valid)
-        self.assertTrue(no_direct_sun.hot_day_override_active)
-        self.assertEqual(NormalCoverState(no_direct_sun).get_state(), 40)
+        self.assertFalse(no_direct_sun.hot_day_override_active)
+        self.assertEqual(NormalCoverState(no_direct_sun).get_state(), 100)
 
         night = make_cover(
             sol_azi=270,

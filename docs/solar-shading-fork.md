@@ -43,6 +43,17 @@ For a visible difference, set the very-hot position lower than the hot-day posit
 - Link multiple windows in one room, so the controller can protect the hot facade while preserving daylight from cooler orientations.
 - Add optional AC/cooling capacity as a room-level budget: if the predicted solar window load would overload the AC, shade earlier/harder.
 - Add outside wall area and a simple room-envelope estimate for longer-term overheating risk.
+- Add trust-building operational diagnostics inspired by mature cover controllers:
+  - simple `decision_reason` first
+  - later a full `decision_trace`
+  - last action / last skipped action
+  - position mismatch or verification status
+- Add only the runtime services that fit Solar Shading's thermal focus, such as heat preset, heat-power cap, hot-day positions and away mode.
+- Explore venetian/KNX support only where it strengthens the heat/daylight model:
+  - position for solar heat reduction
+  - slat angle for daylight and glare control
+  - simulator and diagnostics before live sequencing
+- Keep broad cover-type parity and handler-priority editors out of the core identity.
 - Keep this as a transparent optimizer, not a black-box learner, until the core physics and UI are stable.
 
 ## Disclaimer

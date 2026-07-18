@@ -736,10 +736,10 @@ class AdaptiveGeneralCover(ABC):
 
     @property
     def heat_power_limited_open_position(self) -> int | None:
-        """Return max open position needed to stay below configured heat watts."""
+        """Return max open position needed to stay below configured W/m2 cap."""
         if not self.heat_power_limit_active:
             return None
-        power = self.estimated_solar_heat_power_w
+        power = self.estimated_solar_heat_power_w_m2
         if power is None or power <= 0:
             return None
         limit = float(self.heat_power_max_watts)
@@ -855,10 +855,6 @@ class AdaptiveGeneralCover(ABC):
                 if self.forecast_solar_radiation_risk is not None
                 else 1.0
             )
-            * self.forecast_uv_risk
-            * self.forecast_cloud_damping
-            * self.forecast_precipitation_probability_damping
-            * self.forecast_precipitation_amount_damping
         )
         if not self.forecast_preemptive_active:
             return 0.0
@@ -922,8 +918,8 @@ class AdaptiveGeneralCover(ABC):
         """Return the forecast multiplier applied to the physical solar gain.
 
         Hot opens the heat-protection gate. Very hot then increases the gain
-        response directly so it remains visible even when the composite forecast
-        risk is damped by UV/cloud/precipitation factors.
+        response directly; absolute forecast solar radiation is the only
+        weather forecast proxy that still participates in heat-gain pressure.
         """
         if not self.heat_protection_temperature_allowed:
             return 0.0
@@ -1073,24 +1069,6 @@ class AdaptiveGeneralCover(ABC):
                 )
                 else None
             ),
-            "forecast_uv": (
-                self.forecast_uv_risk if self.use_forecast_uv_index else None
-            ),
-            "forecast_clouds": (
-                self.forecast_cloud_damping
-                if self.use_forecast_cloud_coverage
-                else None
-            ),
-            "forecast_precipitation_probability": (
-                self.forecast_precipitation_probability_damping
-                if self.use_forecast_precipitation_probability
-                else None
-            ),
-            "forecast_precipitation_amount": (
-                self.forecast_precipitation_amount_damping
-                if self.use_forecast_precipitation_amount
-                else None
-            ),
         }
 
     @property
@@ -1107,14 +1085,6 @@ class AdaptiveGeneralCover(ABC):
             "weather": float(self.weight_weather or 0.0),
             "solar_radiation": float(self.weight_solar_radiation or 0.0),
             "forecast_temperature": float(self.weight_forecast_temperature or 0.0),
-            "forecast_uv": float(self.weight_forecast_uv or 0.0),
-            "forecast_clouds": float(self.weight_forecast_clouds or 0.0),
-            "forecast_precipitation_probability": float(
-                self.weight_forecast_precipitation_probability or 0.0
-            ),
-            "forecast_precipitation_amount": float(
-                self.weight_forecast_precipitation_amount or 0.0
-            ),
         }
 
     @property
@@ -1416,27 +1386,11 @@ class NormalCoverState:
             "Sun directly in front of window & before sunset + offset? %s", dsv
         )
         if dsv:
-            if self.cover.enable_legacy_basic_shading:
-                legacy_state = self.cover.calculate_percentage()
-                physics_gain = self.cover.heat_gain_response_factor
-                legacy_closure = 100 - legacy_state
-                state = 100 - (legacy_closure * physics_gain)
-                state = int(round(state))
-                self.cover.logger.debug(
-                    (
-                        "Yes sun in window: legacy open percentage %s relaxed to %s "
-                        "by heat-gain response %.3f"
-                    ),
-                    legacy_state,
-                    state,
-                    physics_gain,
-                )
-            else:
-                state = self.cover.default
-                self.cover.logger.debug(
-                    "Legacy basic shading disabled: using default value (%s)",
-                    state,
-                )
+            state = self.cover.default
+            self.cover.logger.debug(
+                "Using default value before heat-gain overlays (%s)",
+                state,
+            )
             policy_target = self.cover.heat_gain_target_position
             if policy_target is not None:
                 state = min(state, policy_target)
@@ -1450,9 +1404,9 @@ class NormalCoverState:
             if heat_power_target is not None:
                 state = min(state, heat_power_target)
                 self.cover.logger.debug(
-                    "Heat-power cap reduced open position to %s (%.1f W estimated, %.1f W limit)",
+                    "Heat-power cap reduced open position to %s (%.1f W/m2 estimated, %.1f W/m2 limit)",
                     state,
-                    self.cover.estimated_solar_heat_power_w or 0.0,
+                    self.cover.estimated_solar_heat_power_w_m2,
                     self.cover.heat_power_max_watts,
                 )
         else:

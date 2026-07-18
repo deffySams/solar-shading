@@ -64,8 +64,12 @@ from .const import (
     CONF_END_ENTITY,
     CONF_END_TIME,
     CONF_ENTITIES,
+    CONF_FACADE_NAME,
+    CONF_FACADE_OFFSET,
+    CONF_FACADE_REFERENCE_AZIMUTH,
     CONF_FOV_LEFT,
     CONF_FOV_RIGHT,
+    CONF_FLOOR_NAME,
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_FORECAST_INFLUENCE_STRENGTH,
     CONF_FORECAST_PREEMPTIVE_START_TIME,
@@ -107,12 +111,12 @@ from .const import (
     CONF_OUTSIDETEMP_ENTITY,
     CONF_PRESENCE_ENTITY,
     CONF_ENABLE_HEAT_GAIN_POLICY,
-    CONF_ENABLE_LEGACY_BASIC_SHADING,
     CONF_POLICY_PRESET,
     CONF_RETURN_SUNSET,
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
+    CONF_ROOM_NAME,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SHOW_EXPERT_WEIGHTS,
@@ -128,19 +132,12 @@ from .const import (
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
     CONF_TRANSPARENT_BLIND,
-    CONF_USE_FORECAST_CLOUD_COVERAGE,
+    CONF_USE_FACADE_AZIMUTH,
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
     CONF_USE_FORECAST_MAX_TEMP_TOMORROW,
-    CONF_USE_FORECAST_PRECIPITATION_AMOUNT,
-    CONF_USE_FORECAST_PRECIPITATION_PROBABILITY,
-    CONF_USE_FORECAST_UV_INDEX,
     CONF_USE_OPEN_DATA_SOLAR_RADIATION,
     CONF_WEIGHT_DIRECT_EXPOSURE,
-    CONF_WEIGHT_FORECAST_CLOUDS,
-    CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT,
-    CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY,
     CONF_WEIGHT_FORECAST_TEMPERATURE,
-    CONF_WEIGHT_FORECAST_UV,
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
@@ -414,6 +411,14 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "default": options.get(CONF_DEFAULT_HEIGHT),
                 "sunset_default": options.get(CONF_SUNSET_POS),
                 "sunset_offset": options.get(CONF_SUNSET_OFFSET),
+                "facade_name": options.get(CONF_FACADE_NAME),
+                "floor_name": options.get(CONF_FLOOR_NAME),
+                "room_name": options.get(CONF_ROOM_NAME),
+                "use_facade_azimuth": options.get(CONF_USE_FACADE_AZIMUTH, False),
+                "facade_reference_azimuth": options.get(
+                    CONF_FACADE_REFERENCE_AZIMUTH
+                ),
+                "facade_offset": options.get(CONF_FACADE_OFFSET),
                 "azimuth_window": options.get(CONF_AZIMUTH),
                 "field_of_view": [
                     options.get(CONF_FOV_LEFT),
@@ -566,6 +571,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "heat_protection_min_outside_temp": (
                     normal_cover.heat_protection_min_outside_temp
                 ),
+                "heat_power_max_w_m2": normal_cover.heat_power_max_watts,
                 "heat_power_max_watts": normal_cover.heat_power_max_watts,
                 "heat_power_limit_active": normal_cover.heat_power_limit_active,
                 "heat_power_limit_trigger": normal_cover.heat_power_limit_trigger,
@@ -599,24 +605,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "use_forecast_max_temp_tomorrow": (
                     normal_cover.use_forecast_max_temp_tomorrow
                 ),
-                "use_forecast_cloud_coverage": (
-                    normal_cover.use_forecast_cloud_coverage
-                ),
-                "use_forecast_precipitation_probability": (
-                    normal_cover.use_forecast_precipitation_probability
-                ),
-                "use_forecast_precipitation_amount": (
-                    normal_cover.use_forecast_precipitation_amount
-                ),
-                "use_forecast_uv_index": normal_cover.use_forecast_uv_index,
-                "forecast_cloud_coverage_pct": normal_cover.forecast_cloud_coverage,
-                "forecast_precipitation_probability_pct": (
-                    round(normal_cover.forecast_precipitation_probability, 2)
-                    if normal_cover.forecast_precipitation_probability is not None
-                    else None
-                ),
-                "forecast_precipitation_amount": normal_cover.forecast_precipitation_amount,
-                "forecast_uv_index": normal_cover.forecast_uv_index,
                 "forecast_solar_radiation_risk": (
                     round(normal_cover.forecast_solar_radiation_risk, 4)
                     if normal_cover.forecast_solar_radiation_risk is not None
@@ -624,16 +612,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 ),
                 "forecast_temperature_risk": round(
                     normal_cover.forecast_temperature_risk, 4
-                ),
-                "forecast_uv_risk": round(normal_cover.forecast_uv_risk, 4),
-                "forecast_cloud_damping": round(
-                    normal_cover.forecast_cloud_damping, 4
-                ),
-                "forecast_precipitation_probability_damping": round(
-                    normal_cover.forecast_precipitation_probability_damping, 4
-                ),
-                "forecast_precipitation_amount_damping": round(
-                    normal_cover.forecast_precipitation_amount_damping, 4
                 ),
                 "forecast_preemptive_active": normal_cover.forecast_preemptive_active,
                 "forecast_risk_factor": round(normal_cover.forecast_risk_factor, 4),
@@ -694,7 +672,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "heat_gain_policy_active_hot_day_close_position": (
                     normal_cover.active_hot_day_close_position
                 ),
-                "legacy_basic_shading_enabled": normal_cover.enable_legacy_basic_shading,
                 "heat_gain_policy_show_expert_weights": (
                     normal_cover.show_expert_weights
                 ),
@@ -794,24 +771,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 ),
                 "heat_gain_policy_weight_forecast_temperature": round(
                     normal_cover.policy_component_weights["forecast_temperature"], 3
-                ),
-                "heat_gain_policy_weight_forecast_uv": round(
-                    normal_cover.policy_component_weights["forecast_uv"], 3
-                ),
-                "heat_gain_policy_weight_forecast_clouds": round(
-                    normal_cover.policy_component_weights["forecast_clouds"], 3
-                ),
-                "heat_gain_policy_weight_forecast_precipitation_probability": round(
-                    normal_cover.policy_component_weights[
-                        "forecast_precipitation_probability"
-                    ],
-                    3,
-                ),
-                "heat_gain_policy_weight_forecast_precipitation_amount": round(
-                    normal_cover.policy_component_weights[
-                        "forecast_precipitation_amount"
-                    ],
-                    3,
                 ),
             },
         )
@@ -1189,10 +1148,10 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_HEAT_POWER_MAX_WATTS, 250),
             options.get(CONF_USE_FORECAST_MAX_TEMP_TODAY, False),
             options.get(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, False),
-            options.get(CONF_USE_FORECAST_CLOUD_COVERAGE, False),
-            options.get(CONF_USE_FORECAST_PRECIPITATION_PROBABILITY, False),
-            options.get(CONF_USE_FORECAST_PRECIPITATION_AMOUNT, False),
-            options.get(CONF_USE_FORECAST_UV_INDEX, False),
+            False,
+            False,
+            False,
+            False,
             options.get(CONF_FORECAST_HOT_DAY_THRESHOLD),
             options.get(CONF_FORECAST_VERY_HOT_DAY_THRESHOLD),
             options.get(CONF_FORECAST_PREEMPTIVE_START_TIME),
@@ -1209,17 +1168,17 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_HOT_DAY_CLOSE_THRESHOLD, 28),
             options.get(CONF_HOT_DAY_CLOSE_POSITION, 20),
             options.get(CONF_VERY_HOT_DAY_CLOSE_POSITION, 10),
-            options.get(CONF_ENABLE_LEGACY_BASIC_SHADING, False),
+            False,
             options.get(CONF_SHOW_EXPERT_WEIGHTS, False),
             options.get(CONF_WEIGHT_DIRECT_EXPOSURE, 1.0),
             options.get(CONF_WEIGHT_INCIDENCE, 1.0),
             options.get(CONF_WEIGHT_GLAZING, 1.0),
             options.get(CONF_WEIGHT_WEATHER, 1.0),
             options.get(CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0),
-            options.get(CONF_WEIGHT_FORECAST_UV, 0.5),
-            options.get(CONF_WEIGHT_FORECAST_CLOUDS, 0.5),
-            options.get(CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY, 0.5),
-            options.get(CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT, 0.5),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             options.get(CONF_WEIGHT_SOLAR_RADIATION, 1.0),
             options.get(CONF_PARTIAL_CLOSE_THRESHOLD, 0.35),
             options.get(CONF_FULL_CLOSE_THRESHOLD, 0.65),

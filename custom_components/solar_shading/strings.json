@@ -191,7 +191,7 @@
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
           "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
-          "heat_power_max_watts": "Maximum heat gain per window"
+          "heat_power_max_watts": "Maximum heat gain per m2 glass"
         },
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
@@ -222,10 +222,10 @@
           "enable_legacy_basic_shading": "Also apply the old Adaptive Cover geometry rule, which can close slightly for glare or a desk even when heat-gain policy is inactive.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
-          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and W per window and caps the open position when the watt limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
+          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and caps the open position when the configured W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
           "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
-          "heat_power_max_watts": "Maximum allowed estimated solar heat gain for this window. The open position is reduced approximately linearly to stay below this value."
+          "heat_power_max_watts": "Maximum allowed estimated solar heat gain per m2 glass. The open position is reduced approximately linearly to stay below this value."
         },
         "title": "Heat-Gain Weights & Thresholds (NEW)",
         "description": "All weights, heat thresholds, % open targets, and stricter away-from-home behavior for the daylight-aware heat-gain overlay live here. Weight 0 disables an individual factor. Simulator for fine-tuning: /local/solar_shading_simulator.html"
@@ -585,7 +585,7 @@
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
           "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
-          "heat_power_max_watts": "Maximum heat gain per window"
+          "heat_power_max_watts": "Maximum heat gain per m2 glass"
         },
         "data_description": {
           "enable_heat_gain_policy": "Turns the daylight-aware heat-gain overlay on top of the base shading logic on or off.",
@@ -616,10 +616,10 @@
           "enable_legacy_basic_shading": "Also apply the old Adaptive Cover geometry rule, which can close slightly for glare or a desk even when heat-gain policy is inactive.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
-          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and W per window and caps the open position when the watt limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
+          "heat_power_limit_enabled": "When enabled, Solar Shading estimates transmitted solar heat power in W/m2 and caps the open position when the configured W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
           "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
-          "heat_power_max_watts": "Maximum allowed estimated solar heat gain for this window. The open position is reduced approximately linearly to stay below this value."
+          "heat_power_max_watts": "Maximum allowed estimated solar heat gain per m2 glass. The open position is reduced approximately linearly to stay below this value."
         },
         "title": "Heat-Gain Weights & Thresholds (NEW)",
         "description": "All weights, heat thresholds, % open targets, and stricter away-from-home behavior for the daylight-aware heat-gain overlay live here. Weight 0 disables an individual factor. Simulator for fine-tuning: /local/solar_shading_simulator.html"
@@ -801,6 +801,3 @@
     }
   }
 }
-
-
-

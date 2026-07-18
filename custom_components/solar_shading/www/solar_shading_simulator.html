@@ -765,11 +765,7 @@
           </div>
           <div class="checkbox-row">
             <input id="heatPowerLimitEnabled" type="checkbox">
-            <label for="heatPowerLimitEnabled"><span class="label-main">Watt-Limit pro Fenster aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2 und W pro Fenster. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal die eingestellten Watt durch dieses Fenster kommen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="enableLegacyBasicShading" type="checkbox">
-            <label for="enableLegacyBasicShading"><span class="label-main">Legacy Schreibtisch-/Blendschutz aktiv</span><button class="info-btn" type="button" data-info="Aktiviert die alte Adaptive-Cover-Geometrie: Wenn direkte Sonne weit in den Raum faellt, kann leicht geschlossen werden, auch wenn die Waermeschutz-Policy nichts fordert. Fuer reinen Waermeschutz eher aus lassen.">i</button></label>
+            <label for="heatPowerLimitEnabled"><span class="label-main">W/m2-Limit pro Glasflaeche aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal der eingestellte W/m2-Wert durch die offene Glasflaeche kommt.">i</button></label>
           </div>
           <div class="checkbox-row">
             <input id="showExpertWeights" type="checkbox">
@@ -817,34 +813,6 @@
               <div class="range-row">
                 <input id="weightForecastTempRange" type="range" min="0" max="3" step="0.05" value="1.00">
                 <input id="weightForecastTemp" type="number" min="0" max="3" step="0.05" value="1.00">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast UV</label>
-              <div class="range-row">
-                <input id="weightForecastUvRange" type="range" min="0" max="3" step="0.05" value="0.60">
-                <input id="weightForecastUv" type="number" min="0" max="3" step="0.05" value="0.60">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast clouds</label>
-              <div class="range-row">
-                <input id="weightForecastCloudsRange" type="range" min="0" max="3" step="0.05" value="0.50">
-                <input id="weightForecastClouds" type="number" min="0" max="3" step="0.05" value="0.50">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast rain probability</label>
-              <div class="range-row">
-                <input id="weightForecastRainProbRange" type="range" min="0" max="3" step="0.05" value="0.40">
-                <input id="weightForecastRainProb" type="number" min="0" max="3" step="0.05" value="0.40">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast rain amount</label>
-              <div class="range-row">
-                <input id="weightForecastRainAmountRange" type="range" min="0" max="3" step="0.05" value="0.40">
-                <input id="weightForecastRainAmount" type="number" min="0" max="3" step="0.05" value="0.40">
               </div>
             </div>
           </div>
@@ -935,10 +903,10 @@
               </div>
             </div>
             <div class="field">
-              <label>Max. Waermeeintrag pro Fenster in W</label>
+              <label>Max. Waermeeintrag pro m2 Glas</label>
               <div class="range-row">
-                <input id="heatPowerMaxWattsRange" type="range" min="50" max="1500" step="25" value="250">
-                <input id="heatPowerMaxWatts" type="number" min="0" max="3000" step="25" value="250">
+                <input id="heatPowerMaxWattsRange" type="range" min="50" max="800" step="25" value="250">
+                <input id="heatPowerMaxWatts" type="number" min="0" max="1200" step="25" value="250">
               </div>
             </div>
           </div>
@@ -1135,23 +1103,6 @@
             <input id="useTomorrowMax" type="checkbox">
             <label for="useTomorrowMax"><span class="label-main">Morgiges Tmax nutzen</span><button class="info-btn" type="button" data-info="Kann helfen, wenn du schon abends oder frueh morgens fuer den naechsten Tag konservativ denken willst.">i</button></label>
           </div>
-          <div class="checkbox-row">
-            <input id="useForecastClouds" type="checkbox" checked>
-            <label for="useForecastClouds"><span class="label-main">Forecast-Wolken nutzen</span><button class="info-btn" type="button" data-info="Viele Forecast-Wolken daempfen den praeventiven Forecast-Risikowert, weniger Wolken lassen ihn steigen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastUv" type="checkbox" checked>
-            <label for="useForecastUv"><span class="label-main">Forecast-UV nutzen</span><button class="info-btn" type="button" data-info="UV ist ein nuetzlicher Proxy fuer starke solare Last an klaren Tagen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastRainProb" type="checkbox">
-            <label for="useForecastRainProb"><span class="label-main">Regenwahrscheinlichkeit nutzen</span><button class="info-btn" type="button" data-info="Wenn die Regenwahrscheinlichkeit hoch ist, wird der praeventive Forecast-Risikowert gedaempft.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastRainAmount" type="checkbox">
-            <label for="useForecastRainAmount"><span class="label-main">Regenmenge nutzen</span><button class="info-btn" type="button" data-info="Erwartete Niederschlagsmenge daempft den Forecast-Risikowert noch staerker.">i</button></label>
-          </div>
-
           <div class="grid">
             <div class="field">
               <label for="forecastTodayMax">Forecast Tmax heute</label>
@@ -1164,38 +1115,10 @@
           </div>
           <div class="grid">
             <div class="field">
-              <label><span class="label-main">Forecast-Wolken in %</span> <button class="info-btn" type="button" data-info="Forecast-Wolken daempfen den praeventiven Heiss-Tag-Risikowert. Ein hoher Prozentwert sollte die Beschattung also weicher machen, nicht haerter.">i</button></label>
-              <div class="range-row">
-                <input id="forecastCloudCoverageRange" type="range" min="0" max="100" step="1" value="25">
-                <input id="forecastCloudCoverage" type="number" min="0" max="100" step="1" value="25">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast-UV</label>
-              <div class="range-row">
-                <input id="forecastUvRange" type="range" min="0" max="12" step="0.1" value="5.9">
-                <input id="forecastUv" type="number" min="0" max="12" step="0.1" value="5.9">
-              </div>
-            </div>
-            <div class="field">
               <label><span class="label-main">Forecast Solar max in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarleistung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
               <div class="range-row">
                 <input id="forecastSolarMaxRange" type="range" min="0" max="1000" step="10" value="850">
                 <input id="forecastSolarMax" type="number" min="0" max="1200" step="10" value="850">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast Regenwahr. in %</label>
-              <div class="range-row">
-                <input id="forecastRainProbRange" type="range" min="0" max="100" step="1" value="0">
-                <input id="forecastRainProb" type="number" min="0" max="100" step="1" value="0">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast Regenmenge in mm</label>
-              <div class="range-row">
-                <input id="forecastRainAmountRange" type="range" min="0" max="20" step="0.1" value="0.8">
-                <input id="forecastRainAmount" type="number" min="0" max="20" step="0.1" value="0.8">
               </div>
             </div>
           </div>
@@ -1353,19 +1276,19 @@
       custom: { scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0, weights: null },
       daylight_first_single_aspect: {
         scoreMultiplier: 0.92, thresholdShift: 0.06, positionOffset: 5,
-        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7, forecast_uv: 0.35, forecast_clouds: 0.8, forecast_precipitation_probability: 0.5, forecast_precipitation_amount: 0.5 }
+        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7 }
       },
       daylight_first_multi_aspect: {
         scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0,
-        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85, forecast_uv: 0.45, forecast_clouds: 0.75, forecast_precipitation_probability: 0.45, forecast_precipitation_amount: 0.45 }
+        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85 }
       },
       balanced: {
         scoreMultiplier: 1.08, thresholdShift: -0.02, positionOffset: 0,
-        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0, forecast_uv: 0.55, forecast_clouds: 0.65, forecast_precipitation_probability: 0.4, forecast_precipitation_amount: 0.4 }
+        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0 }
       },
       cooling_first: {
         scoreMultiplier: 1.16, thresholdShift: -0.06, positionOffset: -5,
-        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35, forecast_uv: 0.75, forecast_clouds: 0.45, forecast_precipitation_probability: 0.25, forecast_precipitation_amount: 0.25 }
+        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35 }
       }
     };
 
@@ -1429,11 +1352,7 @@
       ["solarRadiationRange", "solarRadiation"],
       ["solarReferenceRange", "solarReference"],
       ["outsideTempRange", "outsideTemp"],
-      ["forecastCloudCoverageRange", "forecastCloudCoverage"],
-      ["forecastUvRange", "forecastUv"],
       ["forecastSolarMaxRange", "forecastSolarMax"],
-      ["forecastRainProbRange", "forecastRainProb"],
-      ["forecastRainAmountRange", "forecastRainAmount"],
       ["forecastInfluenceRange", "forecastInfluence"],
       ["weightDirectRange", "weightDirect"],
       ["weightIncidenceRange", "weightIncidence"],
@@ -1441,10 +1360,6 @@
       ["weightWeatherRange", "weightWeather"],
       ["weightSolarRadiationRange", "weightSolarRadiation"],
       ["weightForecastTempRange", "weightForecastTemp"],
-      ["weightForecastUvRange", "weightForecastUv"],
-      ["weightForecastCloudsRange", "weightForecastClouds"],
-      ["weightForecastRainProbRange", "weightForecastRainProb"],
-      ["weightForecastRainAmountRange", "weightForecastRainAmount"],
       ["partialThresholdRange", "partialThreshold"],
       ["fullThresholdRange", "fullThreshold"],
       ["partialPositionRange", "partialPosition"],
@@ -1467,18 +1382,15 @@
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
       "revealTop", "horizonProfile", "cloudCoverage", "precipitation",
       "solarRadiation", "solarReference", "outsideTemp",
-      "forecastTodayMax", "forecastTomorrowMax", "forecastCloudCoverage",
-      "forecastUv", "forecastSolarMax", "forecastRainProb", "forecastRainAmount", "hotDayThreshold",
+      "forecastTodayMax", "forecastTomorrowMax", "forecastSolarMax", "hotDayThreshold",
       "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
       "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
       "weightSolarRadiation",
-      "weightForecastTemp", "weightForecastUv", "weightForecastClouds",
-      "weightForecastRainProb", "weightForecastRainAmount", "partialThreshold",
+      "weightForecastTemp", "partialThreshold",
       "fullThreshold", "partialPosition", "fullPosition", "awayScoreMultiplier",
       "awayThresholdReduction", "awayPositionOffset", "useTodayMax",
-      "useTomorrowMax", "useForecastClouds", "useForecastUv", "useOpenDataSolarRadiation", "useForecastRainProb",
-      "useForecastRainAmount", "enableHeatGainPolicy", "additionalWindows", "awayActive", "devicePreset",
-      "enableLegacyBasicShading", "showExpertWeights",
+      "useTomorrowMax", "useOpenDataSolarRadiation", "enableHeatGainPolicy",
+      "additionalWindows", "awayActive", "devicePreset", "showExpertWeights",
       "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
       "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
       "heatProtectionMinOutsideTemp", "heatPowerMaxWatts"
@@ -1490,18 +1402,16 @@
       global: [
         "devicePreset", "defaultPosition", "sunsetPosition", "glassType",
         "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
-        "useTodayMax", "useTomorrowMax", "useForecastClouds", "useForecastUv",
-        "useOpenDataSolarRadiation", "useForecastRainProb", "useForecastRainAmount",
+        "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
         "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
         "enableHeatGainPolicy", "policyPreset", "additionalWindows", "awayActive",
         "awayScoreMultiplier", "awayThresholdReduction", "awayPositionOffset",
-        "enableLegacyBasicShading", "showExpertWeights", "hotDayCloseEnabled",
+        "showExpertWeights", "hotDayCloseEnabled",
         "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
         "heatPowerLimitEnabled", "heatPowerTempThreshold",
         "heatProtectionMinOutsideTemp", "heatPowerMaxWatts",
         "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
-        "weightSolarRadiation", "weightForecastTemp", "weightForecastUv",
-        "weightForecastClouds", "weightForecastRainProb", "weightForecastRainAmount",
+        "weightSolarRadiation", "weightForecastTemp",
         "partialThreshold", "fullThreshold", "partialPosition", "fullPosition"
       ],
       geometry: [
@@ -1836,10 +1746,6 @@
       setInputValue("weightWeather", preset.weights.weather);
       setInputValue("weightSolarRadiation", preset.weights.solar_radiation);
       setInputValue("weightForecastTemp", preset.weights.forecast_temperature);
-      setInputValue("weightForecastUv", preset.weights.forecast_uv);
-      setInputValue("weightForecastClouds", preset.weights.forecast_clouds);
-      setInputValue("weightForecastRainProb", preset.weights.forecast_precipitation_probability);
-      setInputValue("weightForecastRainAmount", preset.weights.forecast_precipitation_amount);
     }
 
     function updateExpertWeightsVisibility() {
@@ -1932,27 +1838,18 @@
       overwrite("horizonProfile", typeof attrs.horizon_profile === "string" ? attrs.horizon_profile : JSON.stringify(attrs.horizon_profile || [], null, 2));
       overwrite("forecastTodayMax", attrs.forecast_today_max_temp);
       overwrite("forecastTomorrowMax", attrs.forecast_tomorrow_max_temp);
-      overwrite("forecastCloudCoverage", attrs.forecast_cloud_coverage_pct);
-      overwrite("forecastUv", attrs.forecast_uv_index);
       overwrite("solarRadiation", attrs.solar_radiation_value_w_m2 ?? attrs.open_data_current_direct_normal_irradiance_w_m2 ?? attrs.open_data_current_shortwave_radiation_w_m2);
       overwrite("solarReference", attrs.solar_radiation_reference_w_m2);
       overwrite("outsideTemp", attrs.heat_power_outside_temperature ?? attrs.weather_temperature ?? attrs.forecast_today_max_temp);
       overwrite("forecastSolarMax", attrs.open_data_today_max_direct_normal_irradiance_w_m2);
-      overwrite("forecastRainProb", attrs.forecast_precipitation_probability_pct);
-      overwrite("forecastRainAmount", attrs.forecast_precipitation_amount);
       overwrite("hotDayThreshold", attrs.forecast_hot_day_threshold);
       overwrite("veryHotThreshold", attrs.forecast_very_hot_day_threshold);
       overwrite("forecastInfluence", attrs.forecast_influence_strength);
       overwrite("preemptiveStart", attrs.forecast_preemptive_start_time ? String(attrs.forecast_preemptive_start_time).slice(0, 5) : "09:00");
       overwrite("useTodayMax", attrs.use_forecast_max_temp_today);
       overwrite("useTomorrowMax", attrs.use_forecast_max_temp_tomorrow);
-      overwrite("useForecastClouds", attrs.use_forecast_cloud_coverage);
-      overwrite("useForecastUv", attrs.use_forecast_uv_index);
       overwrite("useOpenDataSolarRadiation", attrs.use_open_data_solar_radiation);
-      overwrite("useForecastRainProb", attrs.use_forecast_precipitation_probability);
-      overwrite("useForecastRainAmount", attrs.use_forecast_precipitation_amount);
       overwrite("enableHeatGainPolicy", attrs.heat_gain_policy_enabled);
-      overwrite("enableLegacyBasicShading", attrs.legacy_basic_shading_enabled);
       overwrite("showExpertWeights", attrs.heat_gain_policy_show_expert_weights);
       overwrite("policyPreset", attrs.heat_gain_policy_preset);
       overwrite("additionalWindows", attrs.heat_gain_policy_has_additional_daylight_windows);
@@ -1967,17 +1864,13 @@
       overwrite("heatPowerLimitEnabled", attrs.heat_power_limit_enabled);
       overwrite("heatPowerTempThreshold", attrs.heat_power_outside_temp_threshold);
       overwrite("heatProtectionMinOutsideTemp", attrs.heat_protection_min_outside_temp);
-      overwrite("heatPowerMaxWatts", attrs.heat_power_max_watts);
+      overwrite("heatPowerMaxWatts", attrs.heat_power_max_w_m2 ?? attrs.heat_power_max_watts);
       overwrite("weightDirect", attrs.heat_gain_policy_weight_direct_exposure);
       overwrite("weightIncidence", attrs.heat_gain_policy_weight_incidence);
       overwrite("weightGlazing", attrs.heat_gain_policy_weight_glazing);
       overwrite("weightWeather", attrs.heat_gain_policy_weight_weather);
       overwrite("weightSolarRadiation", attrs.heat_gain_policy_weight_solar_radiation);
       overwrite("weightForecastTemp", attrs.heat_gain_policy_weight_forecast_temperature);
-      overwrite("weightForecastUv", attrs.heat_gain_policy_weight_forecast_uv);
-      overwrite("weightForecastClouds", attrs.heat_gain_policy_weight_forecast_clouds);
-      overwrite("weightForecastRainProb", attrs.heat_gain_policy_weight_forecast_precipitation_probability);
-      overwrite("weightForecastRainAmount", attrs.heat_gain_policy_weight_forecast_precipitation_amount);
       overwrite("partialThreshold", attrs.heat_gain_policy_base_partial_threshold ?? attrs.heat_gain_policy_partial_threshold);
       overwrite("fullThreshold", attrs.heat_gain_policy_base_full_threshold ?? attrs.heat_gain_policy_full_threshold);
       overwrite("partialPosition", attrs.heat_gain_policy_config_partial_position ?? attrs.heat_gain_policy_base_partial_position ?? attrs.heat_gain_policy_partial_position);
@@ -2320,11 +2213,7 @@
         outsideTemp: parseNumber("outsideTemp"),
         forecastTodayMax: parseNumber("forecastTodayMax"),
         forecastTomorrowMax: parseNumber("forecastTomorrowMax"),
-        forecastCloudCoverage: parseNumber("forecastCloudCoverage"),
-        forecastUv: parseNumber("forecastUv"),
         forecastSolarMax: parseNumber("forecastSolarMax"),
-        forecastRainProb: parseNumber("forecastRainProb"),
-        forecastRainAmount: parseNumber("forecastRainAmount"),
         hotDayThreshold: parseNumber("hotDayThreshold"),
         veryHotThreshold: parseNumber("veryHotThreshold"),
         forecastInfluence: parseNumber("forecastInfluence"),
@@ -2336,10 +2225,6 @@
         weightWeather: parseNumber("weightWeather"),
         weightSolarRadiation: parseNumber("weightSolarRadiation"),
         weightForecastTemp: parseNumber("weightForecastTemp"),
-        weightForecastUv: parseNumber("weightForecastUv"),
-        weightForecastClouds: parseNumber("weightForecastClouds"),
-        weightForecastRainProb: parseNumber("weightForecastRainProb"),
-        weightForecastRainAmount: parseNumber("weightForecastRainAmount"),
         partialThreshold: parseNumber("partialThreshold"),
         fullThreshold: parseNumber("fullThreshold"),
         partialPosition: parseNumber("partialPosition"),
@@ -2349,15 +2234,10 @@
         awayPositionOffset: parseNumber("awayPositionOffset"),
         useTodayMax: parseBool("useTodayMax"),
         useTomorrowMax: parseBool("useTomorrowMax"),
-        useForecastClouds: parseBool("useForecastClouds"),
-        useForecastUv: parseBool("useForecastUv"),
         useOpenDataSolarRadiation: parseBool("useOpenDataSolarRadiation"),
-        useForecastRainProb: parseBool("useForecastRainProb"),
-        useForecastRainAmount: parseBool("useForecastRainAmount"),
         enableHeatGainPolicy: parseBool("enableHeatGainPolicy"),
         additionalWindows: parseBool("additionalWindows"),
         awayActive: parseBool("awayActive"),
-        enableLegacyBasicShading: parseBool("enableLegacyBasicShading"),
         showExpertWeights: parseBool("showExpertWeights"),
         hotDayCloseEnabled: parseBool("hotDayCloseEnabled"),
         hotDayCloseThreshold: parseNumber("hotDayCloseThreshold"),
@@ -3287,13 +3167,9 @@
         const heatProtectionTemperatureAllowed = heatProtectionCurrentTemperatureAllowed && (!Number.isFinite(temperatureGateSignal)
           || !Number.isFinite(state.hotDayThreshold)
           || temperatureGateSignal >= state.hotDayThreshold);
-        const forecastUvRisk = state.useForecastUv ? uvRisk(state.forecastUv) : 1;
         const forecastSolarRadiationRisk = state.useOpenDataSolarRadiation
           ? solarRadiationFactor(state.forecastSolarMax, true, state.solarReference)
           : 1;
-        const forecastCloudDamping = state.useForecastClouds ? clamp(1 - state.forecastCloudCoverage / 100, 0, 1) : 1;
-        const forecastRainProbDamping = state.useForecastRainProb ? precipitationProbabilityDamping(state.forecastRainProb) : 1;
-        const forecastRainAmountDamping = state.useForecastRainAmount ? precipitationAmountDamping(state.forecastRainAmount) : 1;
         const forecastPreemptiveActive = isAfterPreemptiveStart(sun.date, state.preemptiveStart);
         const heatPowerTemperatureGateActive = !Number.isFinite(state.heatPowerTempThreshold)
           || (Number.isFinite(state.outsideTemp) && state.outsideTemp >= state.heatPowerTempThreshold)
@@ -3324,22 +3200,18 @@
                       : "immer";
         const heatPowerLimitActive = state.heatPowerLimitEnabled
           && effectiveSunOnWindow
-          && Number.isFinite(estimatedHeatPowerW)
-          && estimatedHeatPowerW > 0
+          && Number.isFinite(estimatedHeatPowerWm2)
+          && estimatedHeatPowerWm2 > 0
           && Number.isFinite(state.heatPowerMaxWatts)
           && state.heatPowerMaxWatts > 0
           && heatPowerTemperatureGateActive;
-        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerW > state.heatPowerMaxWatts
-          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerW) * 100, 0, 100))
+        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerWm2 > state.heatPowerMaxWatts
+          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerWm2) * 100, 0, 100))
           : null;
         const forecastRisk = forecastPreemptiveActive
           ? clamp(
               forecastTemperatureRisk
-              * forecastSolarRadiationRisk
-              * forecastUvRisk
-              * forecastCloudDamping
-              * forecastRainProbDamping
-              * forecastRainAmountDamping,
+              * forecastSolarRadiationRisk,
               0,
               1
             )
@@ -3370,11 +3242,7 @@
           glazing: solarTransmittance,
           weather: currentSolarRadiationFactor === null ? currentWeatherFactor : null,
           solar_radiation: state.useOpenDataSolarRadiation ? currentSolarRadiationFactor : null,
-          forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null,
-          forecast_uv: state.useForecastUv ? forecastUvRisk : null,
-          forecast_clouds: state.useForecastClouds ? forecastCloudDamping : null,
-          forecast_precipitation_probability: state.useForecastRainProb ? forecastRainProbDamping : null,
-          forecast_precipitation_amount: state.useForecastRainAmount ? forecastRainAmountDamping : null
+          forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null
         };
         const weights = {
           direct_exposure: state.weightDirect,
@@ -3382,11 +3250,7 @@
           glazing: state.weightGlazing,
           weather: state.weightWeather,
           solar_radiation: state.weightSolarRadiation,
-          forecast_temperature: state.weightForecastTemp,
-          forecast_uv: state.weightForecastUv,
-          forecast_clouds: state.weightForecastClouds,
-          forecast_precipitation_probability: state.weightForecastRainProb,
-          forecast_precipitation_amount: state.weightForecastRainAmount
+          forecast_temperature: state.weightForecastTemp
         };
 
         const weightedScore = weightedRiskScore(components, weights);
@@ -3445,12 +3309,7 @@
         const legacyBaseVerticalPosition = baseVerticalClosure !== null
           ? 100 - baseVerticalClosure
           : state.defaultPosition;
-        const legacyDrivenPosition = baseVerticalClosure !== null
-          ? Math.round(clamp(100 - ((100 - legacyBaseVerticalPosition) * heatGainResponse), 0, 100))
-          : state.defaultPosition;
-        const baseVerticalPosition = state.enableLegacyBasicShading
-          ? legacyDrivenPosition
-          : state.defaultPosition;
+        const baseVerticalPosition = state.defaultPosition;
 
         let effectivePolicyTarget = policyResult.target;
         let effectivePolicyLevel = policyResult.level;
@@ -3513,20 +3372,18 @@
         setText("heatPowerCell", `${round(estimatedHeatPowerWm2, 1)} W/m2${estimatedHeatPowerW === null ? "" : ` / ${round(estimatedHeatPowerW, 0)} W Fenster`} (${state.useOpenDataSolarRadiation ? "Solarwert" : "Referenz/Wetter"})`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
-            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W, Limit ${round(state.heatPowerMaxWatts, 0)} W)`
-            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W > ${round(state.heatPowerMaxWatts, 0)} W)`)
+            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2)`
+            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2 > ${round(state.heatPowerMaxWatts, 0)} W/m2)`)
           : "aus");
         setText(
           "forecastTodayCell",
-          `Tmax ${round(state.forecastTodayMax, 1)} C, Gate ${heatProtectionTemperatureAllowed ? "frei" : "gesperrt"} ab ${round(state.hotDayThreshold, 1)} C, Kälte-Sperre < ${round(coldLockoutTemp, 1)} C, Very-Hot bei ${round(state.veryHotThreshold, 1)} C, Solar ${factorPercent(forecastSolarRadiationRisk)}, Wolken ${state.forecastCloudCoverage.toFixed(0)} %, UV ${round(state.forecastUv, 1)}`
+          `Tmax ${round(state.forecastTodayMax, 1)} C, Gate ${heatProtectionTemperatureAllowed ? "frei" : "gesperrt"} ab ${round(state.hotDayThreshold, 1)} C, Kaelte-Sperre < ${round(coldLockoutTemp, 1)} C, Very-Hot bei ${round(state.veryHotThreshold, 1)} C, Forecast-Solar ${factorPercent(forecastSolarRadiationRisk)}`
         );
         setText("forecastRiskCell", `${round(forecastRisk, 3)} (${forecastPreemptiveActive ? "aktiv" : "vor Start"}), Temp-Risk ${round(forecastTemperatureRisk, 3)}, Temp-Boost ${round(forecastTemperatureGainBoost, 3)}, Policy-Druck ${round(forecastTemperaturePolicyPressure, 3)}`);
         setText("forecastAdjustedGainCell", `${round(forecastAdjustedGain, 3)} (Multiplikator ${round(forecastGainUplift, 2)}x)`);
         setText("weightedScoreCell", round(weightedScore, 3));
         setText("rawScoreCell", round(rawScore, 3));
-        setText("basePositionCell", state.enableLegacyBasicShading
-          ? `${baseVerticalPosition} % offen (Legacy ${legacyBaseVerticalPosition} %, Response ${round(heatGainResponse, 2)} aus Gain ${round(forecastAdjustedGain, 2)})`
-          : `${baseVerticalPosition} % offen (Legacy aus; alter Schreibtisch-/Blendschutz ignoriert)`);
+        setText("basePositionCell", `${baseVerticalPosition} % offen (Default vor Heat-Gain-Overlays)`);
         setText("policyTargetCell", state.enableHeatGainPolicy
           ? (effectivePolicyTarget === null
             ? `- (Very-Hot: Schwellen -${round(temperatureAdjusted.thresholdReduction, 2)}, Ziel -${temperatureAdjusted.positionOffset} % offen)`
@@ -3552,10 +3409,10 @@
           ? `Hot-Day-Override: ${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} begrenzt zusaetzlich auf max. ${activeHotDayClosePosition} % offen.`
           : "Hot-Day-Override: aus oder nicht getriggert.";
         const heatPowerLine = heatPowerLimitedOpenPosition !== null
-          ? `Watt-Limit: ${round(estimatedHeatPowerW, 0)} W geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W -> max. ${heatPowerLimitedOpenPosition} % offen.`
+          ? `W/m2-Limit: ${round(estimatedHeatPowerWm2, 0)} W/m2 geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2 -> max. ${heatPowerLimitedOpenPosition} % offen.`
           : state.heatPowerLimitEnabled
-            ? `Watt-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${estimatedHeatPowerW === null ? "unbekannt" : `${round(estimatedHeatPowerW, 0)} W`}.`
-            : "Watt-Limit: aus.";
+            ? `W/m2-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${round(estimatedHeatPowerWm2, 0)} W/m2.`
+            : "W/m2-Limit: aus.";
         const temperatureBand = !heatProtectionTemperatureAllowed
           ? "below_hot"
           : hotDaySignal >= state.veryHotThreshold

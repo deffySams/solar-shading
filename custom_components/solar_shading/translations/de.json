@@ -5,33 +5,33 @@
       "user": {
         "data": {
           "name": "Name",
-          "blueprint": "Blueprint zu HomeAssistant hinzufÃ¼gen",
+          "blueprint": "Blueprint zu HomeAssistant hinzufÃƒÂ¼gen",
           "mode": "Typ der Abdeckung"
         }
       },
       "automation": {
         "data": {
           "delta_position": "Minimale Positionsanpassung",
-          "delta_time": "Minimales Intervall zwischen PositionsÃ¤nderungen",
+          "delta_time": "Minimales Intervall zwischen PositionsÃƒÂ¤nderungen",
           "start_time": "Startzeit",
-          "start_entity": "EntitÃ¤t zur Angabe der Startzeit",
+          "start_entity": "EntitÃƒÂ¤t zur Angabe der Startzeit",
           "manual_override_duration": "Dauer der manuellen Steuerung",
-          "manual_override_reset": "Manuelle Steuerungsdauer zurÃ¼cksetzen",
+          "manual_override_reset": "Manuelle Steuerungsdauer zurÃƒÂ¼cksetzen",
           "end_time": "Endzeit",
-          "end_entity": "EntitÃ¤t zur Angabe der Endzeit",
-          "manual_threshold": "Schwellenwert fÃ¼r manuelle Steuerung",
-          "manual_ignore_intermediate": "Zwischenpositionen wÃ¤hrend der manuellen Steuerung ignorieren (Ã–ffnen und SchlieÃŸen)",
-          "return_sunset": "Position zum Sonnenuntergangs-Standardwert anpassen, wenn die Endzeit vor dem tatsÃ¤chlichen Sonnenuntergang liegt"
+          "end_entity": "EntitÃƒÂ¤t zur Angabe der Endzeit",
+          "manual_threshold": "Schwellenwert fÃƒÂ¼r manuelle Steuerung",
+          "manual_ignore_intermediate": "Zwischenpositionen wÃƒÂ¤hrend der manuellen Steuerung ignorieren (Ãƒâ€“ffnen und SchlieÃƒÅ¸en)",
+          "return_sunset": "Position zum Sonnenuntergangs-Standardwert anpassen, wenn die Endzeit vor dem tatsÃƒÂ¤chlichen Sonnenuntergang liegt"
         },
         "data_description": {
-          "delta_position": "Minimale PositionsÃ¤nderung, die erforderlich ist, bevor die Abdeckung angepasst wird",
-          "delta_time": "Mindestzeitintervall zwischen PositionsÃ¤nderungen; mindestens 2 Minuten",
-          "start_time": "Startzeit fÃ¼r jeden Tag; vor dieser Zeit bleibt die Abdeckung unbewegt",
-          "start_entity": "EntitÃ¤t, die den Startzeitstatus angibt und die feste Startzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung der Startzeit mit einer EntitÃ¤t",
-          "manual_override_duration": "Dauer der manuellen Steuerung, bevor zur automatischen Steuerung zurÃ¼ckgekehrt wird",
-          "manual_override_reset": "Option, um die manuelle Steuerungsdauer nach jeder manuellen Anpassung zurÃ¼ckzusetzen. Falls deaktiviert, gilt die Dauer nur fÃ¼r die erste manuelle Anpassung",
-          "end_time": "Endzeit fÃ¼r jeden Tag; nach dieser Zeit bleibt die Abdeckung unbewegt",
-          "end_entity": "EntitÃ¤t, die den Endzeitstatus angibt und die feste Endzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung der Endzeit mit einer EntitÃ¤t"
+          "delta_position": "Minimale PositionsÃƒÂ¤nderung, die erforderlich ist, bevor die Abdeckung angepasst wird",
+          "delta_time": "Mindestzeitintervall zwischen PositionsÃƒÂ¤nderungen; mindestens 2 Minuten",
+          "start_time": "Startzeit fÃƒÂ¼r jeden Tag; vor dieser Zeit bleibt die Abdeckung unbewegt",
+          "start_entity": "EntitÃƒÂ¤t, die den Startzeitstatus angibt und die feste Startzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung der Startzeit mit einer EntitÃƒÂ¤t",
+          "manual_override_duration": "Dauer der manuellen Steuerung, bevor zur automatischen Steuerung zurÃƒÂ¼ckgekehrt wird",
+          "manual_override_reset": "Option, um die manuelle Steuerungsdauer nach jeder manuellen Anpassung zurÃƒÂ¼ckzusetzen. Falls deaktiviert, gilt die Dauer nur fÃƒÂ¼r die erste manuelle Anpassung",
+          "end_time": "Endzeit fÃƒÂ¼r jeden Tag; nach dieser Zeit bleibt die Abdeckung unbewegt",
+          "end_entity": "EntitÃƒÂ¤t, die den Endzeitstatus angibt und die feste Endzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung der Endzeit mit einer EntitÃƒÂ¤t"
         }
       },
       "vertical": {
@@ -188,10 +188,10 @@
           "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarleistung",
-          "heat_power_limit_enabled": "Watt-Limit pro Fenster aktivieren",
+          "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
-          "heat_power_max_watts": "Maximaler Waermeeintrag pro Fenster"
+          "heat_power_max_watts": "Maximaler Waermeeintrag pro m2 Glas"
         },
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
@@ -222,10 +222,10 @@
           "enable_legacy_basic_shading": "Wendet zusaetzlich die alte Adaptive-Cover-Geometrie an. Das kann bei direkter Sonne leicht schliessen, z.B. gegen Blendung am Schreibtisch, auch wenn die Waermeschutz-Policy inaktiv ist.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
-          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und W pro Fenster und deckelt die Offenposition, sobald die Watt-Grenze an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
+          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und deckelt die Offenposition, sobald das konfigurierte W/m2-Limit an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
           "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
-          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag fuer dieses Fenster. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
+          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag pro m2 Glas. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
         "title": "W?rmeschutz-Gewichte & Schwellen (NEU)",
         "description": "Hier liegen alle Gewichte, Waermeschutz-Schwellen, Ziele in % offen und die strengere Abwesenheits-Logik. Gewicht 0 deaktiviert den jeweiligen Faktor. Simulator zum Feintuning: /local/solar_shading_simulator.html"
@@ -356,29 +356,29 @@
         "data": {
           "blind_spot_left": "Start der blinden Zone links",
           "blind_spot_right": "Ende der blinden Zone rechts",
-          "blind_spot_elevation": "ElevationshÃ¶he der blinden Zone"
+          "blind_spot_elevation": "ElevationshÃƒÂ¶he der blinden Zone"
         },
         "data_description": {
           "blind_spot_left": "Linke Kante der blinden Zone",
           "blind_spot_right": "Rechte Kante der blinden Zone",
-          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃ¼tzlich, wenn die Sonne Ã¼ber ein Objekt in der blinden Zone scheinen kann"
+          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃƒÂ¼tzlich, wenn die Sonne ÃƒÂ¼ber ein Objekt in der blinden Zone scheinen kann"
         },
         "title": "Blinde Zone",
-        "description": "Blinde Zone fÃ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
+        "description": "Blinde Zone fÃƒÂ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
       },
       "interp": {
         "data": {
-          "interp_start": "Wert, bei dem die Ã–ffnung beginnt",
-          "interp_end": "Wert, bei dem das SchlieÃŸen beginnt",
+          "interp_start": "Wert, bei dem die Ãƒâ€“ffnung beginnt",
+          "interp_end": "Wert, bei dem das SchlieÃƒÅ¸en beginnt",
           "interp_list": "Liste der Interpolationen",
           "interp_list_new": "Benutzerdefinierte Interpolationsliste"
         },
         "data_description": {
-          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃ¤ndig geschlossen und 100 vollstÃ¤ndig offen ist",
+          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃƒÂ¤ndig geschlossen und 100 vollstÃƒÂ¤ndig offen ist",
           "interp_list_new": "Benutzerdefinierter Bereich von Interpolationswerten, wobei der Beginn geschlossen und das Ende offen darstellen sollte"
         },
         "title": "Bereichsanpassung",
-        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv Ã¶ffnet oder schlieÃŸt. Ideal fÃ¼r Abdeckungen, die nicht vollstÃ¤ndig bei 0% Ã¶ffnen oder bei 100% schlieÃŸen. \n Die ersten beiden Schieberegler sind fÃ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃ¼r eine Mehrpunkt-Anpassung."
+        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv ÃƒÂ¶ffnet oder schlieÃƒÅ¸t. Ideal fÃƒÂ¼r Abdeckungen, die nicht vollstÃƒÂ¤ndig bei 0% ÃƒÂ¶ffnen oder bei 100% schlieÃƒÅ¸en. \n Die ersten beiden Schieberegler sind fÃƒÂ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃƒÂ¼r eine Mehrpunkt-Anpassung."
       }
     }
   },
@@ -394,7 +394,7 @@
     "step": {
       "init": {
         "menu_options": {
-          "automation": "Automatisierungskonfiguration Ã¤ndern",
+          "automation": "Automatisierungskonfiguration ÃƒÂ¤ndern",
           "blind": "Jalousien-Einstellungen anpassen",
           "climate": "Klimakonfiguration bearbeiten",
           "weather": "Wetterkonfiguration bearbeiten",
@@ -405,27 +405,27 @@
       },
       "automation": {
         "data": {
-          "delta_position": "Minimale PositionsÃ¤nderung",
-          "delta_time": "Minimales Intervall zwischen PositionsÃ¤nderungen",
+          "delta_position": "Minimale PositionsÃƒÂ¤nderung",
+          "delta_time": "Minimales Intervall zwischen PositionsÃƒÂ¤nderungen",
           "start_time": "Startzeit",
-          "start_entity": "EntitÃ¤t zur Bestimmung der Startzeit",
-          "manual_override_duration": "Dauer der manuellen Ãœbersteuerung",
-          "manual_override_reset": "Manuelle Ãœbersteuerungsdauer zurÃ¼cksetzen",
+          "start_entity": "EntitÃƒÂ¤t zur Bestimmung der Startzeit",
+          "manual_override_duration": "Dauer der manuellen ÃƒÅ“bersteuerung",
+          "manual_override_reset": "Manuelle ÃƒÅ“bersteuerungsdauer zurÃƒÂ¼cksetzen",
           "end_time": "Endzeit",
-          "end_entity": "EntitÃ¤t zur Bestimmung der Endzeit",
-          "manual_threshold": "Schwellenwert fÃ¼r manuelle Ãœbersteuerung",
-          "manual_ignore_intermediate": "Zwischenpositionen wÃ¤hrend manueller Ãœbersteuerung ignorieren (Ã–ffnen und SchlieÃŸen)",
-          "return_sunset": "Immer zur Standard-Sonnenuntergangsposition zurÃ¼ckkehren; nÃ¼tzlich, wenn die Endzeit vor Sonnenuntergang liegt"
+          "end_entity": "EntitÃƒÂ¤t zur Bestimmung der Endzeit",
+          "manual_threshold": "Schwellenwert fÃƒÂ¼r manuelle ÃƒÅ“bersteuerung",
+          "manual_ignore_intermediate": "Zwischenpositionen wÃƒÂ¤hrend manueller ÃƒÅ“bersteuerung ignorieren (Ãƒâ€“ffnen und SchlieÃƒÅ¸en)",
+          "return_sunset": "Immer zur Standard-Sonnenuntergangsposition zurÃƒÂ¼ckkehren; nÃƒÂ¼tzlich, wenn die Endzeit vor Sonnenuntergang liegt"
         },
         "data_description": {
-          "delta_position": "Minimale Ã„nderung der Position, bevor die Jalousie angepasst wird",
-          "delta_time": "Minimales Zeitintervall zwischen PositionsÃ¤nderungen; mindestens 2 Minuten",
-          "start_time": "Startzeit fÃ¼r jeden Tag; davor bleibt die Jalousie unverÃ¤ndert",
-          "start_entity": "EntitÃ¤t, die die Startzeit bestimmt und die feste Startzeit Ã¼berschreibt. NÃ¼tzlich zur Automatisierung mit einer EntitÃ¤t",
-          "manual_override_duration": "Dauer der manuellen Steuerung, bevor die Automatik zurÃ¼ckgesetzt wird",
-          "manual_override_reset": "Option zum ZurÃ¼cksetzen der manuellen Ãœbersteuerungsdauer nach jeder manuellen Anpassung; wenn deaktiviert, gilt die Dauer nur fÃ¼r die erste manuelle Anpassung",
-          "end_time": "Endzeit fÃ¼r jeden Tag; danach bleibt die Jalousie unverÃ¤ndert",
-          "end_entity": "Stellt sicher, dass die Position bis zur Endzeit auf die Standard-Sonnenuntergangseinstellung zurÃ¼ckgesetzt wird, insbesondere wenn die Endzeit vor dem tatsÃ¤chlichen Sonnenuntergang liegt"
+          "delta_position": "Minimale Ãƒâ€žnderung der Position, bevor die Jalousie angepasst wird",
+          "delta_time": "Minimales Zeitintervall zwischen PositionsÃƒÂ¤nderungen; mindestens 2 Minuten",
+          "start_time": "Startzeit fÃƒÂ¼r jeden Tag; davor bleibt die Jalousie unverÃƒÂ¤ndert",
+          "start_entity": "EntitÃƒÂ¤t, die die Startzeit bestimmt und die feste Startzeit ÃƒÂ¼berschreibt. NÃƒÂ¼tzlich zur Automatisierung mit einer EntitÃƒÂ¤t",
+          "manual_override_duration": "Dauer der manuellen Steuerung, bevor die Automatik zurÃƒÂ¼ckgesetzt wird",
+          "manual_override_reset": "Option zum ZurÃƒÂ¼cksetzen der manuellen ÃƒÅ“bersteuerungsdauer nach jeder manuellen Anpassung; wenn deaktiviert, gilt die Dauer nur fÃƒÂ¼r die erste manuelle Anpassung",
+          "end_time": "Endzeit fÃƒÂ¼r jeden Tag; danach bleibt die Jalousie unverÃƒÂ¤ndert",
+          "end_entity": "Stellt sicher, dass die Position bis zur Endzeit auf die Standard-Sonnenuntergangseinstellung zurÃƒÂ¼ckgesetzt wird, insbesondere wenn die Endzeit vor dem tatsÃƒÂ¤chlichen Sonnenuntergang liegt"
         }
       },
       "vertical": {
@@ -582,10 +582,10 @@
           "enable_legacy_basic_shading": "Legacy Schreibtisch-/Blendschutz aktivieren",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarleistung",
-          "heat_power_limit_enabled": "Watt-Limit pro Fenster aktivieren",
+          "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
           "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
-          "heat_power_max_watts": "Maximaler Waermeeintrag pro Fenster"
+          "heat_power_max_watts": "Maximaler Waermeeintrag pro m2 Glas"
         },
         "data_description": {
           "enable_heat_gain_policy": "Schaltet die tageslichtorientierte Waermeeintrags-Policy ueber der Basislogik ein oder aus.",
@@ -616,10 +616,10 @@
           "enable_legacy_basic_shading": "Wendet zusaetzlich die alte Adaptive-Cover-Geometrie an. Das kann bei direkter Sonne leicht schliessen, z.B. gegen Blendung am Schreibtisch, auch wenn die Waermeschutz-Policy inaktiv ist.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
-          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und W pro Fenster und deckelt die Offenposition, sobald die Watt-Grenze an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
+          "heat_power_limit_enabled": "Wenn aktiv, berechnet Solar Shading die geschaetzte solare Waermeleistung in W/m2 und deckelt die Offenposition, sobald das konfigurierte W/m2-Limit an einem heissen Tag oder ab der Temperatur-Schwelle ueberschritten wird.",
           "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
-          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag fuer dieses Fenster. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
+          "heat_power_max_watts": "Maximal erlaubter geschaetzter solarer Waermeeintrag pro m2 Glas. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
         "title": "W?rmeschutz-Gewichte & Schwellen (NEU)",
         "description": "Hier liegen alle Gewichte, Waermeschutz-Schwellen, Ziele in % offen und die strengere Abwesenheits-Logik. Gewicht 0 deaktiviert den jeweiligen Faktor. Simulator zum Feintuning: /local/solar_shading_simulator.html"
@@ -750,29 +750,29 @@
         "data": {
           "blind_spot_left": "Start der blinden Zone links",
           "blind_spot_right": "Ende der blinden Zone rechts",
-          "blind_spot_elevation": "ElevationshÃ¶he der blinden Zone"
+          "blind_spot_elevation": "ElevationshÃƒÂ¶he der blinden Zone"
         },
         "data_description": {
           "blind_spot_left": "Linke Kante der blinden Zone",
           "blind_spot_right": "Rechte Kante der blinden Zone",
-          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃ¼tzlich, wenn die Sonne Ã¼ber ein Objekt in der blinden Zone scheinen kann"
+          "blind_spot_elevation": "Alle Werte, die gleich oder kleiner sind, gelten als innerhalb der blinden Zone. NÃƒÂ¼tzlich, wenn die Sonne ÃƒÂ¼ber ein Objekt in der blinden Zone scheinen kann"
         },
         "title": "Blinde Zone",
-        "description": "Blinde Zone fÃ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
+        "description": "Blinde Zone fÃƒÂ¼r die Abdeckung einrichten. Diese Werte sind relative Gradwerte zur Breite des Sichtfelds, wobei 0 die linkeste Position darstellt, die vom Parameter 'FOV links' des Sichtfeldes genommen wird."
       },
       "interp": {
         "data": {
-          "interp_start": "Wert, bei dem die Ã–ffnung beginnt",
-          "interp_end": "Wert, bei dem das SchlieÃŸen beginnt",
+          "interp_start": "Wert, bei dem die Ãƒâ€“ffnung beginnt",
+          "interp_end": "Wert, bei dem das SchlieÃƒÅ¸en beginnt",
           "interp_list": "Liste der Interpolationen",
           "interp_list_new": "Benutzerdefinierte Interpolationsliste"
         },
         "data_description": {
-          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃ¤ndig geschlossen und 100 vollstÃ¤ndig offen ist",
+          "interp_list": "Liste der Interpolationswerte, bei denen 0 vollstÃƒÂ¤ndig geschlossen und 100 vollstÃƒÂ¤ndig offen ist",
           "interp_list_new": "Benutzerdefinierter Bereich von Interpolationswerten, wobei der Beginn geschlossen und das Ende offen darstellen sollte"
         },
         "title": "Bereichsanpassung",
-        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv Ã¶ffnet oder schlieÃŸt. Ideal fÃ¼r Abdeckungen, die nicht vollstÃ¤ndig bei 0% Ã¶ffnen oder bei 100% schlieÃŸen. \n Die ersten beiden Schieberegler sind fÃ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃ¼r eine Mehrpunkt-Anpassung."
+        "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv ÃƒÂ¶ffnet oder schlieÃƒÅ¸t. Ideal fÃƒÂ¼r Abdeckungen, die nicht vollstÃƒÂ¤ndig bei 0% ÃƒÂ¶ffnen oder bei 100% schlieÃƒÅ¸en. \n Die ersten beiden Schieberegler sind fÃƒÂ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃƒÂ¼r eine Mehrpunkt-Anpassung."
       }
     }
   },
@@ -801,6 +801,3 @@
     }
   }
 }
-
-
-

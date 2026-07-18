@@ -35,8 +35,12 @@ from .const import (
     CONF_END_ENTITY,
     CONF_END_TIME,
     CONF_ENTITIES,
+    CONF_FACADE_NAME,
+    CONF_FACADE_OFFSET,
+    CONF_FACADE_REFERENCE_AZIMUTH,
     CONF_FOV_LEFT,
     CONF_FOV_RIGHT,
+    CONF_FLOOR_NAME,
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_FORECAST_INFLUENCE_STRENGTH,
     CONF_FORECAST_PREEMPTIVE_START_TIME,
@@ -75,7 +79,6 @@ from .const import (
     CONF_MIN_ELEVATION,
     CONF_MODE,
     CONF_ENABLE_HEAT_GAIN_POLICY,
-    CONF_ENABLE_LEGACY_BASIC_SHADING,
     CONF_OUTSIDETEMP_ENTITY,
     CONF_PRESENCE_ENTITY,
     CONF_POLICY_PRESET,
@@ -83,6 +86,7 @@ from .const import (
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
+    CONF_ROOM_NAME,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SENSOR_TYPE,
@@ -99,19 +103,13 @@ from .const import (
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
     CONF_TRANSPARENT_BLIND,
-    CONF_USE_FORECAST_CLOUD_COVERAGE,
+    CONF_TEMPLATE_ENTRY,
+    CONF_USE_FACADE_AZIMUTH,
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
     CONF_USE_FORECAST_MAX_TEMP_TOMORROW,
-    CONF_USE_FORECAST_PRECIPITATION_AMOUNT,
-    CONF_USE_FORECAST_PRECIPITATION_PROBABILITY,
-    CONF_USE_FORECAST_UV_INDEX,
     CONF_USE_OPEN_DATA_SOLAR_RADIATION,
     CONF_WEIGHT_DIRECT_EXPOSURE,
-    CONF_WEIGHT_FORECAST_CLOUDS,
-    CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT,
-    CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY,
     CONF_WEIGHT_FORECAST_TEMPERATURE,
-    CONF_WEIGHT_FORECAST_UV,
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
@@ -147,13 +145,63 @@ HORIZON_PROFILE_EXAMPLE = """[
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required("name"): selector.TextSelector(),
-        vol.Optional(CONF_MODE): selector.SelectSelector(
+        vol.Optional(CONF_MODE, default=SensorType.BLIND): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=SENSOR_TYPE_MENU, translation_key="mode"
             )
         ),
     }
 )
+
+TEMPLATE_NONE = "__none__"
+
+
+def _template_entry_options(hass) -> list[dict[str, str]]:
+    """Return selectable existing Solar Shading entries for default reuse."""
+    entries = getattr(hass.config_entries, "async_entries", lambda _domain: [])(DOMAIN)
+    result: list[dict[str, str]] = []
+    for entry in entries:
+        name = entry.data.get("name") or entry.title or entry.entry_id
+        sensor_type = entry.data.get(CONF_SENSOR_TYPE)
+        result.append(
+            {
+                "value": entry.entry_id,
+                "label": f"{name} ({sensor_type or 'Solar Shading'})",
+            }
+        )
+    return result
+
+
+def _config_schema(hass) -> vol.Schema:
+    """Return the initial schema, including existing-window templates."""
+    schema: dict[Any, Any] = dict(CONFIG_SCHEMA.schema)
+    options = _template_entry_options(hass)
+    if options:
+        schema[
+            vol.Optional(CONF_TEMPLATE_ENTRY, default=TEMPLATE_NONE)
+        ] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    {"value": TEMPLATE_NONE, "label": "Keine Vorlage"},
+                    *options,
+                ]
+            )
+        )
+    return vol.Schema(schema)
+
+
+def _template_options(hass, entry_id: str | None) -> dict[str, Any]:
+    """Return options from an existing entry selected as setup template."""
+    if not entry_id or entry_id == TEMPLATE_NONE:
+        return {}
+    entries = getattr(hass.config_entries, "async_entries", lambda _domain: [])(DOMAIN)
+    for entry in entries:
+        if entry.entry_id == entry_id:
+            options = dict(entry.options)
+            options.pop(CONF_ENTITIES, None)
+            options.pop(CONF_TEMPLATE_ENTRY, None)
+            return options
+    return {}
 
 CLIMATE_MODE = vol.Schema(
     {
@@ -163,6 +211,20 @@ CLIMATE_MODE = vol.Schema(
 
 OPTIONS = vol.Schema(
     {
+        vol.Optional(CONF_FACADE_NAME): selector.TextSelector(),
+        vol.Optional(CONF_FLOOR_NAME): selector.TextSelector(),
+        vol.Optional(CONF_ROOM_NAME): selector.TextSelector(),
+        vol.Optional(CONF_USE_FACADE_AZIMUTH, default=False): selector.BooleanSelector(),
+        vol.Optional(CONF_FACADE_REFERENCE_AZIMUTH, default=0): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0, max=359, step=1, mode="slider", unit_of_measurement="Â°"
+            )
+        ),
+        vol.Optional(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=-360, max=360, step=1, mode="box", unit_of_measurement="Â°"
+            )
+        ),
         vol.Required(CONF_AZIMUTH, default=180): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=359, mode="slider", unit_of_measurement="°"
@@ -250,10 +312,7 @@ VERTICAL_OPTIONS = vol.Schema(
         vol.Optional(CONF_ENTITIES, default=[]): selector.EntitySelector(
             selector.EntitySelectorConfig(
                 multiple=True,
-                filter=selector.EntityFilterSelectorConfig(
-                    domain="cover",
-                    supported_features=["cover.CoverEntityFeature.SET_POSITION"],
-                ),
+                filter=selector.EntityFilterSelectorConfig(domain="cover"),
             )
         ),
         vol.Required(CONF_HEIGHT_WIN, default=2.1): selector.NumberSelector(
@@ -290,10 +349,7 @@ TILT_OPTIONS = vol.Schema(
         vol.Optional(CONF_ENTITIES, default=[]): selector.EntitySelector(
             selector.EntitySelectorConfig(
                 multiple=True,
-                filter=selector.EntityFilterSelectorConfig(
-                    domain="cover",
-                    supported_features=["cover.CoverEntityFeature.SET_TILT_POSITION"],
-                ),
+                filter=selector.EntityFilterSelectorConfig(domain="cover"),
             )
         ),
         vol.Required(CONF_TILT_DEPTH, default=3): selector.NumberSelector(
@@ -396,12 +452,6 @@ WEATHER_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TODAY, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_FORECAST_CLOUD_COVERAGE, default=False): selector.BooleanSelector(),
-        vol.Optional(
-            CONF_USE_FORECAST_PRECIPITATION_PROBABILITY, default=False
-        ): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_FORECAST_PRECIPITATION_AMOUNT, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_FORECAST_UV_INDEX, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=False): selector.BooleanSelector(),
         vol.Optional(
             CONF_SOLAR_RADIATION_ENTITY, default=vol.UNDEFINED
@@ -496,10 +546,9 @@ POLICY_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_HEAT_POWER_MAX_WATTS, default=250): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                min=50, max=1500, step=25, mode="slider", unit_of_measurement="W"
+                min=50, max=800, step=25, mode="slider", unit_of_measurement="W/m2"
             )
         ),
-        vol.Optional(CONF_ENABLE_LEGACY_BASIC_SHADING, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_SHOW_EXPERT_WEIGHTS, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_WEIGHT_DIRECT_EXPOSURE, default=1.2): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
@@ -515,22 +564,6 @@ POLICY_OPTIONS = vol.Schema(
         ),
         vol.Optional(
             CONF_WEIGHT_FORECAST_TEMPERATURE, default=1.0
-        ): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
-        ),
-        vol.Optional(CONF_WEIGHT_FORECAST_UV, default=0.6): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
-        ),
-        vol.Optional(CONF_WEIGHT_FORECAST_CLOUDS, default=0.5): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
-        ),
-        vol.Optional(
-            CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY, default=0.4
-        ): selector.NumberSelector(
-            selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
-        ),
-        vol.Optional(
-            CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT, default=0.4
         ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
@@ -669,6 +702,7 @@ def _validate_horizon_profile(value: str | None) -> str | None:
 def _validate_geometry_input(user_input: dict[str, Any]) -> dict[str, str]:
     """Validate geometry-related config values."""
     errors: dict[str, str] = {}
+    _apply_facade_azimuth(user_input)
     try:
         user_input[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
             user_input.get(CONF_HORIZON_PROFILE)
@@ -686,6 +720,17 @@ def _validate_geometry_input(user_input: dict[str, Any]) -> dict[str, str]:
         errors[CONF_WINDOW_WIDTH] = "window_width_required_for_reveals"
 
     return errors
+
+
+def _apply_facade_azimuth(user_input: dict[str, Any]) -> None:
+    """Derive the window azimuth from house/facade reference settings."""
+    if not user_input.get(CONF_USE_FACADE_AZIMUTH):
+        return
+    reference = user_input.get(CONF_FACADE_REFERENCE_AZIMUTH)
+    offset = user_input.get(CONF_FACADE_OFFSET)
+    if reference is None or offset is None:
+        return
+    user_input[CONF_AZIMUTH] = int(round((float(reference) + float(offset)) % 360))
 
 
 def _validate_policy_input(user_input: dict[str, Any]) -> dict[str, str]:
@@ -719,18 +764,34 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
 
+    def optional_entities(self, keys: list, user_input: dict[str, Any] | None = None):
+        """Set optional entity fields to None when the form omits them."""
+        if user_input is None:
+            return
+        for key in keys:
+            if key not in user_input:
+                user_input[key] = None
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Handle the initial step."""
         # errors = {}
         if user_input:
-            self.config = user_input
-            if self.config[CONF_MODE] == SensorType.BLIND:
+            selected_mode = user_input.get(CONF_MODE, SensorType.BLIND)
+            name = user_input["name"]
+            template_entry = user_input.get(CONF_TEMPLATE_ENTRY)
+            self.config = _template_options(self.hass, template_entry)
+            self.config.update(user_input)
+            self.config["name"] = name
+            self.config[CONF_MODE] = selected_mode
+            if selected_mode == SensorType.BLIND:
                 return await self.async_step_vertical()
-            if self.config[CONF_MODE] == SensorType.AWNING:
+            if selected_mode == SensorType.AWNING:
                 return await self.async_step_horizontal()
-            if self.config[CONF_MODE] == SensorType.TILT:
+            if selected_mode == SensorType.TILT:
                 return await self.async_step_tilt()
-        return self.async_show_form(step_id="user", data_schema=CONFIG_SCHEMA)
+        return self.async_show_form(
+            step_id="user", data_schema=_config_schema(self.hass)
+        )
 
     async def async_step_vertical(self, user_input: dict[str, Any] | None = None):
         """Show basic config for vertical blinds."""
@@ -756,14 +817,16 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         },
                     )
             self.config.update(user_input)
-            if self.config[CONF_INTERP]:
+            if self.config.get(CONF_INTERP, False):
                 return await self.async_step_interp()
-            if self.config[CONF_ENABLE_BLIND_SPOT]:
+            if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
         return self.async_show_form(
             step_id="vertical",
-            data_schema=CLIMATE_MODE.extend(VERTICAL_OPTIONS.schema),
+            data_schema=self.add_suggested_values_to_schema(
+                CLIMATE_MODE.extend(VERTICAL_OPTIONS.schema), self.config
+            ),
         )
 
     async def async_step_horizontal(self, user_input: dict[str, Any] | None = None):
@@ -790,14 +853,16 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         },
                     )
             self.config.update(user_input)
-            if self.config[CONF_INTERP]:
+            if self.config.get(CONF_INTERP, False):
                 return await self.async_step_interp()
-            if self.config[CONF_ENABLE_BLIND_SPOT]:
+            if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
         return self.async_show_form(
             step_id="horizontal",
-            data_schema=CLIMATE_MODE.extend(HORIZONTAL_OPTIONS.schema),
+            data_schema=self.add_suggested_values_to_schema(
+                CLIMATE_MODE.extend(HORIZONTAL_OPTIONS.schema), self.config
+            ),
         )
 
     async def async_step_tilt(self, user_input: dict[str, Any] | None = None):
@@ -824,13 +889,16 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                         },
                     )
             self.config.update(user_input)
-            if self.config[CONF_INTERP]:
+            if self.config.get(CONF_INTERP, False):
                 return await self.async_step_interp()
-            if self.config[CONF_ENABLE_BLIND_SPOT]:
+            if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
         return self.async_show_form(
-            step_id="tilt", data_schema=CLIMATE_MODE.extend(TILT_OPTIONS.schema)
+            step_id="tilt",
+            data_schema=self.add_suggested_values_to_schema(
+                CLIMATE_MODE.extend(TILT_OPTIONS.schema), self.config
+            ),
         )
 
     async def async_step_interp(self, user_input: dict[str, Any] | None = None):
@@ -847,10 +915,15 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     },
                 )
             self.config.update(user_input)
-            if self.config[CONF_ENABLE_BLIND_SPOT]:
+            if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
-        return self.async_show_form(step_id="interp", data_schema=INTERPOLATION_OPTIONS)
+        return self.async_show_form(
+            step_id="interp",
+            data_schema=self.add_suggested_values_to_schema(
+                INTERPOLATION_OPTIONS, self.config
+            ),
+        )
 
     async def async_step_blind_spot(self, user_input: dict[str, Any] | None = None):
         """Add blindspot to data."""
@@ -890,17 +963,25 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         """Manage automation options."""
         if user_input is not None:
             self.config.update(user_input)
-            if self.config[CONF_CLIMATE_MODE] is True:
+            if self.config.get(CONF_CLIMATE_MODE, False) is True:
                 return await self.async_step_climate()
             return await self.async_step_weather()
-        return self.async_show_form(step_id="automation", data_schema=AUTOMATION_CONFIG)
+        return self.async_show_form(
+            step_id="automation",
+            data_schema=self.add_suggested_values_to_schema(
+                AUTOMATION_CONFIG, self.config
+            ),
+        )
 
     async def async_step_climate(self, user_input: dict[str, Any] | None = None):
         """Manage climate options."""
         if user_input is not None:
             self.config.update(user_input)
             return await self.async_step_weather()
-        return self.async_show_form(step_id="climate", data_schema=CLIMATE_OPTIONS)
+        return self.async_show_form(
+            step_id="climate",
+            data_schema=self.add_suggested_values_to_schema(CLIMATE_OPTIONS, self.config),
+        )
 
     async def async_step_weather(self, user_input: dict[str, Any] | None = None):
         """Manage weather conditions."""
@@ -908,7 +989,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             self.optional_entities([CONF_SOLAR_RADIATION_ENTITY], user_input)
             self.config.update(user_input)
             return await self.async_step_policy()
-        return self.async_show_form(step_id="weather", data_schema=WEATHER_OPTIONS)
+        return self.async_show_form(
+            step_id="weather",
+            data_schema=self.add_suggested_values_to_schema(WEATHER_OPTIONS, self.config),
+        )
 
     async def async_step_policy(self, user_input: dict[str, Any] | None = None):
         """Manage heat-gain policy options."""
@@ -924,7 +1008,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 )
             self.config.update(user_input)
             return await self.async_step_update()
-        return self.async_show_form(step_id="policy", data_schema=POLICY_OPTIONS)
+        return self.async_show_form(
+            step_id="policy",
+            data_schema=self.add_suggested_values_to_schema(POLICY_OPTIONS, self.config),
+        )
 
     async def async_step_update(self, user_input: dict[str, Any] | None = None):
         """Create entry."""
@@ -941,6 +1028,16 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             },
             options={
                 CONF_MODE: self.mode,
+                CONF_FACADE_NAME: self.config.get(CONF_FACADE_NAME),
+                CONF_FLOOR_NAME: self.config.get(CONF_FLOOR_NAME),
+                CONF_ROOM_NAME: self.config.get(CONF_ROOM_NAME),
+                CONF_USE_FACADE_AZIMUTH: self.config.get(
+                    CONF_USE_FACADE_AZIMUTH, False
+                ),
+                CONF_FACADE_REFERENCE_AZIMUTH: self.config.get(
+                    CONF_FACADE_REFERENCE_AZIMUTH
+                ),
+                CONF_FACADE_OFFSET: self.config.get(CONF_FACADE_OFFSET),
                 CONF_AZIMUTH: self.config.get(CONF_AZIMUTH),
                 CONF_HEIGHT_WIN: self.config.get(CONF_HEIGHT_WIN),
                 CONF_DISTANCE: self.config.get(CONF_DISTANCE),
@@ -1009,18 +1106,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_USE_FORECAST_MAX_TEMP_TOMORROW: self.config.get(
                     CONF_USE_FORECAST_MAX_TEMP_TOMORROW, False
                 ),
-                CONF_USE_FORECAST_CLOUD_COVERAGE: self.config.get(
-                    CONF_USE_FORECAST_CLOUD_COVERAGE, False
-                ),
-                CONF_USE_FORECAST_PRECIPITATION_PROBABILITY: self.config.get(
-                    CONF_USE_FORECAST_PRECIPITATION_PROBABILITY, False
-                ),
-                CONF_USE_FORECAST_PRECIPITATION_AMOUNT: self.config.get(
-                    CONF_USE_FORECAST_PRECIPITATION_AMOUNT, False
-                ),
-                CONF_USE_FORECAST_UV_INDEX: self.config.get(
-                    CONF_USE_FORECAST_UV_INDEX, False
-                ),
                 CONF_USE_OPEN_DATA_SOLAR_RADIATION: self.config.get(
                     CONF_USE_OPEN_DATA_SOLAR_RADIATION, False
                 ),
@@ -1086,9 +1171,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_HEAT_POWER_MAX_WATTS: self.config.get(
                     CONF_HEAT_POWER_MAX_WATTS, 250
                 ),
-                CONF_ENABLE_LEGACY_BASIC_SHADING: self.config.get(
-                    CONF_ENABLE_LEGACY_BASIC_SHADING, False
-                ),
                 CONF_SHOW_EXPERT_WEIGHTS: self.config.get(
                     CONF_SHOW_EXPERT_WEIGHTS, False
                 ),
@@ -1100,16 +1182,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_WEIGHT_WEATHER: self.config.get(CONF_WEIGHT_WEATHER, 1.0),
                 CONF_WEIGHT_FORECAST_TEMPERATURE: self.config.get(
                     CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0
-                ),
-                CONF_WEIGHT_FORECAST_UV: self.config.get(CONF_WEIGHT_FORECAST_UV, 0.6),
-                CONF_WEIGHT_FORECAST_CLOUDS: self.config.get(
-                    CONF_WEIGHT_FORECAST_CLOUDS, 0.5
-                ),
-                CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY: self.config.get(
-                    CONF_WEIGHT_FORECAST_PRECIPITATION_PROBABILITY, 0.4
-                ),
-                CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT: self.config.get(
-                    CONF_WEIGHT_FORECAST_PRECIPITATION_AMOUNT, 0.4
                 ),
                 CONF_WEIGHT_SOLAR_RADIATION: self.config.get(
                     CONF_WEIGHT_SOLAR_RADIATION, 1.0

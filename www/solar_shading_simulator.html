@@ -761,15 +761,11 @@
           </div>
           <div class="checkbox-row">
             <input id="hotDayCloseEnabled" type="checkbox">
-            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt, wird eine maximale Offenposition erzwungen, unabhaengig von den feineren Gewichten.">i</button></label>
+            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt und direkte Sonne auf das Fenster faellt, wird eine maximale Offenposition erzwungen. Sobald keine direkte Sonne mehr auf dem Fenster ist, greift dieses Limit nicht.">i</button></label>
           </div>
           <div class="checkbox-row">
             <input id="heatPowerLimitEnabled" type="checkbox">
-            <label for="heatPowerLimitEnabled"><span class="label-main">Watt-Limit pro Fenster aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2 und W pro Fenster. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal die eingestellten Watt durch dieses Fenster kommen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="enableLegacyBasicShading" type="checkbox">
-            <label for="enableLegacyBasicShading"><span class="label-main">Legacy Schreibtisch-/Blendschutz aktiv</span><button class="info-btn" type="button" data-info="Aktiviert die alte Adaptive-Cover-Geometrie: Wenn direkte Sonne weit in den Raum faellt, kann leicht geschlossen werden, auch wenn die Waermeschutz-Policy nichts fordert. Fuer reinen Waermeschutz eher aus lassen.">i</button></label>
+            <label for="heatPowerLimitEnabled"><span class="label-main">W/m2-Limit pro Glasflaeche aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal der eingestellte W/m2-Wert durch die offene Glasflaeche kommt.">i</button></label>
           </div>
           <div class="checkbox-row">
             <input id="showExpertWeights" type="checkbox">
@@ -817,34 +813,6 @@
               <div class="range-row">
                 <input id="weightForecastTempRange" type="range" min="0" max="3" step="0.05" value="1.00">
                 <input id="weightForecastTemp" type="number" min="0" max="3" step="0.05" value="1.00">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast UV</label>
-              <div class="range-row">
-                <input id="weightForecastUvRange" type="range" min="0" max="3" step="0.05" value="0.60">
-                <input id="weightForecastUv" type="number" min="0" max="3" step="0.05" value="0.60">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast clouds</label>
-              <div class="range-row">
-                <input id="weightForecastCloudsRange" type="range" min="0" max="3" step="0.05" value="0.50">
-                <input id="weightForecastClouds" type="number" min="0" max="3" step="0.05" value="0.50">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast rain probability</label>
-              <div class="range-row">
-                <input id="weightForecastRainProbRange" type="range" min="0" max="3" step="0.05" value="0.40">
-                <input id="weightForecastRainProb" type="number" min="0" max="3" step="0.05" value="0.40">
-              </div>
-            </div>
-            <div class="field">
-              <label>Weight: forecast rain amount</label>
-              <div class="range-row">
-                <input id="weightForecastRainAmountRange" type="range" min="0" max="3" step="0.05" value="0.40">
-                <input id="weightForecastRainAmount" type="number" min="0" max="3" step="0.05" value="0.40">
               </div>
             </div>
           </div>
@@ -935,10 +903,10 @@
               </div>
             </div>
             <div class="field">
-              <label>Max. Waermeeintrag pro Fenster in W</label>
+              <label>Max. Waermeeintrag pro m2 Glas</label>
               <div class="range-row">
-                <input id="heatPowerMaxWattsRange" type="range" min="50" max="1500" step="25" value="250">
-                <input id="heatPowerMaxWatts" type="number" min="0" max="3000" step="25" value="250">
+                <input id="heatPowerMaxWattsRange" type="range" min="50" max="800" step="25" value="250">
+                <input id="heatPowerMaxWatts" type="number" min="0" max="1200" step="25" value="250">
               </div>
             </div>
           </div>
@@ -951,6 +919,14 @@
         <details>
           <summary>Import aus Home Assistant</summary>
           <div class="grid">
+            <div class="field">
+              <label for="haBaseUrl"><span class="label-main">HA Basis-URL</span> <button class="info-btn" type="button" data-info="Leer lassen, wenn der Simulator ueber /local in Home Assistant geoeffnet ist. Wenn du die Datei lokal oeffnest, trage z.B. http://192.168.178.20:8123 ein.">i</button></label>
+              <input id="haBaseUrl" type="url" placeholder="auto oder http://192.168.178.20:8123">
+            </div>
+            <div class="field">
+              <label for="haToken"><span class="label-main">HA Token optional</span> <button class="info-btn" type="button" data-info="Nur noetig, wenn Home Assistant den Import mit 401 ablehnt oder du die HTML-Datei nicht direkt ueber /local oeffnest. Der Token wird nicht exportiert.">i</button></label>
+              <input id="haToken" type="password" autocomplete="off" placeholder="Long-lived access token">
+            </div>
             <div class="field">
               <label for="haSourceSelect"><span class="label-main">Vorhandenes Fenster</span> <button class="info-btn" type="button" data-info="Die Liste wird aus den Solar-Shading-Positionssensoren geladen. Importiert werden Standardwerte, Geometrie, Horizonprofil, Forecast-Toggles und Policy-Gewichte, soweit sie als Attribute verfuegbar sind.">i</button></label>
               <select id="haSourceSelect">
@@ -970,6 +946,70 @@
             <button class="action-btn primary" type="button" id="importSourceBtn">Werte uebernehmen</button>
           </div>
           <div class="status" id="sourceStatus">Noch keine HA-Fenster geladen.</div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Simulator Import / Export</summary>
+          <p class="subtle">Exportiert nur Simulatorwerte. HA-Token und Live-Sensorwerte werden nicht gespeichert.</p>
+          <div class="grid">
+            <div class="field">
+              <label for="simImportMode">Simulator-Import-Modus</label>
+              <select id="simImportMode">
+                <option value="replace" selected>Werte ersetzen</option>
+                <option value="overlay">Nur leere Werte fuellen</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="simPresetScope">Preset-/Export-Umfang</label>
+              <select id="simPresetScope">
+                <option value="all" selected>Alles</option>
+                <option value="global">Globale Policy / Waermeschutz</option>
+                <option value="geometry">Fenster-Geometrie / Horizont</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="simConfigText">JSON</label>
+            <textarea id="simConfigText" placeholder="Export erscheint hier, oder JSON zum Import einfuegen."></textarea>
+          </div>
+          <input id="simConfigFile" type="file" accept="application/json,.json" hidden>
+          <div class="cta-row">
+            <button class="action-btn primary" type="button" id="exportConfigBtn">Export JSON</button>
+            <button class="action-btn" type="button" id="copyConfigBtn">Kopieren</button>
+            <button class="action-btn" type="button" id="downloadConfigBtn">Download</button>
+            <button class="action-btn" type="button" id="selectConfigFileBtn">Datei laden</button>
+            <button class="action-btn secondary" type="button" id="importConfigBtn">JSON importieren</button>
+          </div>
+          <div class="status" id="simConfigStatus">Noch kein Simulator-JSON geladen.</div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Lokale Presets</summary>
+          <p class="subtle">Speichert Presets im Browser dieses Geraets. Damit kannst du ein Rollo als Vorlage fuer andere Fenster nutzen. Fuer globale Einstellungen nutze den Umfang "Globale Policy / Waermeschutz".</p>
+          <div class="grid">
+            <div class="field">
+              <label for="presetName">Preset-Name</label>
+              <input id="presetName" type="text" placeholder="z.B. Aussenrollo Sommer">
+            </div>
+            <div class="field">
+              <label for="presetSelect">Gespeicherte Presets</label>
+              <select id="presetSelect">
+                <option value="">Keine Presets gespeichert</option>
+              </select>
+            </div>
+          </div>
+          <div class="cta-row">
+            <button class="action-btn primary" type="button" id="savePresetBtn">Preset speichern</button>
+            <button class="action-btn" type="button" id="loadPresetBtn">Preset laden</button>
+            <button class="action-btn" type="button" id="deletePresetBtn">Loeschen</button>
+            <button class="action-btn secondary" type="button" id="exportPresetLibraryBtn">Preset-Library exportieren</button>
+            <button class="action-btn secondary" type="button" id="importPresetLibraryBtn">JSON als Preset-Library importieren</button>
+          </div>
+          <div class="status" id="presetStatus">Presets sind lokal im Browser gespeichert.</div>
         </details>
       </section>
 
@@ -1063,23 +1103,6 @@
             <input id="useTomorrowMax" type="checkbox">
             <label for="useTomorrowMax"><span class="label-main">Morgiges Tmax nutzen</span><button class="info-btn" type="button" data-info="Kann helfen, wenn du schon abends oder frueh morgens fuer den naechsten Tag konservativ denken willst.">i</button></label>
           </div>
-          <div class="checkbox-row">
-            <input id="useForecastClouds" type="checkbox" checked>
-            <label for="useForecastClouds"><span class="label-main">Forecast-Wolken nutzen</span><button class="info-btn" type="button" data-info="Viele Forecast-Wolken daempfen den praeventiven Forecast-Risikowert, weniger Wolken lassen ihn steigen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastUv" type="checkbox" checked>
-            <label for="useForecastUv"><span class="label-main">Forecast-UV nutzen</span><button class="info-btn" type="button" data-info="UV ist ein nuetzlicher Proxy fuer starke solare Last an klaren Tagen.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastRainProb" type="checkbox">
-            <label for="useForecastRainProb"><span class="label-main">Regenwahrscheinlichkeit nutzen</span><button class="info-btn" type="button" data-info="Wenn die Regenwahrscheinlichkeit hoch ist, wird der praeventive Forecast-Risikowert gedaempft.">i</button></label>
-          </div>
-          <div class="checkbox-row">
-            <input id="useForecastRainAmount" type="checkbox">
-            <label for="useForecastRainAmount"><span class="label-main">Regenmenge nutzen</span><button class="info-btn" type="button" data-info="Erwartete Niederschlagsmenge daempft den Forecast-Risikowert noch staerker.">i</button></label>
-          </div>
-
           <div class="grid">
             <div class="field">
               <label for="forecastTodayMax">Forecast Tmax heute</label>
@@ -1092,38 +1115,10 @@
           </div>
           <div class="grid">
             <div class="field">
-              <label><span class="label-main">Forecast-Wolken in %</span> <button class="info-btn" type="button" data-info="Forecast-Wolken daempfen den praeventiven Heiss-Tag-Risikowert. Ein hoher Prozentwert sollte die Beschattung also weicher machen, nicht haerter.">i</button></label>
-              <div class="range-row">
-                <input id="forecastCloudCoverageRange" type="range" min="0" max="100" step="1" value="25">
-                <input id="forecastCloudCoverage" type="number" min="0" max="100" step="1" value="25">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast-UV</label>
-              <div class="range-row">
-                <input id="forecastUvRange" type="range" min="0" max="12" step="0.1" value="5.9">
-                <input id="forecastUv" type="number" min="0" max="12" step="0.1" value="5.9">
-              </div>
-            </div>
-            <div class="field">
               <label><span class="label-main">Forecast Solar max in W/m²</span> <button class="info-btn" type="button" data-info="Tagesmaximum der direkten Solarstrahlung. Mit Open-Data-Solarleistung aktiv daempft ein strahlungsarmer Tag das Forecast-Risiko direkter als Wolken-Prozente.">i</button></label>
               <div class="range-row">
                 <input id="forecastSolarMaxRange" type="range" min="0" max="1000" step="10" value="850">
                 <input id="forecastSolarMax" type="number" min="0" max="1200" step="10" value="850">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast Regenwahr. in %</label>
-              <div class="range-row">
-                <input id="forecastRainProbRange" type="range" min="0" max="100" step="1" value="0">
-                <input id="forecastRainProb" type="number" min="0" max="100" step="1" value="0">
-              </div>
-            </div>
-            <div class="field">
-              <label>Forecast Regenmenge in mm</label>
-              <div class="range-row">
-                <input id="forecastRainAmountRange" type="range" min="0" max="20" step="0.1" value="0.8">
-                <input id="forecastRainAmount" type="number" min="0" max="20" step="0.1" value="0.8">
               </div>
             </div>
           </div>
@@ -1213,6 +1208,7 @@
               <div class="metric"><div class="name">Policy-Ziel offen</div><div class="val" id="policyTargetCell"></div></div>
               <div class="metric"><div class="name">Hot-day override</div><div class="val" id="hotDayOverrideCell"></div></div>
               <div class="metric"><div class="name">Finale Offenposition</div><div class="val" id="finalPositionCell"></div></div>
+              <div class="metric"><div class="name">Berechnungsquelle</div><div class="val" id="calculationSourceCell"></div></div>
             </div>
             <h2 style="margin-top: 18px;">Policy-Entscheidung</h2>
             <div class="soft-card policy-explain" id="policyExplanationCell"></div>
@@ -1236,9 +1232,29 @@
     const customGlassFields = document.getElementById("customGlassFields");
     const glassPresetInfo = document.getElementById("glassPresetInfo");
     const haSourceSelect = document.getElementById("haSourceSelect");
+    const haBaseUrlInput = document.getElementById("haBaseUrl");
+    const haTokenInput = document.getElementById("haToken");
     const applyDevicePresetBtn = document.getElementById("applyDevicePresetBtn");
     const refreshSourcesBtn = document.getElementById("refreshSourcesBtn");
     const importSourceBtn = document.getElementById("importSourceBtn");
+    const simImportModeSelect = document.getElementById("simImportMode");
+    const simPresetScopeSelect = document.getElementById("simPresetScope");
+    const simConfigText = document.getElementById("simConfigText");
+    const simConfigFile = document.getElementById("simConfigFile");
+    const simConfigStatus = document.getElementById("simConfigStatus");
+    const exportConfigBtn = document.getElementById("exportConfigBtn");
+    const copyConfigBtn = document.getElementById("copyConfigBtn");
+    const downloadConfigBtn = document.getElementById("downloadConfigBtn");
+    const selectConfigFileBtn = document.getElementById("selectConfigFileBtn");
+    const importConfigBtn = document.getElementById("importConfigBtn");
+    const presetNameInput = document.getElementById("presetName");
+    const presetSelect = document.getElementById("presetSelect");
+    const presetStatus = document.getElementById("presetStatus");
+    const savePresetBtn = document.getElementById("savePresetBtn");
+    const loadPresetBtn = document.getElementById("loadPresetBtn");
+    const deletePresetBtn = document.getElementById("deletePresetBtn");
+    const exportPresetLibraryBtn = document.getElementById("exportPresetLibraryBtn");
+    const importPresetLibraryBtn = document.getElementById("importPresetLibraryBtn");
     const horizonProfileInput = document.getElementById("horizonProfile");
     const horizonEditorSvg = document.getElementById("horizonEditorSvg");
     const horizonEditorStatus = document.getElementById("horizonEditorStatus");
@@ -1260,19 +1276,19 @@
       custom: { scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0, weights: null },
       daylight_first_single_aspect: {
         scoreMultiplier: 0.92, thresholdShift: 0.06, positionOffset: 5,
-        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7, forecast_uv: 0.35, forecast_clouds: 0.8, forecast_precipitation_probability: 0.5, forecast_precipitation_amount: 0.5 }
+        weights: { direct_exposure: 1.25, incidence: 1.0, glazing: 0.75, weather: 1.15, solar_radiation: 1.1, forecast_temperature: 0.7 }
       },
       daylight_first_multi_aspect: {
         scoreMultiplier: 1.0, thresholdShift: 0.0, positionOffset: 0,
-        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85, forecast_uv: 0.45, forecast_clouds: 0.75, forecast_precipitation_probability: 0.45, forecast_precipitation_amount: 0.45 }
+        weights: { direct_exposure: 1.3, incidence: 1.05, glazing: 0.8, weather: 1.1, solar_radiation: 1.1, forecast_temperature: 0.85 }
       },
       balanced: {
         scoreMultiplier: 1.08, thresholdShift: -0.02, positionOffset: 0,
-        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0, forecast_uv: 0.55, forecast_clouds: 0.65, forecast_precipitation_probability: 0.4, forecast_precipitation_amount: 0.4 }
+        weights: { direct_exposure: 1.2, incidence: 0.95, glazing: 0.8, weather: 1.0, solar_radiation: 1.15, forecast_temperature: 1.0 }
       },
       cooling_first: {
         scoreMultiplier: 1.16, thresholdShift: -0.06, positionOffset: -5,
-        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35, forecast_uv: 0.75, forecast_clouds: 0.45, forecast_precipitation_probability: 0.25, forecast_precipitation_amount: 0.25 }
+        weights: { direct_exposure: 1.35, incidence: 1.1, glazing: 0.75, weather: 0.9, solar_radiation: 1.25, forecast_temperature: 1.35 }
       }
     };
 
@@ -1336,11 +1352,7 @@
       ["solarRadiationRange", "solarRadiation"],
       ["solarReferenceRange", "solarReference"],
       ["outsideTempRange", "outsideTemp"],
-      ["forecastCloudCoverageRange", "forecastCloudCoverage"],
-      ["forecastUvRange", "forecastUv"],
       ["forecastSolarMaxRange", "forecastSolarMax"],
-      ["forecastRainProbRange", "forecastRainProb"],
-      ["forecastRainAmountRange", "forecastRainAmount"],
       ["forecastInfluenceRange", "forecastInfluence"],
       ["weightDirectRange", "weightDirect"],
       ["weightIncidenceRange", "weightIncidence"],
@@ -1348,10 +1360,6 @@
       ["weightWeatherRange", "weightWeather"],
       ["weightSolarRadiationRange", "weightSolarRadiation"],
       ["weightForecastTempRange", "weightForecastTemp"],
-      ["weightForecastUvRange", "weightForecastUv"],
-      ["weightForecastCloudsRange", "weightForecastClouds"],
-      ["weightForecastRainProbRange", "weightForecastRainProb"],
-      ["weightForecastRainAmountRange", "weightForecastRainAmount"],
       ["partialThresholdRange", "partialThreshold"],
       ["fullThresholdRange", "fullThreshold"],
       ["partialPositionRange", "partialPosition"],
@@ -1374,22 +1382,45 @@
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
       "revealTop", "horizonProfile", "cloudCoverage", "precipitation",
       "solarRadiation", "solarReference", "outsideTemp",
-      "forecastTodayMax", "forecastTomorrowMax", "forecastCloudCoverage",
-      "forecastUv", "forecastSolarMax", "forecastRainProb", "forecastRainAmount", "hotDayThreshold",
+      "forecastTodayMax", "forecastTomorrowMax", "forecastSolarMax", "hotDayThreshold",
       "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
       "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
       "weightSolarRadiation",
-      "weightForecastTemp", "weightForecastUv", "weightForecastClouds",
-      "weightForecastRainProb", "weightForecastRainAmount", "partialThreshold",
+      "weightForecastTemp", "partialThreshold",
       "fullThreshold", "partialPosition", "fullPosition", "awayScoreMultiplier",
       "awayThresholdReduction", "awayPositionOffset", "useTodayMax",
-      "useTomorrowMax", "useForecastClouds", "useForecastUv", "useOpenDataSolarRadiation", "useForecastRainProb",
-      "useForecastRainAmount", "enableHeatGainPolicy", "additionalWindows", "awayActive", "devicePreset",
-      "enableLegacyBasicShading", "showExpertWeights",
+      "useTomorrowMax", "useOpenDataSolarRadiation", "enableHeatGainPolicy",
+      "additionalWindows", "awayActive", "devicePreset", "showExpertWeights",
       "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
       "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
       "heatProtectionMinOutsideTemp", "heatPowerMaxWatts"
     ];
+
+    const PRESET_STORAGE_KEY = "solar_shading_simulator_presets_v1";
+    const PRESET_SCOPE_IDS = {
+      all: inputIds,
+      global: [
+        "devicePreset", "defaultPosition", "sunsetPosition", "glassType",
+        "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
+        "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
+        "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
+        "enableHeatGainPolicy", "policyPreset", "additionalWindows", "awayActive",
+        "awayScoreMultiplier", "awayThresholdReduction", "awayPositionOffset",
+        "showExpertWeights", "hotDayCloseEnabled",
+        "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
+        "heatPowerLimitEnabled", "heatPowerTempThreshold",
+        "heatProtectionMinOutsideTemp", "heatPowerMaxWatts",
+        "weightDirect", "weightIncidence", "weightGlazing", "weightWeather",
+        "weightSolarRadiation", "weightForecastTemp",
+        "partialThreshold", "fullThreshold", "partialPosition", "fullPosition"
+      ],
+      geometry: [
+        "latitude", "longitude", "windowAzimuth", "fovLeft", "fovRight",
+        "minElevation", "maxElevation", "windowHeight", "windowWidth",
+        "distance", "revealLeft", "revealRight", "revealTop", "horizonProfile",
+        "glassType", "customVisibleT", "customSolarT", "customVisibleR", "customSolarR"
+      ]
+    };
 
     const HORIZON_EXAMPLE_PROFILE = [
       { angle: 43, lower_elevation: 6, upper_elevation: 90 },
@@ -1425,6 +1456,93 @@
 
     function parseBool(id) {
       return Boolean(document.getElementById(id).checked);
+    }
+
+    function syncRangeFor(id) {
+      const range = document.getElementById(`${id}Range`);
+      const element = document.getElementById(id);
+      if (range && element) {
+        range.value = element.value;
+      }
+    }
+
+    function setControlValue(id, value, { overlay = false } = {}) {
+      if (value === undefined || value === null) {
+        return false;
+      }
+      const element = document.getElementById(id);
+      if (!element || element === haTokenInput) {
+        return false;
+      }
+      if (overlay && element.type !== "checkbox" && `${element.value}` !== "" && `${element.value}` !== "0") {
+        return false;
+      }
+      if (element.type === "checkbox") {
+        element.checked = value === true || value === "true" || value === 1 || value === "1";
+      } else if (typeof value === "object") {
+        element.value = JSON.stringify(value, null, 2);
+      } else {
+        element.value = value;
+      }
+      syncRangeFor(id);
+      return true;
+    }
+
+    function idsForScope(scope) {
+      return PRESET_SCOPE_IDS[scope] || PRESET_SCOPE_IDS.all;
+    }
+
+    function simulatorConfigValues(ids = inputIds) {
+      const values = {};
+      ids.forEach((id) => {
+        const element = document.getElementById(id);
+        if (!element) {
+          return;
+        }
+        if (element.type === "checkbox") {
+          values[id] = element.checked;
+        } else if (element.tagName === "SELECT" || element.type === "time" || id === "horizonProfile") {
+          values[id] = element.value;
+        } else {
+          const number = Number(element.value);
+          values[id] = Number.isFinite(number) && element.value !== "" ? number : element.value;
+        }
+      });
+      return values;
+    }
+
+    function simulatorConfigPayload({ name = "", scope = simPresetScopeSelect.value } = {}) {
+      return {
+        type: "solar_shading_simulator_config",
+        version: 2,
+        name,
+        scope,
+        exported_at: new Date().toISOString(),
+        values: simulatorConfigValues(idsForScope(scope))
+      };
+    }
+
+    function simulatorConfigJson(options = {}) {
+      return JSON.stringify({
+        ...simulatorConfigPayload(options)
+      }, null, 2);
+    }
+
+    function applySimulatorValues(values, mode = "replace") {
+      if (!values || typeof values !== "object") {
+        throw new Error("Kein gueltiges values-Objekt gefunden.");
+      }
+      let changed = 0;
+      Object.entries(values).forEach(([id, value]) => {
+        if (inputIds.includes(id) && setControlValue(id, value, { overlay: mode === "overlay" })) {
+          changed += 1;
+        }
+      });
+      updateGlassInfo();
+      updateExpertWeightsVisibility();
+      syncDateTimeReadouts();
+      render();
+      return changed;
     }
 
     function formatTime(minutesValue) {
@@ -1628,10 +1746,6 @@
       setInputValue("weightWeather", preset.weights.weather);
       setInputValue("weightSolarRadiation", preset.weights.solar_radiation);
       setInputValue("weightForecastTemp", preset.weights.forecast_temperature);
-      setInputValue("weightForecastUv", preset.weights.forecast_uv);
-      setInputValue("weightForecastClouds", preset.weights.forecast_clouds);
-      setInputValue("weightForecastRainProb", preset.weights.forecast_precipitation_probability);
-      setInputValue("weightForecastRainAmount", preset.weights.forecast_precipitation_amount);
     }
 
     function updateExpertWeightsVisibility() {
@@ -1641,12 +1755,31 @@
       );
     }
 
+    function haApiBaseUrl() {
+      const configured = haBaseUrlInput.value.trim();
+      if (configured) {
+        return configured.replace(/\/+$/, "");
+      }
+      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+        return window.location.origin;
+      }
+      return "http://homeassistant.local:8123";
+    }
+
     async function refreshHASources() {
       sourceStatus.textContent = "Lade Solar-Shading-Fenster aus Home Assistant ...";
       haSourceSelect.innerHTML = '<option value="">Bitte waehlen ...</option>';
       try {
-        const response = await fetch("/api/states");
+        const headers = { Accept: "application/json" };
+        const token = haTokenInput.value.trim();
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(`${haApiBaseUrl()}/api/states`, { headers });
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("HA API antwortet mit 401. Token eintragen oder Simulator ueber /local in HA oeffnen.");
+          }
           throw new Error(`HA API antwortet mit ${response.status}`);
         }
         const states = await response.json();
@@ -1685,23 +1818,7 @@
         if (value === undefined || value === null || value === "") {
           return;
         }
-        const element = document.getElementById(id);
-        if (!element) {
-          return;
-        }
-        if (mode === "overlay" && `${element.value}` !== "" && `${element.value}` !== "0") {
-          // keep existing non-empty user value in overlay mode
-        } else {
-          if (element.type === "checkbox") {
-            element.checked = Boolean(value);
-          } else {
-            element.value = value;
-          }
-        }
-        const range = document.getElementById(`${id}Range`);
-        if (range && value !== undefined && value !== null && value !== "") {
-          range.value = value;
-        }
+        setControlValue(id, value, { overlay: mode === "overlay" });
       };
 
       overwrite("windowAzimuth", attrs.azimuth_window);
@@ -1721,27 +1838,18 @@
       overwrite("horizonProfile", typeof attrs.horizon_profile === "string" ? attrs.horizon_profile : JSON.stringify(attrs.horizon_profile || [], null, 2));
       overwrite("forecastTodayMax", attrs.forecast_today_max_temp);
       overwrite("forecastTomorrowMax", attrs.forecast_tomorrow_max_temp);
-      overwrite("forecastCloudCoverage", attrs.forecast_cloud_coverage_pct);
-      overwrite("forecastUv", attrs.forecast_uv_index);
       overwrite("solarRadiation", attrs.solar_radiation_value_w_m2 ?? attrs.open_data_current_direct_normal_irradiance_w_m2 ?? attrs.open_data_current_shortwave_radiation_w_m2);
       overwrite("solarReference", attrs.solar_radiation_reference_w_m2);
       overwrite("outsideTemp", attrs.heat_power_outside_temperature ?? attrs.weather_temperature ?? attrs.forecast_today_max_temp);
       overwrite("forecastSolarMax", attrs.open_data_today_max_direct_normal_irradiance_w_m2);
-      overwrite("forecastRainProb", attrs.forecast_precipitation_probability_pct);
-      overwrite("forecastRainAmount", attrs.forecast_precipitation_amount);
       overwrite("hotDayThreshold", attrs.forecast_hot_day_threshold);
       overwrite("veryHotThreshold", attrs.forecast_very_hot_day_threshold);
       overwrite("forecastInfluence", attrs.forecast_influence_strength);
       overwrite("preemptiveStart", attrs.forecast_preemptive_start_time ? String(attrs.forecast_preemptive_start_time).slice(0, 5) : "09:00");
       overwrite("useTodayMax", attrs.use_forecast_max_temp_today);
       overwrite("useTomorrowMax", attrs.use_forecast_max_temp_tomorrow);
-      overwrite("useForecastClouds", attrs.use_forecast_cloud_coverage);
-      overwrite("useForecastUv", attrs.use_forecast_uv_index);
       overwrite("useOpenDataSolarRadiation", attrs.use_open_data_solar_radiation);
-      overwrite("useForecastRainProb", attrs.use_forecast_precipitation_probability);
-      overwrite("useForecastRainAmount", attrs.use_forecast_precipitation_amount);
       overwrite("enableHeatGainPolicy", attrs.heat_gain_policy_enabled);
-      overwrite("enableLegacyBasicShading", attrs.legacy_basic_shading_enabled);
       overwrite("showExpertWeights", attrs.heat_gain_policy_show_expert_weights);
       overwrite("policyPreset", attrs.heat_gain_policy_preset);
       overwrite("additionalWindows", attrs.heat_gain_policy_has_additional_daylight_windows);
@@ -1756,17 +1864,13 @@
       overwrite("heatPowerLimitEnabled", attrs.heat_power_limit_enabled);
       overwrite("heatPowerTempThreshold", attrs.heat_power_outside_temp_threshold);
       overwrite("heatProtectionMinOutsideTemp", attrs.heat_protection_min_outside_temp);
-      overwrite("heatPowerMaxWatts", attrs.heat_power_max_watts);
+      overwrite("heatPowerMaxWatts", attrs.heat_power_max_w_m2 ?? attrs.heat_power_max_watts);
       overwrite("weightDirect", attrs.heat_gain_policy_weight_direct_exposure);
       overwrite("weightIncidence", attrs.heat_gain_policy_weight_incidence);
       overwrite("weightGlazing", attrs.heat_gain_policy_weight_glazing);
       overwrite("weightWeather", attrs.heat_gain_policy_weight_weather);
       overwrite("weightSolarRadiation", attrs.heat_gain_policy_weight_solar_radiation);
       overwrite("weightForecastTemp", attrs.heat_gain_policy_weight_forecast_temperature);
-      overwrite("weightForecastUv", attrs.heat_gain_policy_weight_forecast_uv);
-      overwrite("weightForecastClouds", attrs.heat_gain_policy_weight_forecast_clouds);
-      overwrite("weightForecastRainProb", attrs.heat_gain_policy_weight_forecast_precipitation_probability);
-      overwrite("weightForecastRainAmount", attrs.heat_gain_policy_weight_forecast_precipitation_amount);
       overwrite("partialThreshold", attrs.heat_gain_policy_base_partial_threshold ?? attrs.heat_gain_policy_partial_threshold);
       overwrite("fullThreshold", attrs.heat_gain_policy_base_full_threshold ?? attrs.heat_gain_policy_full_threshold);
       overwrite("partialPosition", attrs.heat_gain_policy_config_partial_position ?? attrs.heat_gain_policy_base_partial_position ?? attrs.heat_gain_policy_partial_position);
@@ -1784,6 +1888,291 @@
       const payload = JSON.parse(option.dataset.payload);
       applyImportedState(payload, document.getElementById("haImportMode").value);
       sourceStatus.textContent = `${payload.attributes?.friendly_name || payload.entity_id} wurde in den Simulator uebernommen.`;
+    }
+
+    function parseSimulatorImportPayload(text) {
+      if (!text || !text.trim()) {
+        throw new Error("Kein JSON im Textfeld.");
+      }
+      const payload = JSON.parse(text);
+      if (payload && payload.type === "solar_shading_simulator_preset_library" && payload.presets) {
+        return { kind: "preset_library", presets: payload.presets };
+      }
+      if (payload && payload.type === "solar_shading_simulator_preset" && payload.values) {
+        return { kind: "simulator", values: payload.values };
+      }
+      if (payload && payload.type === "solar_shading_simulator_config" && payload.values) {
+        return { kind: "simulator", values: payload.values };
+      }
+      if (payload && payload.values && typeof payload.values === "object") {
+        return { kind: "simulator", values: payload.values };
+      }
+      if (payload && payload.entity_id && payload.attributes) {
+        return { kind: "ha_state", entry: payload };
+      }
+      if (
+        payload
+        && typeof payload === "object"
+        && (
+          Object.prototype.hasOwnProperty.call(payload, "heat_gain_policy_weight_direct_exposure")
+          || Object.prototype.hasOwnProperty.call(payload, "azimuth_window")
+          || Object.prototype.hasOwnProperty.call(payload, "horizon_profile")
+        )
+      ) {
+        return { kind: "ha_state", entry: { entity_id: "imported_attributes", attributes: payload } };
+      }
+      if (payload && typeof payload === "object") {
+        return { kind: "simulator", values: payload };
+      }
+      throw new Error("JSON-Format nicht erkannt.");
+    }
+
+    function exportSimulatorConfig() {
+      const json = simulatorConfigJson();
+      simConfigText.value = json;
+      simConfigStatus.textContent = `Simulator-JSON frisch exportiert (${simPresetScopeSelect.options[simPresetScopeSelect.selectedIndex].text}).`;
+      return json;
+    }
+
+    async function copySimulatorConfig() {
+      const json = exportSimulatorConfig();
+      try {
+        await navigator.clipboard.writeText(json);
+        simConfigStatus.textContent = "JSON in die Zwischenablage kopiert.";
+      } catch (error) {
+        simConfigStatus.textContent = "Kopieren im Browser blockiert. JSON ist im Textfeld markierbar.";
+      }
+    }
+
+    function downloadSimulatorConfig() {
+      const json = exportSimulatorConfig();
+      downloadJsonFile(json, `solar-shading-simulator-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`);
+      simConfigStatus.textContent = "Aktueller Simulator-Export wurde heruntergeladen.";
+    }
+
+    function downloadJsonFile(json, filename) {
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importSimulatorConfigText() {
+      try {
+        const parsed = parseSimulatorImportPayload(simConfigText.value.trim());
+        if (parsed.kind === "preset_library") {
+          importPresetLibrary(parsed.presets);
+          return;
+        }
+        if (parsed.kind === "ha_state") {
+          applyImportedState(parsed.entry, simImportModeSelect.value);
+          simConfigStatus.textContent = "HA-Attribute aus JSON importiert.";
+          return;
+        }
+        const changed = applySimulatorValues(parsed.values, simImportModeSelect.value);
+        simConfigStatus.textContent = `${changed} Simulatorwerte importiert.`;
+      } catch (error) {
+        simConfigStatus.textContent = `Import fehlgeschlagen: ${error.message}`;
+      }
+    }
+
+    async function importSimulatorConfigFile(file) {
+      if (!file) {
+        return;
+      }
+      try {
+        simConfigText.value = await file.text();
+        importSimulatorConfigText();
+      } catch (error) {
+        simConfigStatus.textContent = `Datei konnte nicht gelesen werden: ${error.message}`;
+      } finally {
+        simConfigFile.value = "";
+      }
+    }
+
+    function emptyPresetLibrary() {
+      return { version: 1, presets: {} };
+    }
+
+    function loadPresetLibrary() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || "");
+        if (parsed && parsed.presets && typeof parsed.presets === "object") {
+          return parsed;
+        }
+      } catch (_error) {
+        // Fall through to a clean library.
+      }
+      return emptyPresetLibrary();
+    }
+
+    function savePresetLibrary(library) {
+      try {
+        localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(library));
+        refreshPresetList();
+      } catch (error) {
+        presetStatus.textContent = `Preset konnte nicht gespeichert werden: ${error.message}`;
+      }
+    }
+
+    function presetId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return `preset-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+    }
+
+    function refreshPresetList() {
+      const library = loadPresetLibrary();
+      const entries = Object.entries(library.presets)
+        .sort((a, b) => (a[1].name || "").localeCompare(b[1].name || "", "de"));
+      const current = presetSelect.value;
+      presetSelect.innerHTML = "";
+      if (!entries.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Keine Presets gespeichert";
+        presetSelect.appendChild(option);
+        return;
+      }
+      entries.forEach(([id, preset]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = `${preset.name || id} (${preset.scope || "all"})`;
+        presetSelect.appendChild(option);
+      });
+      if (current && library.presets[current]) {
+        presetSelect.value = current;
+      }
+    }
+
+    function saveCurrentPreset() {
+      const name = presetNameInput.value.trim() || `Preset ${new Date().toLocaleString("de-DE")}`;
+      const library = loadPresetLibrary();
+      const selected = presetSelect.value;
+      const id = selected && library.presets[selected]?.name === name ? selected : presetId();
+      library.presets[id] = {
+        type: "solar_shading_simulator_preset",
+        version: 1,
+        name,
+        scope: simPresetScopeSelect.value,
+        updated_at: new Date().toISOString(),
+        values: simulatorConfigValues(idsForScope(simPresetScopeSelect.value))
+      };
+      savePresetLibrary(library);
+      presetSelect.value = id;
+      presetStatus.textContent = `Preset '${name}' gespeichert.`;
+    }
+
+    function loadSelectedPreset() {
+      const library = loadPresetLibrary();
+      const preset = library.presets[presetSelect.value];
+      if (!preset) {
+        presetStatus.textContent = "Bitte zuerst ein Preset auswaehlen.";
+        return;
+      }
+      const changed = applySimulatorValues(preset.values, simImportModeSelect.value);
+      presetNameInput.value = preset.name || "";
+      simPresetScopeSelect.value = preset.scope || "all";
+      presetStatus.textContent = `Preset '${preset.name || presetSelect.value}' geladen (${changed} Werte).`;
+    }
+
+    function deleteSelectedPreset() {
+      const library = loadPresetLibrary();
+      const id = presetSelect.value;
+      if (!id || !library.presets[id]) {
+        presetStatus.textContent = "Kein Preset zum Loeschen ausgewaehlt.";
+        return;
+      }
+      const name = library.presets[id].name || id;
+      delete library.presets[id];
+      savePresetLibrary(library);
+      presetStatus.textContent = `Preset '${name}' geloescht.`;
+    }
+
+    function exportPresetLibrary() {
+      const json = JSON.stringify({
+        type: "solar_shading_simulator_preset_library",
+        version: 1,
+        exported_at: new Date().toISOString(),
+        presets: loadPresetLibrary().presets
+      }, null, 2);
+      simConfigText.value = json;
+      downloadJsonFile(json, `solar-shading-preset-library-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`);
+      simConfigStatus.textContent = "Preset-Library ins JSON-Feld exportiert.";
+      presetStatus.textContent = "Preset-Library exportiert und als Datei heruntergeladen.";
+      return json;
+    }
+
+    function importPresetLibrary(presets) {
+      if (!presets || typeof presets !== "object") {
+        throw new Error("Preset-Library enthaelt keine Presets.");
+      }
+      const library = loadPresetLibrary();
+      let imported = 0;
+      Object.entries(presets).forEach(([id, preset]) => {
+        if (!preset || !preset.values || typeof preset.values !== "object") {
+          return;
+        }
+        library.presets[id || presetId()] = {
+          type: "solar_shading_simulator_preset",
+          version: 1,
+          name: preset.name || id || "Importiertes Preset",
+          scope: preset.scope || "all",
+          updated_at: preset.updated_at || new Date().toISOString(),
+          values: preset.values
+        };
+        imported += 1;
+      });
+      savePresetLibrary(library);
+      simConfigStatus.textContent = `${imported} Presets importiert.`;
+      presetStatus.textContent = `${imported} Presets in die lokale Library uebernommen.`;
+    }
+
+    function importJsonAsPresetLibrary() {
+      try {
+        const parsed = parseSimulatorImportPayload(simConfigText.value.trim());
+        if (parsed.kind === "preset_library") {
+          importPresetLibrary(parsed.presets);
+          return;
+        }
+        const name = presetNameInput.value.trim() || `Import ${new Date().toLocaleString("de-DE")}`;
+        const library = loadPresetLibrary();
+        const id = presetId();
+        const values = parsed.kind === "ha_state"
+          ? {}
+          : parsed.values;
+        if (parsed.kind === "ha_state") {
+          applyImportedState(parsed.entry, "replace");
+          library.presets[id] = {
+            type: "solar_shading_simulator_preset",
+            version: 1,
+            name,
+            scope: "all",
+            updated_at: new Date().toISOString(),
+            values: simulatorConfigValues(inputIds)
+          };
+        } else {
+          library.presets[id] = {
+            type: "solar_shading_simulator_preset",
+            version: 1,
+            name,
+            scope: simPresetScopeSelect.value,
+            updated_at: new Date().toISOString(),
+            values
+          };
+        }
+        savePresetLibrary(library);
+        presetSelect.value = id;
+        presetStatus.textContent = `JSON als Preset '${name}' gespeichert.`;
+      } catch (error) {
+        presetStatus.textContent = `Preset-Import fehlgeschlagen: ${error.message}`;
+      }
     }
 
     function readState() {
@@ -1824,11 +2213,7 @@
         outsideTemp: parseNumber("outsideTemp"),
         forecastTodayMax: parseNumber("forecastTodayMax"),
         forecastTomorrowMax: parseNumber("forecastTomorrowMax"),
-        forecastCloudCoverage: parseNumber("forecastCloudCoverage"),
-        forecastUv: parseNumber("forecastUv"),
         forecastSolarMax: parseNumber("forecastSolarMax"),
-        forecastRainProb: parseNumber("forecastRainProb"),
-        forecastRainAmount: parseNumber("forecastRainAmount"),
         hotDayThreshold: parseNumber("hotDayThreshold"),
         veryHotThreshold: parseNumber("veryHotThreshold"),
         forecastInfluence: parseNumber("forecastInfluence"),
@@ -1840,10 +2225,6 @@
         weightWeather: parseNumber("weightWeather"),
         weightSolarRadiation: parseNumber("weightSolarRadiation"),
         weightForecastTemp: parseNumber("weightForecastTemp"),
-        weightForecastUv: parseNumber("weightForecastUv"),
-        weightForecastClouds: parseNumber("weightForecastClouds"),
-        weightForecastRainProb: parseNumber("weightForecastRainProb"),
-        weightForecastRainAmount: parseNumber("weightForecastRainAmount"),
         partialThreshold: parseNumber("partialThreshold"),
         fullThreshold: parseNumber("fullThreshold"),
         partialPosition: parseNumber("partialPosition"),
@@ -1853,15 +2234,10 @@
         awayPositionOffset: parseNumber("awayPositionOffset"),
         useTodayMax: parseBool("useTodayMax"),
         useTomorrowMax: parseBool("useTomorrowMax"),
-        useForecastClouds: parseBool("useForecastClouds"),
-        useForecastUv: parseBool("useForecastUv"),
         useOpenDataSolarRadiation: parseBool("useOpenDataSolarRadiation"),
-        useForecastRainProb: parseBool("useForecastRainProb"),
-        useForecastRainAmount: parseBool("useForecastRainAmount"),
         enableHeatGainPolicy: parseBool("enableHeatGainPolicy"),
         additionalWindows: parseBool("additionalWindows"),
         awayActive: parseBool("awayActive"),
-        enableLegacyBasicShading: parseBool("enableLegacyBasicShading"),
         showExpertWeights: parseBool("showExpertWeights"),
         hotDayCloseEnabled: parseBool("hotDayCloseEnabled"),
         hotDayCloseThreshold: parseNumber("hotDayCloseThreshold"),
@@ -2607,6 +2983,118 @@
       document.getElementById(id).textContent = value;
     }
 
+    let backendSimulationSeq = 0;
+
+    function haAuthToken() {
+      const manualToken = haTokenInput.value.trim();
+      if (manualToken) {
+        return manualToken;
+      }
+      try {
+        const tokens = JSON.parse(localStorage.getItem("hassTokens") || "{}");
+        return tokens.access_token || "";
+      } catch (_error) {
+        return "";
+      }
+    }
+
+    async function requestBackendSimulation(state, sun, context) {
+      const seq = ++backendSimulationSeq;
+      setText("calculationSourceCell", "JS Vorschau, warte auf HA Python ...");
+      try {
+        const headers = {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        };
+        const token = haAuthToken();
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(`${haApiBaseUrl()}/api/solar_shading/simulate`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            values: state,
+            sun: {
+              azimuth: sun.azimuth,
+              elevation: sun.elevation
+            }
+          })
+        });
+        if (seq !== backendSimulationSeq) {
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(`HA Python API ${response.status}`);
+        }
+        applyBackendSimulationResult(await response.json(), context);
+      } catch (error) {
+        if (seq === backendSimulationSeq) {
+          setText("calculationSourceCell", `JS Fallback (${error.message})`);
+        }
+      }
+    }
+
+    function applyBackendSimulationResult(result, context) {
+      const attrs = result.attributes || {};
+      const open = Number(result.open_position);
+      const closed = Number(result.closed_position);
+      const level = attrs.heat_gain_policy_action_level || "none";
+      if (Number.isFinite(open)) {
+        setText("openingValue", String(open));
+        setText("closureValue", String(Number.isFinite(closed) ? closed : 100 - open));
+        setText("finalPositionCell", `${open} % offen / ${Number.isFinite(closed) ? closed : 100 - open} % geschlossen`);
+      }
+      setText("calculationSourceCell", "HA Python / calculation.py");
+      setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
+      setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
+      setText("revealCell", `links ${round(attrs.left_reveal_shadow_pct, 1)} % / rechts ${round(attrs.right_reveal_shadow_pct, 1)} % / oben ${round(attrs.top_reveal_shadow_pct, 1)} % / gesamt ${round(attrs.total_reveal_shadow_pct, 1)} %`);
+      setText("directExposureCell", round(attrs.direct_solar_exposure_factor, 3));
+      setText("effectiveSunCell", attrs.direct_sun_valid && attrs.direct_solar_exposure_factor > 0.001 ? "ja" : "nein");
+      setText("incidenceCell", `${round(attrs.incidence_angle_deg, 1)} deg / ${round(attrs.incidence_cosine, 3)}`);
+      setText("transmissionCell", `${round(attrs.solar_transmittance_factor, 3)} (R ${round(attrs.solar_reflectance_factor, 3)})`);
+      setText("weatherFactorCell", round(attrs.weather_factor, 3));
+      setText("radiationOrWeatherCell", round(attrs.radiation_or_weather_factor, 3));
+      setText("effectiveGainCell", round(attrs.effective_solar_gain_factor, 3));
+      setText("heatPowerCell", `${round(attrs.estimated_solar_heat_power_w_m2, 1)} W/m2${attrs.estimated_solar_heat_power_w === null ? "" : ` / ${round(attrs.estimated_solar_heat_power_w, 0)} W Fenster`} (HA Python)`);
+      setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
+        ? `kein Deckel (${attrs.heat_power_limit_trigger})`
+        : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
+      setText("forecastRiskCell", `${round(attrs.forecast_risk_factor, 3)}, Temp-Risk ${round(attrs.forecast_temperature_risk, 3)}, Temp-Boost ${round(attrs.forecast_temperature_gain_boost, 3)}, Policy-Druck ${round(attrs.forecast_temperature_policy_pressure, 3)}`);
+      setText("forecastAdjustedGainCell", `${round(attrs.forecast_adjusted_gain_factor, 3)} (Multiplikator ${round(attrs.forecast_gain_uplift_factor, 2)}x)`);
+      setText("weightedScoreCell", round(attrs.heat_gain_policy_weighted_score, 3));
+      setText("rawScoreCell", round(attrs.heat_gain_policy_raw_score, 3));
+      setText("policyTargetCell", attrs.heat_gain_policy_target_position === null ? "-" : `${attrs.heat_gain_policy_target_position} % offen`);
+      setText("hotDayOverrideCell", attrs.heat_gain_policy_hot_day_override_active
+        ? `${attrs.heat_gain_policy_very_hot_day_override_active ? "sehr heiss" : "heiss"} -> max. ${attrs.heat_gain_policy_active_hot_day_close_position} % offen`
+        : "aus");
+      setText("policyScoreValue", round(attrs.heat_gain_policy_score, 2));
+      const pill = document.getElementById("policyLevelPill");
+      pill.textContent = level;
+      pill.className = `pill ${level}`;
+      if (Number.isFinite(open)) {
+        renderWindow(
+          Number.isFinite(closed) ? closed : 100 - open,
+          attrs.direct_sun_valid && attrs.direct_solar_exposure_factor > 0.001,
+          level,
+          context.profile,
+          context.localAngle,
+          context.sunElevation,
+          context.horizon,
+          context.sunPaths
+        );
+      }
+      setText(
+        "policyExplanationCell",
+        [
+          "HA Python Berechnung aktiv.",
+          ...(result.annotations || []),
+          `Final: ${Number.isFinite(open) ? `${open} % offen` : "unbekannt"}, Level ${level}, Score ${round(attrs.heat_gain_policy_score, 3)}.`,
+          `Direkte Sonne: ${attrs.direct_sun_valid ? "ja" : "nein"}, Exposition ${round(attrs.direct_solar_exposure_factor, 3)}, Watt-Trigger ${attrs.heat_power_limit_trigger}.`
+        ].join("\n")
+      );
+    }
+
     function render() {
       syncDateTimeReadouts();
       updateExpertWeightsVisibility();
@@ -2679,13 +3167,9 @@
         const heatProtectionTemperatureAllowed = heatProtectionCurrentTemperatureAllowed && (!Number.isFinite(temperatureGateSignal)
           || !Number.isFinite(state.hotDayThreshold)
           || temperatureGateSignal >= state.hotDayThreshold);
-        const forecastUvRisk = state.useForecastUv ? uvRisk(state.forecastUv) : 1;
         const forecastSolarRadiationRisk = state.useOpenDataSolarRadiation
           ? solarRadiationFactor(state.forecastSolarMax, true, state.solarReference)
           : 1;
-        const forecastCloudDamping = state.useForecastClouds ? clamp(1 - state.forecastCloudCoverage / 100, 0, 1) : 1;
-        const forecastRainProbDamping = state.useForecastRainProb ? precipitationProbabilityDamping(state.forecastRainProb) : 1;
-        const forecastRainAmountDamping = state.useForecastRainAmount ? precipitationAmountDamping(state.forecastRainAmount) : 1;
         const forecastPreemptiveActive = isAfterPreemptiveStart(sun.date, state.preemptiveStart);
         const heatPowerTemperatureGateActive = !Number.isFinite(state.heatPowerTempThreshold)
           || (Number.isFinite(state.outsideTemp) && state.outsideTemp >= state.heatPowerTempThreshold)
@@ -2716,22 +3200,18 @@
                       : "immer";
         const heatPowerLimitActive = state.heatPowerLimitEnabled
           && effectiveSunOnWindow
-          && Number.isFinite(estimatedHeatPowerW)
-          && estimatedHeatPowerW > 0
+          && Number.isFinite(estimatedHeatPowerWm2)
+          && estimatedHeatPowerWm2 > 0
           && Number.isFinite(state.heatPowerMaxWatts)
           && state.heatPowerMaxWatts > 0
           && heatPowerTemperatureGateActive;
-        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerW > state.heatPowerMaxWatts
-          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerW) * 100, 0, 100))
+        const heatPowerLimitedOpenPosition = heatPowerLimitActive && estimatedHeatPowerWm2 > state.heatPowerMaxWatts
+          ? Math.round(clamp((state.heatPowerMaxWatts / estimatedHeatPowerWm2) * 100, 0, 100))
           : null;
         const forecastRisk = forecastPreemptiveActive
           ? clamp(
               forecastTemperatureRisk
-              * forecastSolarRadiationRisk
-              * forecastUvRisk
-              * forecastCloudDamping
-              * forecastRainProbDamping
-              * forecastRainAmountDamping,
+              * forecastSolarRadiationRisk,
               0,
               1
             )
@@ -2762,11 +3242,7 @@
           glazing: solarTransmittance,
           weather: currentSolarRadiationFactor === null ? currentWeatherFactor : null,
           solar_radiation: state.useOpenDataSolarRadiation ? currentSolarRadiationFactor : null,
-          forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null,
-          forecast_uv: state.useForecastUv ? forecastUvRisk : null,
-          forecast_clouds: state.useForecastClouds ? forecastCloudDamping : null,
-          forecast_precipitation_probability: state.useForecastRainProb ? forecastRainProbDamping : null,
-          forecast_precipitation_amount: state.useForecastRainAmount ? forecastRainAmountDamping : null
+          forecast_temperature: (state.useTodayMax || state.useTomorrowMax) ? temperatureBoostSignal(forecastTemperatureRisk) : null
         };
         const weights = {
           direct_exposure: state.weightDirect,
@@ -2774,11 +3250,7 @@
           glazing: state.weightGlazing,
           weather: state.weightWeather,
           solar_radiation: state.weightSolarRadiation,
-          forecast_temperature: state.weightForecastTemp,
-          forecast_uv: state.weightForecastUv,
-          forecast_clouds: state.weightForecastClouds,
-          forecast_precipitation_probability: state.weightForecastRainProb,
-          forecast_precipitation_amount: state.weightForecastRainAmount
+          forecast_temperature: state.weightForecastTemp
         };
 
         const weightedScore = weightedRiskScore(components, weights);
@@ -2819,7 +3291,7 @@
         const hotDayOverrideActive = state.hotDayCloseEnabled
           && forecastPreemptiveActive
           && heatProtectionCurrentTemperatureAllowed
-          && sun.elevation > 0
+          && effectiveSunOnWindow
           && Number.isFinite(hotDaySignal)
           && hotDaySignal >= state.hotDayCloseThreshold;
         const veryHotDayOverrideActive = hotDayOverrideActive
@@ -2837,12 +3309,7 @@
         const legacyBaseVerticalPosition = baseVerticalClosure !== null
           ? 100 - baseVerticalClosure
           : state.defaultPosition;
-        const legacyDrivenPosition = baseVerticalClosure !== null
-          ? Math.round(clamp(100 - ((100 - legacyBaseVerticalPosition) * heatGainResponse), 0, 100))
-          : state.defaultPosition;
-        const baseVerticalPosition = state.enableLegacyBasicShading
-          ? legacyDrivenPosition
-          : state.defaultPosition;
+        const baseVerticalPosition = state.defaultPosition;
 
         let effectivePolicyTarget = policyResult.target;
         let effectivePolicyLevel = policyResult.level;
@@ -2865,9 +3332,7 @@
           }
         }
 
-        const noSunFallback = activeHotDayClosePosition !== null
-          ? Math.min(state.defaultPosition, activeHotDayClosePosition)
-          : state.defaultPosition;
+        const noSunFallback = state.defaultPosition;
         const daylightOpen = effectiveSunOnWindow
           ? Math.round(clamp(Math.min(baseVerticalPosition, effectivePolicyTarget ?? 100), 0, 100))
           : Math.round(clamp(noSunFallback, 0, 100));
@@ -2907,20 +3372,18 @@
         setText("heatPowerCell", `${round(estimatedHeatPowerWm2, 1)} W/m2${estimatedHeatPowerW === null ? "" : ` / ${round(estimatedHeatPowerW, 0)} W Fenster`} (${state.useOpenDataSolarRadiation ? "Solarwert" : "Referenz/Wetter"})`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
-            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W, Limit ${round(state.heatPowerMaxWatts, 0)} W)`
-            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerW, 0)} W > ${round(state.heatPowerMaxWatts, 0)} W)`)
+            ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2)`
+            : `deckt auf max. ${heatPowerLimitedOpenPosition} % offen (${heatPowerLimitTrigger}, ${round(estimatedHeatPowerWm2, 0)} W/m2 > ${round(state.heatPowerMaxWatts, 0)} W/m2)`)
           : "aus");
         setText(
           "forecastTodayCell",
-          `Tmax ${round(state.forecastTodayMax, 1)} C, Gate ${heatProtectionTemperatureAllowed ? "frei" : "gesperrt"} ab ${round(state.hotDayThreshold, 1)} C, Kälte-Sperre < ${round(coldLockoutTemp, 1)} C, Very-Hot bei ${round(state.veryHotThreshold, 1)} C, Solar ${factorPercent(forecastSolarRadiationRisk)}, Wolken ${state.forecastCloudCoverage.toFixed(0)} %, UV ${round(state.forecastUv, 1)}`
+          `Tmax ${round(state.forecastTodayMax, 1)} C, Gate ${heatProtectionTemperatureAllowed ? "frei" : "gesperrt"} ab ${round(state.hotDayThreshold, 1)} C, Kaelte-Sperre < ${round(coldLockoutTemp, 1)} C, Very-Hot bei ${round(state.veryHotThreshold, 1)} C, Forecast-Solar ${factorPercent(forecastSolarRadiationRisk)}`
         );
         setText("forecastRiskCell", `${round(forecastRisk, 3)} (${forecastPreemptiveActive ? "aktiv" : "vor Start"}), Temp-Risk ${round(forecastTemperatureRisk, 3)}, Temp-Boost ${round(forecastTemperatureGainBoost, 3)}, Policy-Druck ${round(forecastTemperaturePolicyPressure, 3)}`);
         setText("forecastAdjustedGainCell", `${round(forecastAdjustedGain, 3)} (Multiplikator ${round(forecastGainUplift, 2)}x)`);
         setText("weightedScoreCell", round(weightedScore, 3));
         setText("rawScoreCell", round(rawScore, 3));
-        setText("basePositionCell", state.enableLegacyBasicShading
-          ? `${baseVerticalPosition} % offen (Legacy ${legacyBaseVerticalPosition} %, Response ${round(heatGainResponse, 2)} aus Gain ${round(forecastAdjustedGain, 2)})`
-          : `${baseVerticalPosition} % offen (Legacy aus; alter Schreibtisch-/Blendschutz ignoriert)`);
+        setText("basePositionCell", `${baseVerticalPosition} % offen (Default vor Heat-Gain-Overlays)`);
         setText("policyTargetCell", state.enableHeatGainPolicy
           ? (effectivePolicyTarget === null
             ? `- (Very-Hot: Schwellen -${round(temperatureAdjusted.thresholdReduction, 2)}, Ziel -${temperatureAdjusted.positionOffset} % offen)`
@@ -2946,10 +3409,10 @@
           ? `Hot-Day-Override: ${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} begrenzt zusaetzlich auf max. ${activeHotDayClosePosition} % offen.`
           : "Hot-Day-Override: aus oder nicht getriggert.";
         const heatPowerLine = heatPowerLimitedOpenPosition !== null
-          ? `Watt-Limit: ${round(estimatedHeatPowerW, 0)} W geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W -> max. ${heatPowerLimitedOpenPosition} % offen.`
+          ? `W/m2-Limit: ${round(estimatedHeatPowerWm2, 0)} W/m2 geschaetzt, Limit ${round(state.heatPowerMaxWatts, 0)} W/m2 -> max. ${heatPowerLimitedOpenPosition} % offen.`
           : state.heatPowerLimitEnabled
-            ? `Watt-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${estimatedHeatPowerW === null ? "unbekannt" : `${round(estimatedHeatPowerW, 0)} W`}.`
-            : "Watt-Limit: aus.";
+            ? `W/m2-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${round(estimatedHeatPowerWm2, 0)} W/m2.`
+            : "W/m2-Limit: aus.";
         const temperatureBand = !heatProtectionTemperatureAllowed
           ? "below_hot"
           : hotDaySignal >= state.veryHotThreshold
@@ -2996,6 +3459,13 @@
           sunPaths
         );
         renderWindowHorizonPreview(profile, localAngle, sun.elevation, horizon, sunPaths);
+        requestBackendSimulation(state, sun, {
+          profile,
+          localAngle,
+          sunElevation: sun.elevation,
+          horizon,
+          sunPaths
+        });
       } catch (error) {
         errorBox.textContent = error.message || String(error);
       }
@@ -3032,6 +3502,24 @@
     applyDevicePresetBtn.addEventListener("click", applyDevicePreset);
     refreshSourcesBtn.addEventListener("click", refreshHASources);
     importSourceBtn.addEventListener("click", importSelectedHASource);
+    exportConfigBtn.addEventListener("click", exportSimulatorConfig);
+    copyConfigBtn.addEventListener("click", copySimulatorConfig);
+    downloadConfigBtn.addEventListener("click", downloadSimulatorConfig);
+    selectConfigFileBtn.addEventListener("click", () => simConfigFile.click());
+    importConfigBtn.addEventListener("click", importSimulatorConfigText);
+    simConfigFile.addEventListener("change", () => importSimulatorConfigFile(simConfigFile.files?.[0]));
+    savePresetBtn.addEventListener("click", saveCurrentPreset);
+    loadPresetBtn.addEventListener("click", loadSelectedPreset);
+    deletePresetBtn.addEventListener("click", deleteSelectedPreset);
+    exportPresetLibraryBtn.addEventListener("click", exportPresetLibrary);
+    importPresetLibraryBtn.addEventListener("click", importJsonAsPresetLibrary);
+    presetSelect.addEventListener("change", () => {
+      const preset = loadPresetLibrary().presets[presetSelect.value];
+      if (preset) {
+        presetNameInput.value = preset.name || "";
+        simPresetScopeSelect.value = preset.scope || "all";
+      }
+    });
     horizonExampleBtn.addEventListener("click", () => {
       horizonProfileInput.value = exampleHorizonJson();
       render();
@@ -3047,6 +3535,7 @@
     dayOfYearRange.value = String(dayOfYear);
     timeRange.value = String(today.getHours() * 60 + today.getMinutes());
     syncDateTimeReadouts();
+    refreshPresetList();
 
     refreshHASources();
     render();

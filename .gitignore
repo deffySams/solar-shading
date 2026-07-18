@@ -1,5 +1,21 @@
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.venv/
-deploy_tmp/
+# artifacts
+__pycache__
+.pytest*
+*.egg-info
+*/build/*
+*/dist/*
+
+
+# misc
+.coverage
+.vscode
+coverage.xml
+
+
+# Home Assistant configuration
+config/*
+!config/configuration.yaml
+API.ipynb
+.github/.DS_Store
+.DS_Store
+notebooks/test_python.ipynb
