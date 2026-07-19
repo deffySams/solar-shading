@@ -36,6 +36,7 @@ def _payload(**overrides):
         "defaultPosition": 100,
         "sunsetPosition": 100,
         "nightMode": "time",
+        "coverLocation": "exterior",
         "nightStartTime": "22:00",
         "nightEndTime": "06:00",
         "fovLeft": 90,
@@ -97,9 +98,7 @@ class SimulatorBackendTest(unittest.TestCase):
 
         self.assertEqual(result["source"], "ha_python")
         self.assertLess(result["open_position"], 100)
-        self.assertTrue(
-            result["attributes"]["heat_protection_activation_active"]
-        )
+        self.assertTrue(result["attributes"]["heat_protection_activation_active"])
         self.assertEqual(
             result["attributes"]["heat_protection_activation_reason"],
             "forecast_hot",
@@ -108,10 +107,50 @@ class SimulatorBackendTest(unittest.TestCase):
         self.assertAlmostEqual(
             attributes["solar_power_with_target_cover_w_per_window"],
             attributes["solar_power_without_cover_w_per_window"]
-            * result["open_position"]
-            / 100,
+            * (0.1 + 0.9 * result["open_position"] / 100),
             places=2,
         )
+
+    def test_interior_cover_retains_more_heat_than_exterior_cover(self):
+        exterior = simulate_from_payload(
+            _Hass(), _payload(coverLocation="exterior", sunsetPosition=0, time="23:00")
+        )
+        interior = simulate_from_payload(
+            _Hass(), _payload(coverLocation="interior", sunsetPosition=0, time="23:00")
+        )
+
+        self.assertEqual(exterior["open_position"], 0)
+        self.assertEqual(interior["open_position"], 0)
+        self.assertGreater(
+            interior["attributes"]["solar_power_with_target_cover_w_per_window"],
+            exterior["attributes"]["solar_power_with_target_cover_w_per_window"],
+        )
+
+    def test_evening_and_morning_boundaries_are_independent(self):
+        before_opening = simulate_from_payload(
+            _Hass(),
+            _payload(
+                time="07:30",
+                nightEveningMode="sunset",
+                nightMorningMode="fixed",
+                nightEndTime="08:00",
+                sunsetPosition=35,
+            ),
+        )
+        after_opening = simulate_from_payload(
+            _Hass(),
+            _payload(
+                time="08:30",
+                nightEveningMode="sunset",
+                nightMorningMode="fixed",
+                nightEndTime="08:00",
+                sunsetPosition=35,
+            ),
+        )
+
+        self.assertTrue(before_opening["attributes"]["sunset_valid"])
+        self.assertEqual(before_opening["open_position"], 35)
+        self.assertFalse(after_opening["attributes"]["sunset_valid"])
 
     def test_simulator_opens_without_direct_sun(self):
         result = simulate_from_payload(
@@ -134,7 +173,9 @@ class SimulatorBackendTest(unittest.TestCase):
 
         self.assertEqual(result["open_position"], 22)
         self.assertTrue(result["attributes"]["binary_heat_protection_active"])
-        self.assertEqual(result["attributes"]["decision_reason"], "binary_solar_threshold")
+        self.assertEqual(
+            result["attributes"]["decision_reason"], "binary_solar_threshold"
+        )
 
     def test_binary_control_stays_open_below_threshold(self):
         result = simulate_from_payload(

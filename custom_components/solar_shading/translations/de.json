@@ -103,9 +103,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
@@ -132,6 +139,8 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
@@ -260,9 +269,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
@@ -291,6 +307,8 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
@@ -332,9 +350,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
         },
@@ -363,6 +388,8 @@
           "reveal_top_depth": "Tiefe der oberen Laibung in Metern. Erhoeht die Verschattung bei hoher Sonne.",
           "horizon_profile": "Optionale JSON-Himmelsgrenzen. Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts; Kompassmodus nutzt den echten Azimut von 0 bis 359 Grad.",
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
+          "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
@@ -435,7 +462,7 @@
           "house_floors": "Stockwerksprofile",
           "house_rooms": "Raumprofile",
           "house_room_facades": "Raumfassadenprofile",
-          "house_bulk_assignment": "Mehrere Fenster zuordnen"
+          "house_bulk_assignment": "Fenster & Bereiche: zuordnen und bearbeiten"
         }
       },
       "assignment": {
@@ -474,6 +501,7 @@
         "data": {
           "house_reference_azimuth": "Azimut der Referenzfassade",
           "glass_type": "Standardverglasung",
+          "cover_location": "Standard-Montageort des Sonnenschutzes",
           "fov_left": "Standard-Sichtfeld links",
           "fov_right": "Standard-Sichtfeld rechts",
           "reveal_left_depth": "Standard-Laibung links",
@@ -482,9 +510,16 @@
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Standard-Horizontprofil",
           "default_percentage": "Standardposition am Tag (% offen)",
-          "night_mode": "Nachtsteuerung",
-          "night_start_time": "Nacht beginnt",
-          "night_end_time": "Nacht endet",
+          "night_evening_mode": "Abendgrenze",
+          "night_start_time": "Feste Schließzeit am Abend",
+          "sunset_offset": "Minuten nach Sonnenuntergang",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
+          "night_end_time": "Feste Öffnungszeit am Morgen",
+          "sunrise_offset": "Minuten nach Sonnenaufgang",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "sunset_position": "Nachtposition (% offen)",
           "weather_entity": "Quelle der Temperaturprognose",
           "use_forecast_max_temp_today": "Heutige Maximaltemperatur verwenden",
@@ -507,6 +542,7 @@
         "data_description": {
           "house_reference_azimuth": "Kompass-Azimut der Referenzfassade, am besten der am weitesten nach Norden gerichteten Fassade. Fassaden speichern nur ihre Drehung relativ zu dieser Achse.",
           "glass_type": "Standardverglasung. Winkelabhängige Reflexion und Transmission bestimmen, wie viel der auftreffenden Solarstrahlung in den Raum gelangt.",
+          "cover_location": "Ein außenliegender Sonnenschutz hält den größten Teil der absorbierten Wärme vor dem Raum zurück. Bei innenliegendem Sonnenschutz bleibt deutlich mehr Wärme hinter der Scheibe. Das verändert die Leistung mit Sonnenschutz, nicht die unbeschattete Fensterleistung.",
           "fov_left": "Maximal sichtbarer Winkel links von der Fensternormalen. Sonne außerhalb dieses Winkels kann keine direkte Beschattung auslösen.",
           "fov_right": "Maximal sichtbarer Winkel rechts von der Fensternormalen. Sonne außerhalb dieses Winkels kann keine direkte Beschattung auslösen.",
           "reveal_left_depth": "Standardtiefe der linken Laibung in Metern. Sie reduziert die direkte Exposition bei Sonne von links.",
@@ -515,9 +551,16 @@
           "horizon_mode": "Kompassmodus erwartet den echten Sonnenazimut von 0 bis 359 Grad. Fenstersicht verwendet 0 links, 90 geradeaus und 180 rechts.",
           "horizon_profile": "JSON-Horizont für Fenster ohne spezielleren Fassaden-, Stockwerks-, Raumwand- oder Fensterhorizont.",
           "default_percentage": "Fallback-Ziel, wenn keine direkte Sonne, Nacht- oder Hitzeschutzregel eine strengere Position verlangt. 100 % bedeutet vollständig offen.",
-          "night_mode": "Zeitgeführt nutzt die beiden festen Uhrzeiten. Sonnengeführt nutzt Sonnenuntergang und Sonnenaufgang.",
-          "night_start_time": "Im zeitgeführten Modus wird ab dieser lokalen Uhrzeit die Nachtposition aktiv.",
-          "night_end_time": "Im zeitgeführten Modus beginnt ab dieser lokalen Uhrzeit wieder die Tagesberechnung.",
+          "night_evening_mode": "Feste lokale Uhrzeit oder Sonnenuntergang plus Minutenversatz. Ab dieser Grenze gilt die Nachtposition.",
+          "night_start_time": "Wird nur verwendet, wenn die Abendgrenze auf feste Uhrzeit steht.",
+          "sunset_offset": "Wird bei sonnengeführter Abendgrenze auf den Sonnenuntergang addiert. Beispiel: 60 schließt eine Stunde nach Sonnenuntergang.",
+          "night_evening_earliest_time": "Optional: Die Nachtposition beginnt bei Sonnenführung niemals vor dieser lokalen Uhrzeit.",
+          "night_evening_latest_time": "Optional: Die Nachtposition beginnt bei Sonnenführung spätestens zu dieser lokalen Uhrzeit.",
+          "night_morning_mode": "Feste lokale Uhrzeit oder Sonnenaufgang plus Minutenversatz. Ab dieser Grenze endet die Nachtposition.",
+          "night_end_time": "Wird nur bei fester Morgengrenze verwendet. Beispiel: 08:00 öffnet unabhängig vom Sonnenaufgang um 08:00 Uhr.",
+          "sunrise_offset": "Wird bei sonnengeführter Morgengrenze auf den Sonnenaufgang addiert. Positive Werte halten die Nachtposition länger aktiv.",
+          "night_morning_earliest_time": "Optional: Der Tagesbetrieb beginnt bei Sonnenführung niemals vor dieser lokalen Uhrzeit.",
+          "night_morning_latest_time": "Optional: Der Tagesbetrieb beginnt bei Sonnenführung spätestens zu dieser lokalen Uhrzeit.",
           "sunset_position": "Zielposition außerhalb des Tagesintervalls. 100 % lässt die Beschattung offen; kleinere Werte schließen weiter.",
           "weather_entity": "Wetterentität ausschließlich für Außentemperatur sowie Maximaltemperatur-Prognosen von heute und morgen.",
           "use_forecast_max_temp_today": "Nimmt die heutige prognostizierte Maximaltemperatur in das Hitzeschutz-Temperatursignal auf.",
@@ -533,7 +576,7 @@
           "binary_close_threshold_w_m2": "Geschätzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Beim Überschreiten wird das feste Ziel angefahren.",
           "binary_close_position": "Automatisches Ziel beim Überschreiten der Binärschwelle. Manuelle Fahrten bleiben über die bestehende Override-Logik möglich.",
           "heat_power_limit_enabled": "Ergänzt im stufenlosen Modus eine physikalische W/m²-Obergrenze. Deaktivieren, wenn ausschließlich das Preset die Zielposition bestimmen soll.",
-          "max_transmitted_solar_power_w_m2": "Stufenloser Grenzwert der geschätzten durchgelassenen Solarleistung. Die Offenposition wird ungefähr proportional zur Überschreitung reduziert.",
+          "max_transmitted_solar_power_w_m2": "Stufenloser Grenzwert der geschätzten raumseitigen Solarleistung. Die Zielposition berücksichtigt, ob der Sonnenschutz innen oder außen montiert ist.",
           "enable_away_mode": "Verwendet strengere Schwellen und Positionen, solange die gewählte Anwesenheitsentität Abwesenheit meldet.",
           "away_entity": "Anwesenheitsquelle. Person und Tracker ungleich home, eine leere Zone oder ein ausgeschalteter Boolean gelten als abwesend."
         },
@@ -586,31 +629,53 @@
       },
       "house_bulk_assignment": {
         "data": {
-          "bulk_window_entries": "Fenstergruppen",
+          "bulk_window_entries": "Zu bearbeitende Fenster",
           "floor_name": "Home-Assistant-Stockwerk"
         },
         "data_description": {
-          "bulk_window_entries": "Wähle alle vorhandenen Solar-Shading-Einträge, die dieselbe Haus-, Stockwerks-, Raum- und Fassadenzuordnung erhalten sollen. Jeder Eintrag kann bereits ein oder mehrere Cover enthalten.",
+          "bulk_window_entries": "Wähle alle Solar-Shading-Fenstergruppen, die zur gleichen Raumwand gehören. Jede Gruppe kann bereits ein oder mehrere Cover enthalten.",
           "floor_name": "Im nächsten Schritt erscheinen nur Home-Assistant-Räume, die diesem Stockwerk zugeordnet sind."
         },
-        "title": "Mehrere Fenster zuordnen: Auswahl",
-        "description": "Die Profilzuordnung wird gemeinsam geändert. Cover-Entitäten, Fenstermaße und physische Fensterdetails bleiben erhalten."
+        "title": "Fenster & Bereiche: Fenster und Stockwerk wählen",
+        "description": "Dies ist der zentrale Editor für Stockwerk, Raum und Raumfassade. Im nächsten Schritt wird die Hierarchie erstellt oder aktualisiert und allen gewählten Fenstern zugeordnet."
       },
       "house_bulk_assignment_details": {
         "data": {
           "room_name": "Home-Assistant-Raum",
-          "facade_name": "Fassadenprofil",
-          "facade_offset": "Azimutkorrektur der Fenster",
+          "facade_name": "Raumfassade",
+          "bulk_facade_rotation": "Fassadendrehung zur Referenzfassade",
+          "facade_offset": "Fensterkorrektur zur Fassade",
+          "room_temperature_entity": "Raumtemperaturquelle",
+          "has_additional_daylight_windows": "Raum erhält Tageslicht von weiteren Fassaden",
+          "policy_preset": "Hitzeschutzprofil dieser Raumfassade",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Horizont dieser Raumfassade",
+          "reveal_left_depth": "Gemeinsame Laibungstiefe links",
+          "reveal_right_depth": "Gemeinsame Laibungstiefe rechts",
+          "reveal_top_depth": "Gemeinsame Laibungstiefe oben",
+          "fov_left": "Gemeinsames Sichtfeld links",
+          "fov_right": "Gemeinsames Sichtfeld rechts",
           "bulk_reset_local_overrides": "Geerbte Hausregeln verwenden"
         },
         "data_description": {
           "room_name": "Alle ausgewählten Fenstergruppen werden diesem Raum zugeordnet und erben sein Raumprofil.",
-          "facade_name": "Alle ausgewählten Gruppen erben diese Fassadenausrichtung und dieses Fassadenprofil.",
-          "facade_offset": "Gemeinsame Korrektur relativ zur ausgewählten Fassade. Für parallele Fenster 0 belassen.",
+          "facade_name": "Benenne diese Wand, zum Beispiel Ost, Innenhof oder Garten. Ein vorhandener Name aktualisiert dasselbe Fassadenprofil.",
+          "bulk_facade_rotation": "Vorzeichenbehaftete Drehung zur Haus-Referenzfassade. Wirksamer Azimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
+          "facade_offset": "Korrektur der gewählten Fenster relativ zu dieser Fassade. Für parallele Fenster 0 belassen.",
+          "room_temperature_entity": "Optionaler Sensor oder Climate-Entität für den Raum. Damit kann der Haus-Komfortschwellwert den Hitzeschutz aktivieren.",
+          "has_additional_daylight_windows": "Aktivieren, wenn der Raum zusätzlich über Fenster mit anderer Ausrichtung Tageslicht erhält.",
+          "policy_preset": "Gemeinsames Verhalten dieser Raumfassade. Es überschreibt das Hausprofil nur auf dieser Ebene.",
+          "horizon_mode": "Für Messungen aus einer Solar-App Kompass-Azimut wählen; Fenstersicht für vom Innenraum gemessene Winkel.",
+          "horizon_profile": "Optionaler JSON-Horizont für alle gewählten Fenster. Leer lassen, um den Fassaden- oder Haushorizont zu erben.",
+          "reveal_left_depth": "Linke Laibungstiefe in Metern für alle gewählten Fenster.",
+          "reveal_right_depth": "Rechte Laibungstiefe in Metern für alle gewählten Fenster.",
+          "reveal_top_depth": "Obere Laibungstiefe in Metern für alle gewählten Fenster.",
+          "fov_left": "Sichtbarer Winkel links von der Fensternormalen für alle gewählten Fenster.",
+          "fov_right": "Sichtbarer Winkel rechts von der Fensternormalen für alle gewählten Fenster.",
           "bulk_reset_local_overrides": "Empfohlen: entfernt lokale Geometrie-, Horizont- und Regelschalter sowie lokale Regelabweichungen, damit spätere Änderungen am Hausprofil alle ausgewählten Fenster erreichen. Cover-Entitäten und exakte Fenstermaße bleiben erhalten."
         },
-        "title": "Mehrere Fenster zuordnen: Raum und Fassade",
-        "description": "Die gewählte Hierarchie wird auf alle Fenstergruppen angewendet. Lokale Ausnahmen können später weiterhin in den Fenstereinstellungen ergänzt werden."
+        "title": "Fenster & Bereiche: Raumfassade bearbeiten",
+        "description": "Speichern erstellt oder aktualisiert Stockwerk, Raum, Fassade und Raumfassade und ordnet sie allen gewählten Fenstern zu. Fensterspezifische Ausnahmen bleiben in den Detaileinstellungen möglich."
       },
       "house_facades": {
         "data": {
@@ -800,9 +865,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
@@ -957,9 +1029,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose"
         },
         "data_description": {
@@ -1029,9 +1108,16 @@
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
           "night_mode": "Nachtsteuerung",
+          "night_evening_mode": "Abendgrenze",
           "night_start_time": "Nacht beginnt",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
           "night_end_time": "Nacht endet",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
           "glass_type": "Glasart",
+          "cover_location": "Montageort des Sonnenschutzes",
           "weather_entity": "Quelle fuer Temperaturprognose",
           "distance_shaded_area": "Legacy Schutz-/Blendtiefe"
         },
@@ -1135,6 +1221,24 @@
       "options": {
         "time": "Feste Uhrzeiten",
         "solar": "Sonnenuntergang und Sonnenaufgang"
+      }
+    },
+    "night_evening_mode": {
+      "options": {
+        "fixed": "Feste lokale Uhrzeit",
+        "sunset": "Sonnenuntergang plus Versatz"
+      }
+    },
+    "night_morning_mode": {
+      "options": {
+        "fixed": "Feste lokale Uhrzeit",
+        "sunrise": "Sonnenaufgang plus Versatz"
+      }
+    },
+    "cover_location": {
+      "options": {
+        "exterior": "Außenliegender Sonnenschutz",
+        "interior": "Innenliegender Sonnenschutz"
       }
     },
     "heat_protection_control_mode": {

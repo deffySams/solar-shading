@@ -18,6 +18,9 @@ from .const import (
     CONF_IRRADIANCE_ENTITY,
     CONF_IRRADIANCE_THRESHOLD,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
+    CONF_NIGHT_EVENING_MODE,
+    CONF_NIGHT_MODE,
+    CONF_NIGHT_MORNING_MODE,
     CONF_OUTSIDE_THRESHOLD,
     CONF_OUTSIDETEMP_ENTITY,
     CONF_PRESENCE_ENTITY,
@@ -28,6 +31,11 @@ from .const import (
     CONF_TEMP_LOW,
     CONF_TRANSPARENT_BLIND,
     CONF_VERY_HOT_DAY_CLOSE_POSITION,
+    NIGHT_EVENING_FIXED,
+    NIGHT_EVENING_SUNSET,
+    NIGHT_MODE_TIME,
+    NIGHT_MORNING_FIXED,
+    NIGHT_MORNING_SUNRISE,
 )
 
 LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
@@ -64,10 +72,7 @@ RETIRED_OPTION_KEYS = {
 
 def migrate_retired_options(options: dict[str, Any]) -> dict[str, Any]:
     """Recursively migrate useful values and discard retired settings."""
-    migrated = {
-        key: _migrate_nested(value)
-        for key, value in options.items()
-    }
+    migrated = {key: _migrate_nested(value) for key, value in options.items()}
 
     if CONF_ROOM_TEMPERATURE_ENTITY not in migrated:
         legacy_room_sensor = migrated.get(CONF_TEMP_ENTITY)
@@ -94,6 +99,19 @@ def migrate_retired_options(options: dict[str, Any]) -> dict[str, Any]:
         legacy_limit = migrated.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER)
         if legacy_limit is not None:
             migrated[CONF_MAX_TRANSMITTED_SOLAR_POWER] = legacy_limit
+    legacy_night_mode = migrated.get(CONF_NIGHT_MODE)
+    if legacy_night_mode is not None and CONF_NIGHT_EVENING_MODE not in migrated:
+        migrated[CONF_NIGHT_EVENING_MODE] = (
+            NIGHT_EVENING_FIXED
+            if legacy_night_mode == NIGHT_MODE_TIME
+            else NIGHT_EVENING_SUNSET
+        )
+    if legacy_night_mode is not None and CONF_NIGHT_MORNING_MODE not in migrated:
+        migrated[CONF_NIGHT_MORNING_MODE] = (
+            NIGHT_MORNING_FIXED
+            if legacy_night_mode == NIGHT_MODE_TIME
+            else NIGHT_MORNING_SUNRISE
+        )
 
     migrated.pop(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, None)
     migrated.pop(CONF_TEMP_ENTITY, None)

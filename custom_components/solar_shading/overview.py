@@ -21,6 +21,7 @@ from .const import (
     DOMAIN,
     ENTRY_TYPE_HOUSE,
 )
+from .cover_physics import estimate_power_with_cover as _estimate_power_with_cover
 
 OVERVIEW_API_URL = "/api/solar_shading/overview"
 WINDOW_STATUS_OPTIONS = (
@@ -43,12 +44,12 @@ WINDOW_STATUS_OPTIONS = (
 def estimate_power_with_cover(
     power_without_cover: float | None,
     open_position: float | None,
+    cover_location: str | None = None,
 ) -> float | None:
-    """Estimate transmitted power with a linearly attenuating opaque cover."""
-    if power_without_cover is None or open_position is None:
-        return None
-    fraction = max(0.0, min(100.0, float(open_position))) / 100.0
-    return float(power_without_cover) * fraction
+    """Keep the public overview helper while using the shared physics model."""
+    return _estimate_power_with_cover(
+        power_without_cover, open_position, cover_location
+    )
 
 
 def derive_window_status(
@@ -183,20 +184,18 @@ def build_window_snapshot(entry, coordinator) -> dict[str, Any]:
         "solar_power_with_actual_cover_w_total": attributes.get(
             "solar_power_with_actual_cover_w_total"
         ),
-        "transmitted_solar_power_w_m2": attributes.get(
-            "transmitted_solar_power_w_m2"
-        ),
+        "transmitted_solar_power_w_m2": attributes.get("transmitted_solar_power_w_m2"),
         "solar_radiation_value_w_m2": attributes.get("solar_radiation_value_w_m2"),
         "room_temperature": attributes.get("room_temperature"),
-        "room_temperature_threshold": attributes.get(
-            "room_heat_protection_threshold"
-        ),
+        "room_temperature_threshold": attributes.get("room_heat_protection_threshold"),
         "warnings": attributes.get("configuration_warnings") or [],
         "covers": covers,
         "configuration_layers": attributes.get("configuration_layers") or [],
         "configuration_sources": attributes.get("configuration_sources") or {},
         "decision_trace": attributes.get("decision_trace") or [],
         "cover_attenuation_model": attributes.get("cover_attenuation_model"),
+        "cover_location": attributes.get("cover_location"),
+        "closed_cover_residual_factor": attributes.get("closed_cover_residual_factor"),
     }
 
 
@@ -223,9 +222,7 @@ def build_overview_payload(hass: HomeAssistant) -> dict[str, Any]:
             "window_groups": len(windows),
             "covers": sum(len(window["covers"]) for window in windows),
             "warnings": sum(len(window["warnings"]) for window in windows),
-            "solar_power_without_cover_w": total(
-                "solar_power_without_cover_w_total"
-            ),
+            "solar_power_without_cover_w": total("solar_power_without_cover_w_total"),
             "solar_power_with_target_cover_w": total(
                 "solar_power_with_target_cover_w_total"
             ),

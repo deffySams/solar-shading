@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from .calculation import AdaptiveVerticalCover, NormalCoverState
 from .config_context_adapter import ConfigContextAdapter
 from .const import _LOGGER
-from .overview import estimate_power_with_cover
+from .cover_physics import estimate_power_with_cover
 
 SIMULATOR_API_URL = "/api/solar_shading/simulate"
 
@@ -28,7 +28,9 @@ class _SimulationState:
 class _SimulationStates:
     """State registry proxy with simulator overrides."""
 
-    def __init__(self, hass: HomeAssistant, states: dict[str, _SimulationState]) -> None:
+    def __init__(
+        self, hass: HomeAssistant, states: dict[str, _SimulationState]
+    ) -> None:
         self._hass = hass
         self._states = states
 
@@ -40,7 +42,9 @@ class _SimulationStates:
 class _SimulationHass:
     """Small proxy exposing the Home Assistant pieces used by calculation.py."""
 
-    def __init__(self, hass: HomeAssistant, states: dict[str, _SimulationState]) -> None:
+    def __init__(
+        self, hass: HomeAssistant, states: dict[str, _SimulationState]
+    ) -> None:
         self.config = hass.config
         self.data = hass.data
         self.states = _SimulationStates(hass, states)
@@ -80,7 +84,9 @@ class SolarShadingSimulationView(HomeAssistantView):
         return self.json(simulate_from_payload(hass, payload))
 
 
-def _float(values: dict[str, Any], key: str, default: float | None = None) -> float | None:
+def _float(
+    values: dict[str, Any], key: str, default: float | None = None
+) -> float | None:
     value = values.get(key, default)
     if value in (None, ""):
         return default
@@ -128,7 +134,9 @@ def _round(value: Any, digits: int = 4):
         return value
 
 
-def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[str, Any]:
+def simulate_from_payload(
+    hass: HomeAssistant, payload: dict[str, Any]
+) -> dict[str, Any]:
     """Run one simulator calculation with the production Python code."""
     values = payload.get("values") or payload
     sun = payload.get("sun") or {}
@@ -214,9 +222,7 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         room_heat_protection_threshold=_float(
             values, "roomHeatProtectionThreshold", 24.0
         ),
-        max_transmitted_solar_power_w_m2=_float(
-            values, "maxTransmittedSolarPower"
-        ),
+        max_transmitted_solar_power_w_m2=_float(values, "maxTransmittedSolarPower"),
         use_forecast_max_temp_today=_bool(values, "useTodayMax", True),
         use_forecast_max_temp_tomorrow=_bool(values, "useTomorrowMax"),
         forecast_hot_day_threshold=_float(values, "hotDayThreshold"),
@@ -249,23 +255,38 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
     cover.night_mode = values.get("nightMode") or "time"
     cover.night_start_time = values.get("nightStartTime") or "22:00:00"
     cover.night_end_time = values.get("nightEndTime") or "06:00:00"
+    cover.sunset_offset = _int(values, "sunsetOffset", 0)
+    cover.sunrise_offset = _int(values, "sunriseOffset", 0)
+    cover.night_evening_mode = values.get("nightEveningMode") or (
+        "fixed" if cover.night_mode == "time" else "sunset"
+    )
+    cover.night_morning_mode = values.get("nightMorningMode") or (
+        "fixed" if cover.night_mode == "time" else "sunrise"
+    )
+    cover.night_evening_earliest_time = values.get("nightEveningEarliestTime")
+    cover.night_evening_latest_time = values.get("nightEveningLatestTime")
+    cover.night_morning_earliest_time = values.get("nightMorningEarliestTime")
+    cover.night_morning_latest_time = values.get("nightMorningLatestTime")
+    cover.cover_location = values.get("coverLocation") or "exterior"
     cover.heat_protection_control_mode = (
         values.get("heatProtectionControlMode") or "scaling"
     )
-    cover.binary_close_threshold_w_m2 = _float(
-        values, "binaryCloseThreshold", 180
-    )
+    cover.binary_close_threshold_w_m2 = _float(values, "binaryCloseThreshold", 180)
     cover.binary_close_position = _int(values, "binaryClosePosition", 20)
     cover.hass = _SimulationHass(hass, fake_states)
     cover.sun_data = _SimulationSunData(cover.sol_elev > 0, now)
     open_position = int(round(NormalCoverState(cover).get_state()))
     power_with_target_cover = estimate_power_with_cover(
-        cover.transmitted_solar_power_w, open_position
+        cover.transmitted_solar_power_w, open_position, cover.cover_location
     )
     attrs = {
         "local_solar_angle": _round(cover.local_solar_angle, 2),
-        "effective_lower_horizon_elevation": _round(cover.effective_lower_horizon_elevation, 2),
-        "effective_upper_horizon_elevation": _round(cover.effective_upper_horizon_elevation, 2),
+        "effective_lower_horizon_elevation": _round(
+            cover.effective_lower_horizon_elevation, 2
+        ),
+        "effective_upper_horizon_elevation": _round(
+            cover.effective_upper_horizon_elevation, 2
+        ),
         "sun_within_horizon_profile": cover.sun_within_horizon_profile,
         "left_reveal_shadow_pct": _round(cover.left_reveal_shadow * 100, 2),
         "right_reveal_shadow_pct": _round(cover.right_reveal_shadow * 100, 2),
@@ -281,9 +302,7 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
             cover.incoming_solar_radiation_factor
         ),
         "effective_solar_gain_factor": _round(cover.effective_solar_gain_factor),
-        "transmitted_solar_power_w_m2": _round(
-            cover.transmitted_solar_power_w_m2, 2
-        ),
+        "transmitted_solar_power_w_m2": _round(cover.transmitted_solar_power_w_m2, 2),
         "transmitted_solar_power_w": _round(cover.transmitted_solar_power_w, 2),
         "solar_power_without_cover_w_per_window": _round(
             cover.transmitted_solar_power_w, 2
@@ -291,7 +310,9 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "solar_power_with_target_cover_w_per_window": _round(
             power_with_target_cover, 2
         ),
-        "cover_attenuation_model": "linear_open_fraction",
+        "cover_attenuation_model": "location_residual_linear",
+        "cover_location": cover.cover_location,
+        "closed_cover_residual_factor": cover.closed_cover_residual_factor,
         "heat_power_limit_active": cover.heat_power_limit_active,
         "heat_power_limit_trigger": cover.heat_power_limit_trigger,
         "heat_power_limited_open_position": cover.heat_power_limited_open_position,
@@ -303,9 +324,13 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "heat_protection_activation_reason": cover.heat_protection_activation_reason,
         "forecast_temperature_risk": _round(cover.forecast_temperature_risk),
         "forecast_risk_factor": _round(cover.forecast_risk_factor),
-        "forecast_temperature_gain_boost": _round(cover.forecast_temperature_gain_boost),
+        "forecast_temperature_gain_boost": _round(
+            cover.forecast_temperature_gain_boost
+        ),
         "forecast_gain_uplift_factor": _round(cover.forecast_gain_uplift_factor),
-        "forecast_temperature_policy_pressure": _round(cover.forecast_temperature_policy_pressure),
+        "forecast_temperature_policy_pressure": _round(
+            cover.forecast_temperature_policy_pressure
+        ),
         "forecast_adjusted_gain_factor": _round(cover.forecast_adjusted_gain_factor),
         "heat_gain_response_factor": _round(cover.heat_gain_response_factor),
         "heat_gain_policy_weighted_score": _round(cover.policy_weighted_score),
@@ -322,8 +347,16 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "direct_sun_valid": cover.direct_sun_valid,
         "horizon_mode": cover.horizon_mode,
         "night_mode": cover.night_mode,
+        "night_evening_mode": cover.night_evening_mode,
+        "night_morning_mode": cover.night_morning_mode,
         "night_start_time": cover.night_start_time,
         "night_end_time": cover.night_end_time,
+        "sunset_offset": cover.sunset_offset,
+        "sunrise_offset": cover.sunrise_offset,
+        "night_evening_earliest_time": cover.night_evening_earliest_time,
+        "night_evening_latest_time": cover.night_evening_latest_time,
+        "night_morning_earliest_time": cover.night_morning_earliest_time,
+        "night_morning_latest_time": cover.night_morning_latest_time,
         "decision_reason": cover.decision_reason,
         "decision_trace": cover.decision_trace,
     }

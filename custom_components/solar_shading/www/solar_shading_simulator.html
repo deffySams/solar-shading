@@ -590,6 +590,13 @@
             </select>
           </div>
             <div class="field">
+              <label for="coverLocation"><span class="label-main">Montageort Sonnenschutz</span> <button class="info-btn" type="button" data-info="Aussenliegend: geschlossen bleiben modellhaft 10 Prozent des unbeschatteten solaren Waermeeintrags. Innenliegend: 55 Prozent, weil die Strahlung bereits das Glas passiert hat und mehr Waerme im Raum verbleibt.">i</button></label>
+              <select id="coverLocation">
+                <option value="exterior">Aussenliegend</option>
+                <option value="interior" selected>Innenliegend</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="defaultPosition"><span class="label-main">Default-Position (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert, wenn keine wirksame direkte Sonne relevant ist. 100 Prozent offen bedeutet ganz offen, 0 Prozent offen bedeutet geschlossen.">i</button></label>
               <input id="defaultPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
@@ -597,21 +604,54 @@
               <label for="sunsetPosition"><span class="label-main">Ruhe-/Nachtposition nach Zeit (% offen)</span> <button class="info-btn" type="button" data-info="Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergang/Sonnenaufgang plus Offset bestimmen, wann diese Ruheposition gilt.">i</button></label>
               <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
-            <div class="field">
-              <label for="nightMode"><span class="label-main">Nachtsteuerung</span> <button class="info-btn" type="button" data-info="Zeitgefuehrt verwendet die festen Uhrzeiten unten. Sonnengefuehrt verwendet Sonnenuntergang und Sonnenaufgang. In beiden Modi wird waehrend der Nacht die Ruhe-/Nachtposition angefahren.">i</button></label>
-              <select id="nightMode">
-                <option value="time" selected>Zeitgefuehrt</option>
-                <option value="solar">Sonnengefuehrt</option>
-              </select>
-            </div>
-            <div id="nightTimePanel" class="grid">
+            <div class="grid">
               <div class="field">
-                <label for="nightStartTime">Nacht beginnt</label>
+                <label for="nightEveningMode"><span class="label-main">Abendgrenze</span> <button class="info-btn" type="button" data-info="Aktiviert die Nachtposition entweder zu einer festen Uhrzeit oder relativ zum Sonnenuntergang.">i</button></label>
+                <select id="nightEveningMode">
+                  <option value="sunset" selected>Sonnenuntergang plus Versatz</option>
+                  <option value="fixed">Feste Uhrzeit</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="nightStartTime">Feste Schliesszeit am Abend</label>
                 <input id="nightStartTime" type="time" value="22:00">
               </div>
               <div class="field">
-                <label for="nightEndTime">Nacht endet</label>
-                <input id="nightEndTime" type="time" value="06:00">
+                <label for="sunsetOffset">Minuten nach Sonnenuntergang</label>
+                <input id="sunsetOffset" type="number" step="1" value="60">
+              </div>
+              <div class="field">
+                <label for="nightEveningEarliestTime">Abends nicht frueher als</label>
+                <input id="nightEveningEarliestTime" type="time">
+              </div>
+              <div class="field">
+                <label for="nightEveningLatestTime">Abends nicht spaeter als</label>
+                <input id="nightEveningLatestTime" type="time">
+              </div>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="nightMorningMode"><span class="label-main">Morgengrenze</span> <button class="info-btn" type="button" data-info="Beendet die Nachtposition entweder zu einer festen Uhrzeit oder relativ zum Sonnenaufgang.">i</button></label>
+                <select id="nightMorningMode">
+                  <option value="fixed" selected>Feste Uhrzeit</option>
+                  <option value="sunrise">Sonnenaufgang plus Versatz</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="nightEndTime">Feste Oeffnungszeit am Morgen</label>
+                <input id="nightEndTime" type="time" value="08:00">
+              </div>
+              <div class="field">
+                <label for="sunriseOffset">Minuten nach Sonnenaufgang</label>
+                <input id="sunriseOffset" type="number" step="1" value="0">
+              </div>
+              <div class="field">
+                <label for="nightMorningEarliestTime">Morgens nicht frueher als</label>
+                <input id="nightMorningEarliestTime" type="time">
+              </div>
+              <div class="field">
+                <label for="nightMorningLatestTime">Morgens nicht spaeter als</label>
+                <input id="nightMorningLatestTime" type="time">
               </div>
             </div>
           </div>
@@ -1314,6 +1354,7 @@
     const DEVICE_PRESETS = {
       custom: {},
       indoor_roller: {
+        coverLocation: "interior",
         defaultPosition: 100,
         partialPosition: 70,
         fullPosition: 30,
@@ -1325,6 +1366,7 @@
         weightSolarRadiation: 1.0
       },
       outdoor_roller: {
+        coverLocation: "exterior",
         defaultPosition: 100,
         partialPosition: 55,
         fullPosition: 20,
@@ -1336,6 +1378,7 @@
         weightSolarRadiation: 1.2
       },
       indoor_venetian: {
+        coverLocation: "interior",
         defaultPosition: 100,
         partialPosition: 75,
         fullPosition: 45,
@@ -1347,6 +1390,7 @@
         weightSolarRadiation: 0.9
       },
       outdoor_venetian: {
+        coverLocation: "exterior",
         defaultPosition: 100,
         partialPosition: 65,
         fullPosition: 30,
@@ -1387,7 +1431,9 @@
 
     const inputIds = [
       "dayOfYearRange", "timeRange", "latitude", "longitude", "windowAzimuth",
-      "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime",
+      "defaultPosition", "sunsetPosition", "coverLocation",
+      "nightEveningMode", "nightStartTime", "sunsetOffset", "nightEveningEarliestTime", "nightEveningLatestTime",
+      "nightMorningMode", "nightEndTime", "sunriseOffset", "nightMorningEarliestTime", "nightMorningLatestTime",
       "fovLeft", "fovRight", "minElevation", "maxElevation",
       "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
@@ -1412,7 +1458,9 @@
     const PRESET_SCOPE_IDS = {
       all: inputIds,
       global: [
-        "devicePreset", "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime", "glassType",
+        "devicePreset", "defaultPosition", "sunsetPosition", "coverLocation", "nightEveningMode", "nightStartTime", "sunsetOffset",
+        "nightEveningEarliestTime", "nightEveningLatestTime", "nightMorningMode", "nightEndTime", "sunriseOffset",
+        "nightMorningEarliestTime", "nightMorningLatestTime", "glassType",
         "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
         "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
         "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
@@ -1766,10 +1814,6 @@
         "hidden",
         document.getElementById("heatProtectionControlMode").value !== "binary"
       );
-      document.getElementById("nightTimePanel").classList.toggle(
-        "hidden",
-        document.getElementById("nightMode").value !== "time"
-      );
     }
 
     function haApiBaseUrl() {
@@ -1841,9 +1885,17 @@
       overwrite("windowAzimuth", attrs.azimuth_window);
       overwrite("defaultPosition", attrs.default);
       overwrite("sunsetPosition", attrs.sunset_default);
-      overwrite("nightMode", attrs.night_mode);
+      overwrite("coverLocation", attrs.cover_location);
+      overwrite("nightEveningMode", attrs.night_evening_mode);
+      overwrite("nightMorningMode", attrs.night_morning_mode);
       overwrite("nightStartTime", attrs.night_start_time ? String(attrs.night_start_time).slice(0, 5) : null);
       overwrite("nightEndTime", attrs.night_end_time ? String(attrs.night_end_time).slice(0, 5) : null);
+      overwrite("sunsetOffset", attrs.sunset_offset);
+      overwrite("sunriseOffset", attrs.sunrise_offset);
+      overwrite("nightEveningEarliestTime", attrs.night_evening_earliest_time ? String(attrs.night_evening_earliest_time).slice(0, 5) : null);
+      overwrite("nightEveningLatestTime", attrs.night_evening_latest_time ? String(attrs.night_evening_latest_time).slice(0, 5) : null);
+      overwrite("nightMorningEarliestTime", attrs.night_morning_earliest_time ? String(attrs.night_morning_earliest_time).slice(0, 5) : null);
+      overwrite("nightMorningLatestTime", attrs.night_morning_latest_time ? String(attrs.night_morning_latest_time).slice(0, 5) : null);
       overwrite("fovLeft", attrs.fov_left_deg ?? attrs.field_of_view?.[0]);
       overwrite("fovRight", attrs.fov_right_deg ?? attrs.field_of_view?.[1]);
       overwrite("minElevation", attrs.min_elevation_deg);
@@ -2210,9 +2262,17 @@
         windowAzimuth: parseNumber("windowAzimuth"),
         defaultPosition: parseNumber("defaultPosition"),
         sunsetPosition: parseNumber("sunsetPosition"),
-        nightMode: document.getElementById("nightMode").value,
+        coverLocation: document.getElementById("coverLocation").value,
+        nightEveningMode: document.getElementById("nightEveningMode").value,
         nightStartTime: document.getElementById("nightStartTime").value || "22:00",
-        nightEndTime: document.getElementById("nightEndTime").value || "06:00",
+        sunsetOffset: parseNumber("sunsetOffset"),
+        nightEveningEarliestTime: document.getElementById("nightEveningEarliestTime").value || null,
+        nightEveningLatestTime: document.getElementById("nightEveningLatestTime").value || null,
+        nightMorningMode: document.getElementById("nightMorningMode").value,
+        nightEndTime: document.getElementById("nightEndTime").value || "08:00",
+        sunriseOffset: parseNumber("sunriseOffset"),
+        nightMorningEarliestTime: document.getElementById("nightMorningEarliestTime").value || null,
+        nightMorningLatestTime: document.getElementById("nightMorningLatestTime").value || null,
         fovLeft: parseNumber("fovLeft"),
         fovRight: parseNumber("fovRight"),
         minElevation: parseNumber("minElevation"),
@@ -2816,20 +2876,72 @@
       return currentMinutes >= startMinutes;
     }
 
-    function isNightModeActive(state, sun) {
-      if (state.nightMode !== "time") {
-        return sun.elevation <= 0;
+    function timeToMinutes(value) {
+      const [hoursRaw, minutesRaw] = String(value || "00:00").split(":");
+      return Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
+    }
+
+    function clampSolarBoundary(value, earliest, latest) {
+      let result = clamp(value, 0, 1439);
+      if (earliest) result = Math.max(result, timeToMinutes(earliest));
+      if (latest) result = Math.min(result, timeToMinutes(latest));
+      return result;
+    }
+
+    function solarDayBoundaries(state) {
+      let sunrise = null;
+      let sunset = null;
+      let previousElevation = solarPosition(
+        state.year, state.month, state.day, "00:00", state.latitude, state.longitude
+      ).elevation;
+      for (let minute = 5; minute < 1440; minute += 5) {
+        const elevation = solarPosition(
+          state.year, state.month, state.day, formatTime(minute), state.latitude, state.longitude
+        ).elevation;
+        if (sunrise === null && previousElevation <= 0 && elevation > 0) sunrise = minute;
+        if (previousElevation > 0 && elevation <= 0) sunset = minute;
+        previousElevation = elevation;
       }
-      const toMinutes = (value) => {
-        const [hoursRaw, minutesRaw] = String(value || "00:00").split(":");
-        return Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
-      };
-      const current = toMinutes(state.time);
-      const start = toMinutes(state.nightStartTime);
-      const end = toMinutes(state.nightEndTime);
+      return { sunrise, sunset };
+    }
+
+    function isNightModeActive(state) {
+      const solar = solarDayBoundaries(state);
+      const current = timeToMinutes(state.time);
+      const start = state.nightEveningMode === "sunset" && solar.sunset !== null
+        ? clampSolarBoundary(
+            solar.sunset + state.sunsetOffset,
+            state.nightEveningEarliestTime,
+            state.nightEveningLatestTime
+          )
+        : timeToMinutes(state.nightStartTime);
+      const end = state.nightMorningMode === "sunrise" && solar.sunrise !== null
+        ? clampSolarBoundary(
+            solar.sunrise + state.sunriseOffset,
+            state.nightMorningEarliestTime,
+            state.nightMorningLatestTime
+          )
+        : timeToMinutes(state.nightEndTime);
       return start <= end
         ? current >= start && current < end
         : current >= start || current < end;
+    }
+
+    function closedCoverResidualFactor(location) {
+      return location === "interior" ? 0.55 : 0.10;
+    }
+
+    function coverTransmissionFactor(openPosition, location) {
+      const residual = closedCoverResidualFactor(location);
+      return residual + (1 - residual) * clamp(openPosition, 0, 100) / 100;
+    }
+
+    function maximumOpenPositionForLimit(uncoveredPower, limit, location) {
+      if (!Number.isFinite(uncoveredPower) || uncoveredPower <= 0 || uncoveredPower <= limit) return null;
+      const residual = closedCoverResidualFactor(location);
+      const requiredFactor = limit / uncoveredPower;
+      if (requiredFactor <= residual) return 0;
+      return Math.round(clamp((requiredFactor - residual) / (1 - residual) * 100, 0, 100));
     }
 
     function round(value, digits = 3) {
@@ -3093,8 +3205,8 @@
       setText(
         "nightModeCell",
         attrs.sunset_valid
-          ? `aktiv (${attrs.night_mode}) -> ${open} % offen`
-          : `aus (${attrs.night_mode})`
+          ? `aktiv (abends ${attrs.night_evening_mode}, morgens ${attrs.night_morning_mode}) -> ${open} % offen`
+          : `aus (abends ${attrs.night_evening_mode}, morgens ${attrs.night_morning_mode})`
       );
       setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
       setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
@@ -3110,7 +3222,7 @@
         : `${round(attrs.transmitted_solar_power_w_m2, 1)} W/m2${attrs.transmitted_solar_power_w === null ? "" : ` / ${round(attrs.transmitted_solar_power_w, 0)} W Fenster`} (HA Python)`);
       setText("coveredHeatPowerCell", attrs.solar_power_with_target_cover_w_per_window === null
         ? "kein Strahlungswert"
-        : `${round(attrs.solar_power_with_target_cover_w_per_window, 0)} W bei ${open} % offen (lineares Covermodell)`);
+        : `${round(attrs.solar_power_with_target_cover_w_per_window, 0)} W bei ${open} % offen (${attrs.cover_location === "interior" ? "innen" : "aussen"}, geschlossen ${round(Number(attrs.closed_cover_residual_factor) * 100, 0)} % Rest)`);
       setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
         ? `kein Deckel (${attrs.heat_power_limit_trigger})`
         : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
@@ -3273,7 +3385,11 @@
           && state.maxTransmittedSolarPower > 0
           && heatPowerTemperatureGateActive;
         const heatPowerLimitedOpenPosition = heatPowerLimitActive && transmittedSolarPowerWm2 > state.maxTransmittedSolarPower
-          ? Math.round(clamp((state.maxTransmittedSolarPower / transmittedSolarPowerWm2) * 100, 0, 100))
+          ? maximumOpenPositionForLimit(
+              transmittedSolarPowerWm2,
+              state.maxTransmittedSolarPower,
+              state.coverLocation
+            )
           : null;
         const forecastRisk = forecastPreemptiveActive
           ? clamp(
@@ -3427,7 +3543,7 @@
           : `${round(transmittedSolarPowerWm2, 1)} W/m2${transmittedSolarPowerW === null ? "" : ` / ${round(transmittedSolarPowerW, 0)} W Fenster`}`);
         setText("coveredHeatPowerCell", transmittedSolarPowerW === null
           ? "kein Strahlungswert"
-          : `${round(transmittedSolarPowerW * clamp(open, 0, 100) / 100, 0)} W bei ${open} % offen (lineares Covermodell)`);
+          : `${round(transmittedSolarPowerW * coverTransmissionFactor(open, state.coverLocation), 0)} W bei ${open} % offen (${state.coverLocation === "interior" ? "innen" : "aussen"}, geschlossen ${round(closedCoverResidualFactor(state.coverLocation) * 100, 0)} % Rest)`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
             ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(transmittedSolarPowerWm2, 0)} W/m2, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2)`

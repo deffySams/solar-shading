@@ -76,6 +76,16 @@ class FakeNightSunData:
         return dt.datetime.now(dt.UTC).replace(tzinfo=None) + dt.timedelta(hours=6)
 
 
+class FixedBoundarySunData:
+    """Solar boundaries for deterministic local-time night tests."""
+
+    def sunset(self):
+        return dt.datetime(2026, 6, 21, 18, 0, tzinfo=dt.UTC)
+
+    def sunrise(self):
+        return dt.datetime(2026, 6, 21, 4, 0, tzinfo=dt.UTC)
+
+
 def make_cover(**overrides):
     """Create a vertical cover with defaults aimed at direct east-window sun."""
     values = {
@@ -191,7 +201,9 @@ class CalculationMatrixTests(unittest.TestCase):
             }
         )
 
-        self.assertGreater(very_hot.forecast_gain_uplift_factor, hot.forecast_gain_uplift_factor)
+        self.assertGreater(
+            very_hot.forecast_gain_uplift_factor, hot.forecast_gain_uplift_factor
+        )
         self.assertGreater(very_hot.policy_score, hot.policy_score)
         self.assertLess(
             very_hot.effective_partial_close_threshold,
@@ -294,6 +306,26 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertEqual(
             NormalCoverState(cover).get_state(),
             cover.heat_power_limited_open_position,
+        )
+
+    def test_interior_power_limit_requires_more_closing(self):
+        """Interior covers retain more heat and must use a stricter open target."""
+        exterior = make_cover(
+            enable_heat_gain_policy=False,
+            heat_power_limit_enabled=True,
+            max_transmitted_solar_power_w_m2=50.0,
+        )
+        interior = make_cover(
+            enable_heat_gain_policy=False,
+            heat_power_limit_enabled=True,
+            max_transmitted_solar_power_w_m2=50.0,
+        )
+        exterior.cover_location = "exterior"
+        interior.cover_location = "interior"
+
+        self.assertLessEqual(
+            interior.heat_power_limited_open_position,
+            exterior.heat_power_limited_open_position,
         )
 
     def test_heat_power_limit_uses_hot_forecast_even_on_cool_morning(self):
@@ -404,6 +436,21 @@ class CalculationMatrixTests(unittest.TestCase):
         night.sun_data = FakeNightSunData()
         self.assertTrue(night.sunset_valid)
         self.assertEqual(NormalCoverState(night).get_state(), 75)
+
+    def test_sunset_boundary_supports_offset_and_earliest_clock(self):
+        """A sunset boundary can be delayed and clamped to a local earliest time."""
+        cover = make_cover(
+            evaluation_datetime=dt.datetime(2026, 6, 21, 19, 30, tzinfo=dt.UTC),
+            sunset_off=60,
+        )
+        cover.sun_data = FixedBoundarySunData()
+        cover.night_evening_mode = "sunset"
+        cover.night_morning_mode = "fixed"
+        cover.night_end_time = "08:00:00"
+
+        self.assertTrue(cover.sunset_valid)
+        cover.night_evening_earliest_time = "22:00:00"
+        self.assertFalse(cover.sunset_valid)
 
     def test_hot_room_activates_heat_protection_on_cool_forecast(self):
         """A hot room should react even when the daily forecast misses the heat."""

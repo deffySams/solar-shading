@@ -8,6 +8,8 @@ from custom_components.solar_shading.const import (
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_HEAT_PROTECTION_CONTROL_MODE,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
+    CONF_NIGHT_EVENING_MODE,
+    CONF_NIGHT_MORNING_MODE,
     CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
     CONF_ROOM_TEMPERATURE_ENTITY,
 )
@@ -73,6 +75,15 @@ class MigrationTests(unittest.TestCase):
             overrides[CONF_ROOM_TEMPERATURE_ENTITY],
             "sensor.bedroom_temperature",
         )
+
+    def test_legacy_night_mode_becomes_two_equivalent_boundaries(self):
+        fixed = migrate_retired_options({"night_mode": "time"})
+        solar = migrate_retired_options({"night_mode": "solar"})
+
+        self.assertEqual(fixed[CONF_NIGHT_EVENING_MODE], "fixed")
+        self.assertEqual(fixed[CONF_NIGHT_MORNING_MODE], "fixed")
+        self.assertEqual(solar[CONF_NIGHT_EVENING_MODE], "sunset")
+        self.assertEqual(solar[CONF_NIGHT_MORNING_MODE], "sunrise")
 
 
 if __name__ == "__main__":

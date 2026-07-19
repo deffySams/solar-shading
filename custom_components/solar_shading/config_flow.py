@@ -27,8 +27,10 @@ from .const import (
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
+    CONF_BULK_FACADE_ROTATION,
     CONF_BULK_RESET_LOCAL_OVERRIDES,
     CONF_BULK_WINDOW_ENTRIES,
+    CONF_COVER_LOCATION,
     CONF_DEFAULT_HEIGHT,
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
@@ -85,7 +87,13 @@ from .const import (
     CONF_MIN_POSITION,
     CONF_MODE,
     CONF_NIGHT_END_TIME,
+    CONF_NIGHT_EVENING_EARLIEST_TIME,
+    CONF_NIGHT_EVENING_LATEST_TIME,
+    CONF_NIGHT_EVENING_MODE,
     CONF_NIGHT_MODE,
+    CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_LATEST_TIME,
+    CONF_NIGHT_MORNING_MODE,
     CONF_NIGHT_START_TIME,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
@@ -135,10 +143,12 @@ from .const import (
     ENTRY_TYPE_HOUSE,
     ENTRY_TYPE_OPTIONS,
     ENTRY_TYPE_WINDOW,
+    COVER_LOCATION_OPTIONS,
     GLASS_TYPE_OPTIONS,
     HEAT_PROTECTION_MODE_OPTIONS,
     HORIZON_MODE_OPTIONS,
-    NIGHT_MODE_OPTIONS,
+    NIGHT_EVENING_MODE_OPTIONS,
+    NIGHT_MORNING_MODE_OPTIONS,
     POLICY_PRESET_OPTIONS,
     SensorType,
 )
@@ -226,21 +236,19 @@ def _window_config_schema(hass) -> vol.Schema:
     }
     house_profiles = _house_profile_entry_options(hass)
     if house_profiles:
-        schema[
-            vol.Optional(CONF_HOUSE_PROFILE_ENTRY_ID)
-        ] = selector.SelectSelector(
+        schema[vol.Optional(CONF_HOUSE_PROFILE_ENTRY_ID)] = selector.SelectSelector(
             selector.SelectSelectorConfig(options=house_profiles)
         )
     options = _template_entry_options(hass)
     if options:
-        schema[
-            vol.Optional(CONF_TEMPLATE_ENTRY, default=TEMPLATE_NONE)
-        ] = selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=[
-                    {"value": TEMPLATE_NONE, "label": "Keine Vorlage"},
-                    *options,
-                ]
+        schema[vol.Optional(CONF_TEMPLATE_ENTRY, default=TEMPLATE_NONE)] = (
+            selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        {"value": TEMPLATE_NONE, "label": "Keine Vorlage"},
+                        *options,
+                    ]
+                )
             )
         )
     return vol.Schema(schema)
@@ -285,7 +293,9 @@ def _area_options_for_floor(hass, floor_id: str | None) -> list[dict[str, str]]:
     registry = area_registry.async_get(hass)
     return [
         {"value": area.id, "label": area.name}
-        for area in sorted(registry.async_list_areas(), key=lambda item: item.name.casefold())
+        for area in sorted(
+            registry.async_list_areas(), key=lambda item: item.name.casefold()
+        )
         if area.floor_id == floor_id
     ]
 
@@ -295,7 +305,9 @@ OPTIONS = vol.Schema(
         vol.Optional(CONF_FACADE_NAME): selector.TextSelector(),
         vol.Optional(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
         vol.Optional(CONF_ROOM_NAME): _ha_selector_or_text("AreaSelector"),
-        vol.Optional(CONF_USE_FACADE_AZIMUTH, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_FACADE_AZIMUTH, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_FACADE_REFERENCE_AZIMUTH, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=359, step=1, mode="slider", unit_of_measurement="deg"
@@ -351,13 +363,28 @@ OPTIONS = vol.Schema(
         vol.Required(CONF_SUNRISE_OFFSET, default=0): selector.NumberSelector(
             selector.NumberSelectorConfig(mode="box", unit_of_measurement="minutes")
         ),
-        vol.Optional(CONF_NIGHT_MODE, default="time"): selector.SelectSelector(
+        vol.Optional(
+            CONF_NIGHT_EVENING_MODE, default="sunset"
+        ): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=NIGHT_MODE_OPTIONS, translation_key="night_mode"
+                options=NIGHT_EVENING_MODE_OPTIONS,
+                translation_key="night_evening_mode",
             )
         ),
-        vol.Optional(CONF_NIGHT_START_TIME, default="22:00:00"): selector.TimeSelector(),
-        vol.Optional(CONF_NIGHT_END_TIME, default="06:00:00"): selector.TimeSelector(),
+        vol.Optional(
+            CONF_NIGHT_START_TIME, default="22:00:00"
+        ): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_EVENING_EARLIEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_EVENING_LATEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_MODE, default="fixed"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=NIGHT_MORNING_MODE_OPTIONS,
+                translation_key="night_morning_mode",
+            )
+        ),
+        vol.Optional(CONF_NIGHT_END_TIME, default="08:00:00"): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_EARLIEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_LATEST_TIME): selector.TimeSelector(),
         vol.Required(CONF_INVERSE_STATE, default=False): bool,
         vol.Required(CONF_ENABLE_BLIND_SPOT, default=False): bool,
         vol.Required(CONF_INTERP, default=False): bool,
@@ -383,9 +410,7 @@ OPTIONS = vol.Schema(
         ),
         vol.Optional(
             CONF_HORIZON_PROFILE, default=HORIZON_PROFILE_EXAMPLE
-        ): selector.TextSelector(
-            selector.TextSelectorConfig(multiline=True)
-        ),
+        ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
         vol.Optional(CONF_HORIZON_MODE, default="window"): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
@@ -394,7 +419,14 @@ OPTIONS = vol.Schema(
         vol.Optional(CONF_GLASS_TYPE, default="double_clear"): selector.SelectSelector(
             selector.SelectSelectorConfig(options=GLASS_TYPE_OPTIONS)
         ),
-        vol.Optional(CONF_WEATHER_ENTITY, default=vol.UNDEFINED): selector.EntitySelector(
+        vol.Optional(CONF_COVER_LOCATION, default="exterior"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=COVER_LOCATION_OPTIONS, translation_key="cover_location"
+            )
+        ),
+        vol.Optional(
+            CONF_WEATHER_ENTITY, default=vol.UNDEFINED
+        ): selector.EntitySelector(
             selector.EntityFilterSelectorConfig(domain="weather")
         ),
     }
@@ -495,11 +527,18 @@ LINKED_WINDOW_OPTIONS = vol.Schema(
                 min=0.1, max=2, step=0.1, mode="box", unit_of_measurement="m"
             )
         ),
-        vol.Optional(CONF_USE_LOCAL_GEOMETRY, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_LOCAL_GEOMETRY, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_USE_LOCAL_HORIZON, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_USE_LOCAL_POLICY, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_GLASS_TYPE, default="double_clear"): selector.SelectSelector(
             selector.SelectSelectorConfig(options=GLASS_TYPE_OPTIONS)
+        ),
+        vol.Optional(CONF_COVER_LOCATION, default="exterior"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=COVER_LOCATION_OPTIONS, translation_key="cover_location"
+            )
         ),
         vol.Optional(CONF_FOV_LEFT, default=90): selector.NumberSelector(
             selector.NumberSelectorConfig(min=1, max=90, step=1, mode="slider")
@@ -565,9 +604,15 @@ LINKED_TILT_OPTIONS = vol.Schema(
 
 WEATHER_OPTIONS = vol.Schema(
     {
-        vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TODAY, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_FORECAST_MAX_TEMP_TODAY, default=False
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(
             CONF_SOLAR_RADIATION_ENTITY, default=vol.UNDEFINED
         ): selector.EntitySelector(
@@ -575,12 +620,16 @@ WEATHER_OPTIONS = vol.Schema(
                 domain=["sensor"], device_class="irradiance"
             )
         ),
-        vol.Optional(CONF_SOLAR_RADIATION_REFERENCE, default=900): selector.NumberSelector(
+        vol.Optional(
+            CONF_SOLAR_RADIATION_REFERENCE, default=900
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=300, max=1600, step=50, mode="slider", unit_of_measurement="W/m²"
             )
         ),
-        vol.Optional(CONF_FORECAST_HOT_DAY_THRESHOLD, default=26): selector.NumberSelector(
+        vol.Optional(
+            CONF_FORECAST_HOT_DAY_THRESHOLD, default=26
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=50, step=0.5, mode="box", unit_of_measurement="°C"
             )
@@ -595,17 +644,19 @@ WEATHER_OPTIONS = vol.Schema(
         vol.Optional(
             CONF_FORECAST_PREEMPTIVE_START_TIME, default="09:00:00"
         ): selector.TimeSelector(),
-        vol.Optional(CONF_FORECAST_INFLUENCE_STRENGTH, default=0.5): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=1, step=0.05, mode="slider"
-            )
+        vol.Optional(
+            CONF_FORECAST_INFLUENCE_STRENGTH, default=0.5
+        ): selector.NumberSelector(
+            selector.NumberSelectorConfig(min=0, max=1, step=0.05, mode="slider")
         ),
     }
 )
 
 POLICY_OPTIONS = vol.Schema(
     {
-        vol.Optional(CONF_ENABLE_HEAT_GAIN_POLICY, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_ENABLE_HEAT_GAIN_POLICY, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(
             CONF_POLICY_PRESET, default="daylight_first_single_aspect"
         ): selector.SelectSelector(
@@ -632,7 +683,9 @@ POLICY_OPTIONS = vol.Schema(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
-        vol.Optional(CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_ENABLE_AWAY_MODE, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_ROOM_TEMPERATURE_ENTITY): selector.EntitySelector(
             selector.EntitySelectorConfig(domain=["sensor", "climate"])
@@ -646,13 +699,21 @@ POLICY_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_AWAY_ENTITY, default=vol.UNDEFINED): selector.EntitySelector(
             selector.EntitySelectorConfig(
-                domain=["person", "device_tracker", "zone", "binary_sensor", "input_boolean"]
+                domain=[
+                    "person",
+                    "device_tracker",
+                    "zone",
+                    "binary_sensor",
+                    "input_boolean",
+                ]
             )
         ),
         vol.Optional(CONF_AWAY_SCORE_MULTIPLIER, default=1.25): selector.NumberSelector(
             selector.NumberSelectorConfig(min=1, max=2.5, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_AWAY_THRESHOLD_REDUCTION, default=0.1): selector.NumberSelector(
+        vol.Optional(
+            CONF_AWAY_THRESHOLD_REDUCTION, default=0.1
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=0.5, step=0.01, mode="slider")
         ),
         vol.Optional(CONF_AWAY_POSITION_OFFSET, default=10): selector.NumberSelector(
@@ -660,8 +721,12 @@ POLICY_OPTIONS = vol.Schema(
                 min=0, max=30, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
-        vol.Optional(CONF_HEAT_POWER_LIMIT_ENABLED, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14): selector.NumberSelector(
+        vol.Optional(
+            CONF_HEAT_POWER_LIMIT_ENABLED, default=False
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=-20, max=30, step=0.5, mode="slider", unit_of_measurement="degC"
             )
@@ -673,7 +738,9 @@ POLICY_OPTIONS = vol.Schema(
                 min=50, max=800, step=25, mode="slider", unit_of_measurement="W/m2"
             )
         ),
-        vol.Optional(CONF_SHOW_EXPERT_WEIGHTS, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_SHOW_EXPERT_WEIGHTS, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_WEIGHT_DIRECT_EXPOSURE, default=1.2): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
@@ -691,7 +758,9 @@ POLICY_OPTIONS = vol.Schema(
         vol.Optional(CONF_WEIGHT_SOLAR_RADIATION, default=1.0): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_PARTIAL_CLOSE_THRESHOLD, default=0.35): selector.NumberSelector(
+        vol.Optional(
+            CONF_PARTIAL_CLOSE_THRESHOLD, default=0.35
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=1, step=0.01, mode="slider")
         ),
         vol.Optional(CONF_FULL_CLOSE_THRESHOLD, default=0.65): selector.NumberSelector(
@@ -720,6 +789,11 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_GLASS_TYPE, default="double_clear"): selector.SelectSelector(
             selector.SelectSelectorConfig(options=GLASS_TYPE_OPTIONS)
+        ),
+        vol.Optional(CONF_COVER_LOCATION, default="exterior"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=COVER_LOCATION_OPTIONS, translation_key="cover_location"
+            )
         ),
         vol.Required(CONF_FOV_LEFT, default=90): selector.NumberSelector(
             selector.NumberSelectorConfig(
@@ -759,13 +833,34 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
-        vol.Optional(CONF_NIGHT_MODE, default="time"): selector.SelectSelector(
+        vol.Optional(
+            CONF_NIGHT_EVENING_MODE, default="sunset"
+        ): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=NIGHT_MODE_OPTIONS, translation_key="night_mode"
+                options=NIGHT_EVENING_MODE_OPTIONS,
+                translation_key="night_evening_mode",
             )
         ),
-        vol.Optional(CONF_NIGHT_START_TIME, default="22:00:00"): selector.TimeSelector(),
-        vol.Optional(CONF_NIGHT_END_TIME, default="06:00:00"): selector.TimeSelector(),
+        vol.Optional(
+            CONF_NIGHT_START_TIME, default="22:00:00"
+        ): selector.TimeSelector(),
+        vol.Optional(CONF_SUNSET_OFFSET, default=60): selector.NumberSelector(
+            selector.NumberSelectorConfig(mode="box", unit_of_measurement="minutes")
+        ),
+        vol.Optional(CONF_NIGHT_EVENING_EARLIEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_EVENING_LATEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_MODE, default="fixed"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=NIGHT_MORNING_MODE_OPTIONS,
+                translation_key="night_morning_mode",
+            )
+        ),
+        vol.Optional(CONF_NIGHT_END_TIME, default="08:00:00"): selector.TimeSelector(),
+        vol.Optional(CONF_SUNRISE_OFFSET, default=0): selector.NumberSelector(
+            selector.NumberSelectorConfig(mode="box", unit_of_measurement="minutes")
+        ),
+        vol.Optional(CONF_NIGHT_MORNING_EARLIEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_LATEST_TIME): selector.TimeSelector(),
         vol.Optional(CONF_SUNSET_POS, default=100): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
@@ -774,23 +869,37 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         vol.Optional(CONF_WEATHER_ENTITY): selector.EntitySelector(
             selector.EntityFilterSelectorConfig(domain="weather")
         ),
-        vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TODAY, default=True): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=True): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_FORECAST_MAX_TEMP_TODAY, default=True
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_FORECAST_MAX_TEMP_TOMORROW, default=False
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_USE_OPEN_DATA_SOLAR_RADIATION, default=True
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_SOLAR_RADIATION_ENTITY): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(domain=["sensor"], device_class="irradiance")
+            selector.EntityFilterSelectorConfig(
+                domain=["sensor"], device_class="irradiance"
+            )
         ),
-        vol.Optional(CONF_FORECAST_HOT_DAY_THRESHOLD, default=26): selector.NumberSelector(
+        vol.Optional(
+            CONF_FORECAST_HOT_DAY_THRESHOLD, default=26
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=50, step=0.5, mode="box", unit_of_measurement="°C"
             )
         ),
-        vol.Optional(CONF_FORECAST_VERY_HOT_DAY_THRESHOLD, default=30): selector.NumberSelector(
+        vol.Optional(
+            CONF_FORECAST_VERY_HOT_DAY_THRESHOLD, default=30
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=50, step=0.5, mode="box", unit_of_measurement="°C"
             )
         ),
-        vol.Optional(CONF_FORECAST_PREEMPTIVE_START_TIME, default="09:00:00"): selector.TimeSelector(),
+        vol.Optional(
+            CONF_FORECAST_PREEMPTIVE_START_TIME, default="09:00:00"
+        ): selector.TimeSelector(),
         vol.Optional(
             CONF_ROOM_HEAT_PROTECTION_THRESHOLD, default=24
         ): selector.NumberSelector(
@@ -803,7 +912,9 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
                 options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
             )
         ),
-        vol.Optional(CONF_HEAT_PROTECTION_CONTROL_MODE, default="scaling"): selector.SelectSelector(
+        vol.Optional(
+            CONF_HEAT_PROTECTION_CONTROL_MODE, default="scaling"
+        ): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=HEAT_PROTECTION_MODE_OPTIONS,
                 translation_key="heat_protection_control_mode",
@@ -819,8 +930,12 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
-        vol.Optional(CONF_HEAT_POWER_LIMIT_ENABLED, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_MAX_TRANSMITTED_SOLAR_POWER, default=250): selector.NumberSelector(
+        vol.Optional(
+            CONF_HEAT_POWER_LIMIT_ENABLED, default=False
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_MAX_TRANSMITTED_SOLAR_POWER, default=250
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=50, max=800, step=25, mode="slider", unit_of_measurement="W/m²"
             )
@@ -828,7 +943,13 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         vol.Optional(CONF_ENABLE_AWAY_MODE, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_AWAY_ENTITY): selector.EntitySelector(
             selector.EntitySelectorConfig(
-                domain=["person", "device_tracker", "zone", "binary_sensor", "input_boolean"]
+                domain=[
+                    "person",
+                    "device_tracker",
+                    "zone",
+                    "binary_sensor",
+                    "input_boolean",
+                ]
             )
         ),
     }
@@ -837,20 +958,28 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
 
 HOUSE_EXPERT_OPTIONS = vol.Schema(
     {
-        vol.Optional(CONF_SOLAR_RADIATION_REFERENCE, default=900): selector.NumberSelector(
+        vol.Optional(
+            CONF_SOLAR_RADIATION_REFERENCE, default=900
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=300, max=1600, step=50, mode="slider", unit_of_measurement="W/m²"
             )
         ),
-        vol.Optional(CONF_FORECAST_INFLUENCE_STRENGTH, default=0.5): selector.NumberSelector(
+        vol.Optional(
+            CONF_FORECAST_INFLUENCE_STRENGTH, default=0.5
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=1, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14): selector.NumberSelector(
+        vol.Optional(
+            CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=-20, max=30, step=0.5, mode="slider", unit_of_measurement="°C"
             )
         ),
-        vol.Optional(CONF_SHOW_EXPERT_WEIGHTS, default=False): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_SHOW_EXPERT_WEIGHTS, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_WEIGHT_DIRECT_EXPOSURE, default=1.2): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
@@ -860,13 +989,17 @@ HOUSE_EXPERT_OPTIONS = vol.Schema(
         vol.Optional(CONF_WEIGHT_GLAZING, default=0.8): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_WEIGHT_FORECAST_TEMPERATURE, default=1): selector.NumberSelector(
+        vol.Optional(
+            CONF_WEIGHT_FORECAST_TEMPERATURE, default=1
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
         vol.Optional(CONF_WEIGHT_SOLAR_RADIATION, default=1): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=3, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_PARTIAL_CLOSE_THRESHOLD, default=0.35): selector.NumberSelector(
+        vol.Optional(
+            CONF_PARTIAL_CLOSE_THRESHOLD, default=0.35
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=1, step=0.01, mode="slider")
         ),
         vol.Optional(CONF_FULL_CLOSE_THRESHOLD, default=0.65): selector.NumberSelector(
@@ -885,19 +1018,15 @@ HOUSE_EXPERT_OPTIONS = vol.Schema(
         vol.Optional(CONF_AWAY_SCORE_MULTIPLIER, default=1.25): selector.NumberSelector(
             selector.NumberSelectorConfig(min=1, max=2.5, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_AWAY_THRESHOLD_REDUCTION, default=0.1): selector.NumberSelector(
+        vol.Optional(
+            CONF_AWAY_THRESHOLD_REDUCTION, default=0.1
+        ): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=0.5, step=0.01, mode="slider")
         ),
         vol.Optional(CONF_AWAY_POSITION_OFFSET, default=10): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=30, step=1, mode="slider", unit_of_measurement="%"
             )
-        ),
-        vol.Optional(CONF_SUNSET_OFFSET, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(mode="box", unit_of_measurement="min")
-        ),
-        vol.Optional(CONF_SUNRISE_OFFSET, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(mode="box", unit_of_measurement="min")
         ),
     }
 )
@@ -915,6 +1044,7 @@ def _schema_subset(schema: vol.Schema, keys: set[str]) -> vol.Schema:
 
 LINKED_WINDOW_INITIAL_KEYS = {
     CONF_ENTITIES,
+    CONF_COVER_LOCATION,
     CONF_HEIGHT_WIN,
     CONF_WINDOW_WIDTH,
     CONF_INVERSE_STATE,
@@ -925,6 +1055,7 @@ LINKED_WINDOW_INITIAL_KEYS = {
 
 LINKED_WINDOW_DETAIL_KEYS = {
     CONF_ENTITIES,
+    CONF_COVER_LOCATION,
     CONF_HEIGHT_WIN,
     CONF_WINDOW_WIDTH,
     CONF_INVERSE_STATE,
@@ -947,7 +1078,13 @@ def _linked_initial_schema(schema: vol.Schema) -> vol.Schema:
     return _schema_subset(
         schema,
         LINKED_WINDOW_INITIAL_KEYS
-        | {CONF_LENGTH_AWNING, CONF_AWNING_ANGLE, CONF_TILT_DEPTH, CONF_TILT_DISTANCE, CONF_TILT_MODE},
+        | {
+            CONF_LENGTH_AWNING,
+            CONF_AWNING_ANGLE,
+            CONF_TILT_DEPTH,
+            CONF_TILT_DISTANCE,
+            CONF_TILT_MODE,
+        },
     )
 
 
@@ -959,7 +1096,13 @@ def _linked_detail_schema(schema: vol.Schema, values: dict[str, Any]) -> vol.Sch
     elif values.get(CONF_USE_LOCAL_HORIZON):
         keys.update({CONF_HORIZON_MODE, CONF_HORIZON_PROFILE})
     keys.update(
-        {CONF_LENGTH_AWNING, CONF_AWNING_ANGLE, CONF_TILT_DEPTH, CONF_TILT_DISTANCE, CONF_TILT_MODE}
+        {
+            CONF_LENGTH_AWNING,
+            CONF_AWNING_ANGLE,
+            CONF_TILT_DEPTH,
+            CONF_TILT_DISTANCE,
+            CONF_TILT_MODE,
+        }
     )
     return _schema_subset(schema, keys)
 
@@ -1132,13 +1275,10 @@ def _validate_geometry_input(user_input: dict[str, Any]) -> dict[str, str]:
     except vol.Invalid:
         errors[CONF_HORIZON_PROFILE] = "invalid_horizon_profile"
 
-    if (
-        any(
-            user_input.get(key) not in (None, 0)
-            for key in (CONF_REVEAL_LEFT, CONF_REVEAL_RIGHT, CONF_REVEAL_TOP)
-        )
-        and user_input.get(CONF_WINDOW_WIDTH) in (None, 0)
-    ):
+    if any(
+        user_input.get(key) not in (None, 0)
+        for key in (CONF_REVEAL_LEFT, CONF_REVEAL_RIGHT, CONF_REVEAL_TOP)
+    ) and user_input.get(CONF_WINDOW_WIDTH) in (None, 0):
         errors[CONF_WINDOW_WIDTH] = "window_width_required_for_reveals"
 
     return errors
@@ -1341,9 +1481,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_automation()
         return self.async_show_form(
             step_id="vertical",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, self.config
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, self.config),
         )
 
     async def async_step_horizontal(self, user_input: dict[str, Any] | None = None):
@@ -1385,20 +1523,14 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_automation()
         return self.async_show_form(
             step_id="horizontal",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, self.config
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, self.config),
         )
 
     async def async_step_tilt(self, user_input: dict[str, Any] | None = None):
         """Show basic config for tilted blinds."""
         self.type_blind = SensorType.TILT
         linked = bool(self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID))
-        schema = (
-            _linked_initial_schema(LINKED_TILT_OPTIONS)
-            if linked
-            else TILT_OPTIONS
-        )
+        schema = _linked_initial_schema(LINKED_TILT_OPTIONS) if linked else TILT_OPTIONS
         if user_input is not None:
             geometry_errors = _validate_geometry_input(user_input)
             if geometry_errors:
@@ -1429,9 +1561,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_automation()
         return self.async_show_form(
             step_id="tilt",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, self.config
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, self.config),
         )
 
     async def async_step_interp(self, user_input: dict[str, Any] | None = None):
@@ -1512,7 +1642,9 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_policy()
         return self.async_show_form(
             step_id="weather",
-            data_schema=self.add_suggested_values_to_schema(WEATHER_OPTIONS, self.config),
+            data_schema=self.add_suggested_values_to_schema(
+                WEATHER_OPTIONS, self.config
+            ),
         )
 
     async def async_step_policy(self, user_input: dict[str, Any] | None = None):
@@ -1532,7 +1664,9 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_update()
         return self.async_show_form(
             step_id="policy",
-            data_schema=self.add_suggested_values_to_schema(POLICY_OPTIONS, self.config),
+            data_schema=self.add_suggested_values_to_schema(
+                POLICY_OPTIONS, self.config
+            ),
         )
 
     async def async_step_update(self, user_input: dict[str, Any] | None = None):
@@ -1543,186 +1677,171 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             "cover_tilt": "Tilt",
         }
         entry_options = {
-                CONF_MODE: self.mode,
-                CONF_HOUSE_PROFILE_ENTRY_ID: self.config.get(
-                    CONF_HOUSE_PROFILE_ENTRY_ID
-                ),
-                CONF_USE_LOCAL_GEOMETRY: self.config.get(
-                    CONF_USE_LOCAL_GEOMETRY, False
-                ),
-                CONF_USE_LOCAL_HORIZON: self.config.get(
-                    CONF_USE_LOCAL_HORIZON, False
-                ),
-                CONF_USE_LOCAL_POLICY: self.config.get(
-                    CONF_USE_LOCAL_POLICY, False
-                ),
-                CONF_WINDOW_OVERRIDES: self.config.get(CONF_WINDOW_OVERRIDES, {}),
-                CONF_FACADE_NAME: self.config.get(CONF_FACADE_NAME),
-                CONF_FLOOR_NAME: self.config.get(CONF_FLOOR_NAME),
-                CONF_ROOM_NAME: self.config.get(CONF_ROOM_NAME),
-                CONF_USE_FACADE_AZIMUTH: self.config.get(
-                    CONF_USE_FACADE_AZIMUTH, False
-                ),
-                CONF_FACADE_REFERENCE_AZIMUTH: self.config.get(
-                    CONF_FACADE_REFERENCE_AZIMUTH
-                ),
-                CONF_FACADE_OFFSET: self.config.get(CONF_FACADE_OFFSET),
-                CONF_AZIMUTH: self.config.get(CONF_AZIMUTH),
-                CONF_HEIGHT_WIN: self.config.get(CONF_HEIGHT_WIN),
-                CONF_DISTANCE: self.config.get(CONF_DISTANCE),
-                CONF_DEFAULT_HEIGHT: self.config.get(CONF_DEFAULT_HEIGHT),
-                CONF_MAX_POSITION: self.config.get(CONF_MAX_POSITION),
-                CONF_MIN_POSITION: self.config.get(CONF_MIN_POSITION),
-                CONF_FOV_LEFT: self.config.get(CONF_FOV_LEFT),
-                CONF_FOV_RIGHT: self.config.get(CONF_FOV_RIGHT),
-                CONF_ENTITIES: self.config.get(CONF_ENTITIES),
-                CONF_INVERSE_STATE: self.config.get(CONF_INVERSE_STATE),
-                CONF_SUNSET_POS: self.config.get(CONF_SUNSET_POS),
-                CONF_SUNSET_OFFSET: self.config.get(CONF_SUNSET_OFFSET),
-                CONF_SUNRISE_OFFSET: self.config.get(CONF_SUNRISE_OFFSET),
-                CONF_LENGTH_AWNING: self.config.get(CONF_LENGTH_AWNING),
-                CONF_AWNING_ANGLE: self.config.get(CONF_AWNING_ANGLE),
-                CONF_TILT_DISTANCE: self.config.get(CONF_TILT_DISTANCE),
-                CONF_TILT_DEPTH: self.config.get(CONF_TILT_DEPTH),
-                CONF_TILT_MODE: self.config.get(CONF_TILT_MODE),
-                CONF_WEATHER_ENTITY: self.config.get(CONF_WEATHER_ENTITY),
-                CONF_ROOM_TEMPERATURE_ENTITY: self.config.get(
-                    CONF_ROOM_TEMPERATURE_ENTITY
-                ),
-                CONF_ROOM_HEAT_PROTECTION_THRESHOLD: self.config.get(
-                    CONF_ROOM_HEAT_PROTECTION_THRESHOLD, 24
-                ),
-                CONF_DELTA_POSITION: self.config.get(CONF_DELTA_POSITION),
-                CONF_DELTA_TIME: self.config.get(CONF_DELTA_TIME),
-                CONF_START_TIME: self.config.get(CONF_START_TIME),
-                CONF_START_ENTITY: self.config.get(CONF_START_ENTITY),
-                CONF_MANUAL_OVERRIDE_DURATION: self.config.get(
-                    CONF_MANUAL_OVERRIDE_DURATION
-                ),
-                CONF_MANUAL_OVERRIDE_RESET: self.config.get(CONF_MANUAL_OVERRIDE_RESET),
-                CONF_MANUAL_THRESHOLD: self.config.get(CONF_MANUAL_THRESHOLD),
-                CONF_MANUAL_IGNORE_INTERMEDIATE: self.config.get(
-                    CONF_MANUAL_IGNORE_INTERMEDIATE
-                ),
-                CONF_BLIND_SPOT_RIGHT: self.config.get(CONF_BLIND_SPOT_RIGHT, None),
-                CONF_BLIND_SPOT_LEFT: self.config.get(CONF_BLIND_SPOT_LEFT, None),
-                CONF_BLIND_SPOT_ELEVATION: self.config.get(
-                    CONF_BLIND_SPOT_ELEVATION, None
-                ),
-                CONF_ENABLE_BLIND_SPOT: self.config.get(CONF_ENABLE_BLIND_SPOT),
-                CONF_MIN_ELEVATION: self.config.get(CONF_MIN_ELEVATION, None),
-                CONF_MAX_ELEVATION: self.config.get(CONF_MAX_ELEVATION, None),
-                CONF_INTERP: self.config.get(CONF_INTERP),
-                CONF_INTERP_START: self.config.get(CONF_INTERP_START, None),
-                CONF_INTERP_END: self.config.get(CONF_INTERP_END, None),
-                CONF_INTERP_LIST: self.config.get(CONF_INTERP_LIST, []),
-                CONF_INTERP_LIST_NEW: self.config.get(CONF_INTERP_LIST_NEW, []),
-                CONF_HORIZON_PROFILE: self.config.get(CONF_HORIZON_PROFILE),
-                CONF_WINDOW_WIDTH: self.config.get(CONF_WINDOW_WIDTH),
-                CONF_REVEAL_LEFT: self.config.get(CONF_REVEAL_LEFT),
-                CONF_REVEAL_RIGHT: self.config.get(CONF_REVEAL_RIGHT),
-                CONF_REVEAL_TOP: self.config.get(CONF_REVEAL_TOP),
-                CONF_USE_FORECAST_MAX_TEMP_TODAY: self.config.get(
-                    CONF_USE_FORECAST_MAX_TEMP_TODAY, False
-                ),
-                CONF_USE_FORECAST_MAX_TEMP_TOMORROW: self.config.get(
-                    CONF_USE_FORECAST_MAX_TEMP_TOMORROW, False
-                ),
-                CONF_USE_OPEN_DATA_SOLAR_RADIATION: self.config.get(
-                    CONF_USE_OPEN_DATA_SOLAR_RADIATION, False
-                ),
-                CONF_SOLAR_RADIATION_ENTITY: self.config.get(
-                    CONF_SOLAR_RADIATION_ENTITY
-                ),
-                CONF_SOLAR_RADIATION_REFERENCE: self.config.get(
-                    CONF_SOLAR_RADIATION_REFERENCE, 900
-                ),
-                CONF_FORECAST_HOT_DAY_THRESHOLD: self.config.get(
-                    CONF_FORECAST_HOT_DAY_THRESHOLD
-                ),
-                CONF_FORECAST_VERY_HOT_DAY_THRESHOLD: self.config.get(
-                    CONF_FORECAST_VERY_HOT_DAY_THRESHOLD
-                ),
-                CONF_FORECAST_PREEMPTIVE_START_TIME: self.config.get(
-                    CONF_FORECAST_PREEMPTIVE_START_TIME
-                ),
-                CONF_FORECAST_INFLUENCE_STRENGTH: self.config.get(
-                    CONF_FORECAST_INFLUENCE_STRENGTH, 0.5
-                ),
-                CONF_ENABLE_HEAT_GAIN_POLICY: self.config.get(
-                    CONF_ENABLE_HEAT_GAIN_POLICY, False
-                ),
-                CONF_POLICY_PRESET: self.config.get(
-                    CONF_POLICY_PRESET, "daylight_first_single_aspect"
-                ),
-                CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS: self.config.get(
-                    CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, False
-                ),
-                CONF_ENABLE_AWAY_MODE: self.config.get(CONF_ENABLE_AWAY_MODE, False),
-                CONF_AWAY_ENTITY: self.config.get(CONF_AWAY_ENTITY),
-                CONF_AWAY_SCORE_MULTIPLIER: self.config.get(
-                    CONF_AWAY_SCORE_MULTIPLIER, 1.25
-                ),
-                CONF_AWAY_THRESHOLD_REDUCTION: self.config.get(
-                    CONF_AWAY_THRESHOLD_REDUCTION, 0.1
-                ),
-                CONF_AWAY_POSITION_OFFSET: self.config.get(
-                    CONF_AWAY_POSITION_OFFSET, 10
-                ),
-                CONF_HEAT_POWER_LIMIT_ENABLED: self.config.get(
-                    CONF_HEAT_POWER_LIMIT_ENABLED, False
-                ),
-                CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP: self.config.get(
-                    CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14
-                ),
-                CONF_MAX_TRANSMITTED_SOLAR_POWER: self.config.get(
-                    CONF_MAX_TRANSMITTED_SOLAR_POWER,
-                    self.config.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, 250),
-                ),
-                CONF_SHOW_EXPERT_WEIGHTS: self.config.get(
-                    CONF_SHOW_EXPERT_WEIGHTS, False
-                ),
-                CONF_WEIGHT_DIRECT_EXPOSURE: self.config.get(
-                    CONF_WEIGHT_DIRECT_EXPOSURE, 1.2
-                ),
-                CONF_WEIGHT_INCIDENCE: self.config.get(CONF_WEIGHT_INCIDENCE, 0.9),
-                CONF_WEIGHT_GLAZING: self.config.get(CONF_WEIGHT_GLAZING, 0.8),
-                CONF_WEIGHT_FORECAST_TEMPERATURE: self.config.get(
-                    CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0
-                ),
-                CONF_WEIGHT_SOLAR_RADIATION: self.config.get(
-                    CONF_WEIGHT_SOLAR_RADIATION, 1.0
-                ),
-                CONF_PARTIAL_CLOSE_THRESHOLD: self.config.get(
-                    CONF_PARTIAL_CLOSE_THRESHOLD, 0.35
-                ),
-                CONF_FULL_CLOSE_THRESHOLD: self.config.get(
-                    CONF_FULL_CLOSE_THRESHOLD, 0.65
-                ),
-                CONF_PARTIAL_CLOSE_POSITION: self.config.get(
-                    CONF_PARTIAL_CLOSE_POSITION, 70
-                ),
-                CONF_FULL_CLOSE_POSITION: self.config.get(
-                    CONF_FULL_CLOSE_POSITION, 30
-                ),
-                CONF_HORIZON_MODE: self.config.get(CONF_HORIZON_MODE, "window"),
-                CONF_NIGHT_MODE: self.config.get(CONF_NIGHT_MODE, "time"),
-                CONF_NIGHT_START_TIME: self.config.get(
-                    CONF_NIGHT_START_TIME, "22:00:00"
-                ),
-                CONF_NIGHT_END_TIME: self.config.get(
-                    CONF_NIGHT_END_TIME, "06:00:00"
-                ),
-                CONF_HEAT_PROTECTION_CONTROL_MODE: self.config.get(
-                    CONF_HEAT_PROTECTION_CONTROL_MODE, "scaling"
-                ),
-                CONF_BINARY_CLOSE_THRESHOLD: self.config.get(
-                    CONF_BINARY_CLOSE_THRESHOLD, 180
-                ),
-                CONF_BINARY_CLOSE_POSITION: self.config.get(
-                    CONF_BINARY_CLOSE_POSITION, 20
-                ),
-            }
+            CONF_MODE: self.mode,
+            CONF_HOUSE_PROFILE_ENTRY_ID: self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID),
+            CONF_USE_LOCAL_GEOMETRY: self.config.get(CONF_USE_LOCAL_GEOMETRY, False),
+            CONF_USE_LOCAL_HORIZON: self.config.get(CONF_USE_LOCAL_HORIZON, False),
+            CONF_USE_LOCAL_POLICY: self.config.get(CONF_USE_LOCAL_POLICY, False),
+            CONF_WINDOW_OVERRIDES: self.config.get(CONF_WINDOW_OVERRIDES, {}),
+            CONF_FACADE_NAME: self.config.get(CONF_FACADE_NAME),
+            CONF_FLOOR_NAME: self.config.get(CONF_FLOOR_NAME),
+            CONF_ROOM_NAME: self.config.get(CONF_ROOM_NAME),
+            CONF_USE_FACADE_AZIMUTH: self.config.get(CONF_USE_FACADE_AZIMUTH, False),
+            CONF_FACADE_REFERENCE_AZIMUTH: self.config.get(
+                CONF_FACADE_REFERENCE_AZIMUTH
+            ),
+            CONF_FACADE_OFFSET: self.config.get(CONF_FACADE_OFFSET),
+            CONF_AZIMUTH: self.config.get(CONF_AZIMUTH),
+            CONF_HEIGHT_WIN: self.config.get(CONF_HEIGHT_WIN),
+            CONF_DISTANCE: self.config.get(CONF_DISTANCE),
+            CONF_DEFAULT_HEIGHT: self.config.get(CONF_DEFAULT_HEIGHT),
+            CONF_MAX_POSITION: self.config.get(CONF_MAX_POSITION),
+            CONF_MIN_POSITION: self.config.get(CONF_MIN_POSITION),
+            CONF_FOV_LEFT: self.config.get(CONF_FOV_LEFT),
+            CONF_FOV_RIGHT: self.config.get(CONF_FOV_RIGHT),
+            CONF_ENTITIES: self.config.get(CONF_ENTITIES),
+            CONF_COVER_LOCATION: self.config.get(CONF_COVER_LOCATION, "exterior"),
+            CONF_INVERSE_STATE: self.config.get(CONF_INVERSE_STATE),
+            CONF_SUNSET_POS: self.config.get(CONF_SUNSET_POS),
+            CONF_SUNSET_OFFSET: self.config.get(CONF_SUNSET_OFFSET),
+            CONF_SUNRISE_OFFSET: self.config.get(CONF_SUNRISE_OFFSET),
+            CONF_LENGTH_AWNING: self.config.get(CONF_LENGTH_AWNING),
+            CONF_AWNING_ANGLE: self.config.get(CONF_AWNING_ANGLE),
+            CONF_TILT_DISTANCE: self.config.get(CONF_TILT_DISTANCE),
+            CONF_TILT_DEPTH: self.config.get(CONF_TILT_DEPTH),
+            CONF_TILT_MODE: self.config.get(CONF_TILT_MODE),
+            CONF_WEATHER_ENTITY: self.config.get(CONF_WEATHER_ENTITY),
+            CONF_ROOM_TEMPERATURE_ENTITY: self.config.get(CONF_ROOM_TEMPERATURE_ENTITY),
+            CONF_ROOM_HEAT_PROTECTION_THRESHOLD: self.config.get(
+                CONF_ROOM_HEAT_PROTECTION_THRESHOLD, 24
+            ),
+            CONF_DELTA_POSITION: self.config.get(CONF_DELTA_POSITION),
+            CONF_DELTA_TIME: self.config.get(CONF_DELTA_TIME),
+            CONF_START_TIME: self.config.get(CONF_START_TIME),
+            CONF_START_ENTITY: self.config.get(CONF_START_ENTITY),
+            CONF_MANUAL_OVERRIDE_DURATION: self.config.get(
+                CONF_MANUAL_OVERRIDE_DURATION
+            ),
+            CONF_MANUAL_OVERRIDE_RESET: self.config.get(CONF_MANUAL_OVERRIDE_RESET),
+            CONF_MANUAL_THRESHOLD: self.config.get(CONF_MANUAL_THRESHOLD),
+            CONF_MANUAL_IGNORE_INTERMEDIATE: self.config.get(
+                CONF_MANUAL_IGNORE_INTERMEDIATE
+            ),
+            CONF_BLIND_SPOT_RIGHT: self.config.get(CONF_BLIND_SPOT_RIGHT, None),
+            CONF_BLIND_SPOT_LEFT: self.config.get(CONF_BLIND_SPOT_LEFT, None),
+            CONF_BLIND_SPOT_ELEVATION: self.config.get(CONF_BLIND_SPOT_ELEVATION, None),
+            CONF_ENABLE_BLIND_SPOT: self.config.get(CONF_ENABLE_BLIND_SPOT),
+            CONF_MIN_ELEVATION: self.config.get(CONF_MIN_ELEVATION, None),
+            CONF_MAX_ELEVATION: self.config.get(CONF_MAX_ELEVATION, None),
+            CONF_INTERP: self.config.get(CONF_INTERP),
+            CONF_INTERP_START: self.config.get(CONF_INTERP_START, None),
+            CONF_INTERP_END: self.config.get(CONF_INTERP_END, None),
+            CONF_INTERP_LIST: self.config.get(CONF_INTERP_LIST, []),
+            CONF_INTERP_LIST_NEW: self.config.get(CONF_INTERP_LIST_NEW, []),
+            CONF_HORIZON_PROFILE: self.config.get(CONF_HORIZON_PROFILE),
+            CONF_WINDOW_WIDTH: self.config.get(CONF_WINDOW_WIDTH),
+            CONF_REVEAL_LEFT: self.config.get(CONF_REVEAL_LEFT),
+            CONF_REVEAL_RIGHT: self.config.get(CONF_REVEAL_RIGHT),
+            CONF_REVEAL_TOP: self.config.get(CONF_REVEAL_TOP),
+            CONF_USE_FORECAST_MAX_TEMP_TODAY: self.config.get(
+                CONF_USE_FORECAST_MAX_TEMP_TODAY, False
+            ),
+            CONF_USE_FORECAST_MAX_TEMP_TOMORROW: self.config.get(
+                CONF_USE_FORECAST_MAX_TEMP_TOMORROW, False
+            ),
+            CONF_USE_OPEN_DATA_SOLAR_RADIATION: self.config.get(
+                CONF_USE_OPEN_DATA_SOLAR_RADIATION, False
+            ),
+            CONF_SOLAR_RADIATION_ENTITY: self.config.get(CONF_SOLAR_RADIATION_ENTITY),
+            CONF_SOLAR_RADIATION_REFERENCE: self.config.get(
+                CONF_SOLAR_RADIATION_REFERENCE, 900
+            ),
+            CONF_FORECAST_HOT_DAY_THRESHOLD: self.config.get(
+                CONF_FORECAST_HOT_DAY_THRESHOLD
+            ),
+            CONF_FORECAST_VERY_HOT_DAY_THRESHOLD: self.config.get(
+                CONF_FORECAST_VERY_HOT_DAY_THRESHOLD
+            ),
+            CONF_FORECAST_PREEMPTIVE_START_TIME: self.config.get(
+                CONF_FORECAST_PREEMPTIVE_START_TIME
+            ),
+            CONF_FORECAST_INFLUENCE_STRENGTH: self.config.get(
+                CONF_FORECAST_INFLUENCE_STRENGTH, 0.5
+            ),
+            CONF_ENABLE_HEAT_GAIN_POLICY: self.config.get(
+                CONF_ENABLE_HEAT_GAIN_POLICY, False
+            ),
+            CONF_POLICY_PRESET: self.config.get(
+                CONF_POLICY_PRESET, "daylight_first_single_aspect"
+            ),
+            CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS: self.config.get(
+                CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, False
+            ),
+            CONF_ENABLE_AWAY_MODE: self.config.get(CONF_ENABLE_AWAY_MODE, False),
+            CONF_AWAY_ENTITY: self.config.get(CONF_AWAY_ENTITY),
+            CONF_AWAY_SCORE_MULTIPLIER: self.config.get(
+                CONF_AWAY_SCORE_MULTIPLIER, 1.25
+            ),
+            CONF_AWAY_THRESHOLD_REDUCTION: self.config.get(
+                CONF_AWAY_THRESHOLD_REDUCTION, 0.1
+            ),
+            CONF_AWAY_POSITION_OFFSET: self.config.get(CONF_AWAY_POSITION_OFFSET, 10),
+            CONF_HEAT_POWER_LIMIT_ENABLED: self.config.get(
+                CONF_HEAT_POWER_LIMIT_ENABLED, False
+            ),
+            CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP: self.config.get(
+                CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14
+            ),
+            CONF_MAX_TRANSMITTED_SOLAR_POWER: self.config.get(
+                CONF_MAX_TRANSMITTED_SOLAR_POWER,
+                self.config.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, 250),
+            ),
+            CONF_SHOW_EXPERT_WEIGHTS: self.config.get(CONF_SHOW_EXPERT_WEIGHTS, False),
+            CONF_WEIGHT_DIRECT_EXPOSURE: self.config.get(
+                CONF_WEIGHT_DIRECT_EXPOSURE, 1.2
+            ),
+            CONF_WEIGHT_INCIDENCE: self.config.get(CONF_WEIGHT_INCIDENCE, 0.9),
+            CONF_WEIGHT_GLAZING: self.config.get(CONF_WEIGHT_GLAZING, 0.8),
+            CONF_WEIGHT_FORECAST_TEMPERATURE: self.config.get(
+                CONF_WEIGHT_FORECAST_TEMPERATURE, 1.0
+            ),
+            CONF_WEIGHT_SOLAR_RADIATION: self.config.get(
+                CONF_WEIGHT_SOLAR_RADIATION, 1.0
+            ),
+            CONF_PARTIAL_CLOSE_THRESHOLD: self.config.get(
+                CONF_PARTIAL_CLOSE_THRESHOLD, 0.35
+            ),
+            CONF_FULL_CLOSE_THRESHOLD: self.config.get(CONF_FULL_CLOSE_THRESHOLD, 0.65),
+            CONF_PARTIAL_CLOSE_POSITION: self.config.get(
+                CONF_PARTIAL_CLOSE_POSITION, 70
+            ),
+            CONF_FULL_CLOSE_POSITION: self.config.get(CONF_FULL_CLOSE_POSITION, 30),
+            CONF_HORIZON_MODE: self.config.get(CONF_HORIZON_MODE, "window"),
+            CONF_NIGHT_MODE: self.config.get(CONF_NIGHT_MODE, "time"),
+            CONF_NIGHT_EVENING_MODE: self.config.get(CONF_NIGHT_EVENING_MODE),
+            CONF_NIGHT_MORNING_MODE: self.config.get(CONF_NIGHT_MORNING_MODE),
+            CONF_NIGHT_EVENING_EARLIEST_TIME: self.config.get(
+                CONF_NIGHT_EVENING_EARLIEST_TIME
+            ),
+            CONF_NIGHT_EVENING_LATEST_TIME: self.config.get(
+                CONF_NIGHT_EVENING_LATEST_TIME
+            ),
+            CONF_NIGHT_MORNING_EARLIEST_TIME: self.config.get(
+                CONF_NIGHT_MORNING_EARLIEST_TIME
+            ),
+            CONF_NIGHT_MORNING_LATEST_TIME: self.config.get(
+                CONF_NIGHT_MORNING_LATEST_TIME
+            ),
+            CONF_NIGHT_START_TIME: self.config.get(CONF_NIGHT_START_TIME, "22:00:00"),
+            CONF_NIGHT_END_TIME: self.config.get(CONF_NIGHT_END_TIME, "06:00:00"),
+            CONF_HEAT_PROTECTION_CONTROL_MODE: self.config.get(
+                CONF_HEAT_PROTECTION_CONTROL_MODE, "scaling"
+            ),
+            CONF_BINARY_CLOSE_THRESHOLD: self.config.get(
+                CONF_BINARY_CLOSE_THRESHOLD, 180
+            ),
+            CONF_BINARY_CLOSE_POSITION: self.config.get(CONF_BINARY_CLOSE_POSITION, 20),
+        }
         return self.async_create_entry(
             title=f"{type[self.type_blind]} {self.config['name']}",
             data={
@@ -1759,13 +1878,10 @@ class OptionsFlowHandler(OptionsFlow):
             return self.async_show_menu(
                 step_id="init",
                 menu_options=[
-                    "house_defaults",
-                    "house_expert",
-                    "house_facades",
-                    "house_floors",
-                    "house_rooms",
-                    "house_room_facades",
                     "house_bulk_assignment",
+                    "house_defaults",
+                    "house_facades",
+                    "house_expert",
                 ],
             )
 
@@ -1866,9 +1982,7 @@ class OptionsFlowHandler(OptionsFlow):
             }
         )
         if user_input is not None:
-            self._bulk_window_entry_ids = list(
-                user_input[CONF_BULK_WINDOW_ENTRIES]
-            )
+            self._bulk_window_entry_ids = list(user_input[CONF_BULK_WINDOW_ENTRIES])
             self._selected_floor_id = user_input[CONF_FLOOR_NAME]
             return await self.async_step_house_bulk_assignment_details()
         return self.async_show_form(
@@ -1888,8 +2002,19 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=room_options)
                 ),
-                vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
+                vol.Required(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
+                ),
+                vol.Required(
+                    CONF_BULK_FACADE_ROTATION, default=0
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=-360,
+                        max=360,
+                        step=1,
+                        mode="box",
+                        unit_of_measurement="°",
+                    )
                 ),
                 vol.Optional(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
                     selector.NumberSelectorConfig(
@@ -1900,12 +2025,118 @@ class OptionsFlowHandler(OptionsFlow):
                         unit_of_measurement="°",
                     )
                 ),
+                vol.Optional(CONF_ROOM_TEMPERATURE_ENTITY): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["sensor", "climate"])
+                ),
+                vol.Optional(
+                    CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False
+                ): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_POLICY_PRESET, default="balanced"
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
+                    )
+                ),
+                vol.Optional(
+                    CONF_HORIZON_MODE, default="compass"
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
+                    )
+                ),
+                vol.Optional(CONF_HORIZON_PROFILE): selector.TextSelector(
+                    selector.TextSelectorConfig(multiline=True)
+                ),
+                vol.Optional(CONF_REVEAL_LEFT, default=0): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=0, max=5, step=0.01, mode="box")
+                ),
+                vol.Optional(CONF_REVEAL_RIGHT, default=0): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=0, max=5, step=0.01, mode="box")
+                ),
+                vol.Optional(CONF_REVEAL_TOP, default=0): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=0, max=5, step=0.01, mode="box")
+                ),
+                vol.Optional(CONF_FOV_LEFT, default=90): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=1, max=90, step=1, mode="slider")
+                ),
+                vol.Optional(CONF_FOV_RIGHT, default=90): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=1, max=90, step=1, mode="slider")
+                ),
                 vol.Optional(
                     CONF_BULK_RESET_LOCAL_OVERRIDES, default=True
                 ): selector.BooleanSelector(),
             }
         )
         if user_input is not None:
+            try:
+                user_input[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
+                    user_input.get(CONF_HORIZON_PROFILE),
+                    compass=user_input.get(CONF_HORIZON_MODE) == "compass",
+                )
+            except vol.Invalid:
+                return self.async_show_form(
+                    step_id="house_bulk_assignment_details",
+                    data_schema=self.add_suggested_values_to_schema(schema, user_input),
+                    errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
+                )
+            room_id = user_input[CONF_ROOM_NAME]
+            facade_name = user_input[CONF_FACADE_NAME]
+
+            floor_profiles = dict(self.options.get(CONF_FLOOR_PROFILES) or {})
+            floor_profiles.setdefault(
+                self._selected_floor_id or "", {CONF_PROFILE_OVERRIDES: {}}
+            )
+            self.options[CONF_FLOOR_PROFILES] = floor_profiles
+
+            facade_profiles = dict(self.options.get(CONF_FACADE_PROFILES) or {})
+            facade_profile = dict(facade_profiles.get(facade_name) or {})
+            facade_profile[CONF_FACADE_OFFSET] = user_input[CONF_BULK_FACADE_ROTATION]
+            facade_profile.setdefault(CONF_PROFILE_OVERRIDES, {})
+            facade_profiles[facade_name] = facade_profile
+            self.options[CONF_FACADE_PROFILES] = facade_profiles
+
+            room_profiles = dict(self.options.get(CONF_ROOM_PROFILES) or {})
+            room_profile = dict(room_profiles.get(room_id) or {})
+            room_overrides = dict(room_profile.get(CONF_PROFILE_OVERRIDES) or {})
+            room_overrides[CONF_POLICY_PRESET] = user_input[CONF_POLICY_PRESET]
+            room_overrides[CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS] = user_input[
+                CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS
+            ]
+            room_temperature = user_input.get(CONF_ROOM_TEMPERATURE_ENTITY)
+            if room_temperature:
+                room_overrides[CONF_ROOM_TEMPERATURE_ENTITY] = room_temperature
+            else:
+                room_overrides.pop(CONF_ROOM_TEMPERATURE_ENTITY, None)
+            room_profile.update(
+                {
+                    CONF_FLOOR_NAME: self._selected_floor_id,
+                    CONF_FACADE_NAME: facade_name,
+                    CONF_PROFILE_OVERRIDES: room_overrides,
+                }
+            )
+            room_profiles[room_id] = room_profile
+            self.options[CONF_ROOM_PROFILES] = room_profiles
+
+            wall_overrides = {
+                key: user_input.get(key)
+                for key in (
+                    CONF_POLICY_PRESET,
+                    CONF_HORIZON_MODE,
+                    CONF_HORIZON_PROFILE,
+                    CONF_REVEAL_LEFT,
+                    CONF_REVEAL_RIGHT,
+                    CONF_REVEAL_TOP,
+                    CONF_FOV_LEFT,
+                    CONF_FOV_RIGHT,
+                )
+            }
+            room_facades = dict(self.options.get(CONF_ROOM_FACADE_PROFILES) or {})
+            room_facades[room_facade_key(room_id, facade_name)] = {
+                CONF_PROFILE_OVERRIDES: wall_overrides
+            }
+            self.options[CONF_ROOM_FACADE_PROFILES] = room_facades
+
             for entry_id in self._bulk_window_entry_ids:
                 entry = self.hass.config_entries.async_get_entry(entry_id)
                 if entry is None or entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
@@ -1914,8 +2145,8 @@ class OptionsFlowHandler(OptionsFlow):
                     dict(entry.options),
                     house_profile_entry_id=self._house_entry_id,
                     floor_id=self._selected_floor_id or "",
-                    room_id=user_input[CONF_ROOM_NAME],
-                    facade_name=user_input.get(CONF_FACADE_NAME),
+                    room_id=room_id,
+                    facade_name=facade_name,
                     facade_offset=user_input.get(CONF_FACADE_OFFSET, 0),
                     reset_local_overrides=user_input.get(
                         CONF_BULK_RESET_LOCAL_OVERRIDES, True
@@ -1937,10 +2168,9 @@ class OptionsFlowHandler(OptionsFlow):
             {"value": TEMPLATE_NONE, "label": "Kein Hausprofil"},
             *_house_profile_entry_options(self.hass),
         ]
-        selected_profile = (
-            (user_input or self.options).get(CONF_HOUSE_PROFILE_ENTRY_ID)
-            or TEMPLATE_NONE
-        )
+        selected_profile = (user_input or self.options).get(
+            CONF_HOUSE_PROFILE_ENTRY_ID
+        ) or TEMPLATE_NONE
         schema = vol.Schema(
             {
                 vol.Required(
@@ -1990,9 +2220,15 @@ class OptionsFlowHandler(OptionsFlow):
                         unit_of_measurement="°",
                     )
                 ),
-                vol.Optional(CONF_USE_LOCAL_GEOMETRY, default=False): selector.BooleanSelector(),
-                vol.Optional(CONF_USE_LOCAL_HORIZON, default=False): selector.BooleanSelector(),
-                vol.Optional(CONF_USE_LOCAL_POLICY, default=False): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_USE_LOCAL_GEOMETRY, default=False
+                ): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_USE_LOCAL_HORIZON, default=False
+                ): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_USE_LOCAL_POLICY, default=False
+                ): selector.BooleanSelector(),
             }
         )
         if user_input is not None:
@@ -2000,9 +2236,7 @@ class OptionsFlowHandler(OptionsFlow):
             if values.get(CONF_HOUSE_PROFILE_ENTRY_ID) == TEMPLATE_NONE:
                 self.options.pop(CONF_HOUSE_PROFILE_ENTRY_ID, None)
                 values.pop(CONF_HOUSE_PROFILE_ENTRY_ID, None)
-            self.optional_entities(
-                [CONF_FACADE_NAME], values
-            )
+            self.optional_entities([CONF_FACADE_NAME], values)
             self.options.update(values)
             return await self._update_options()
         values = {**self.options, **self._assignment_values}
@@ -2048,13 +2282,17 @@ class OptionsFlowHandler(OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(CONF_PROFILE_NAME): selector.TextSelector(),
-                vol.Optional(CONF_PROFILE_DELETE, default=False): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_PROFILE_DELETE, default=False
+                ): selector.BooleanSelector(),
                 vol.Required(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=-360, max=360, step=1, mode="box", unit_of_measurement="°"
                     )
                 ),
-                vol.Optional(CONF_HORIZON_MODE, default="compass"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_HORIZON_MODE, default="compass"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
                     )
@@ -2077,7 +2315,9 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Optional(CONF_REVEAL_TOP, default=0): selector.NumberSelector(
                     selector.NumberSelectorConfig(min=0, max=5, step=0.01, mode="box")
                 ),
-                vol.Optional(CONF_POLICY_PRESET, default="balanced"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_POLICY_PRESET, default="balanced"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
                     )
@@ -2098,7 +2338,9 @@ class OptionsFlowHandler(OptionsFlow):
                 except vol.Invalid:
                     return self.async_show_form(
                         step_id="house_facade_edit",
-                        data_schema=self.add_suggested_values_to_schema(schema, user_input),
+                        data_schema=self.add_suggested_values_to_schema(
+                            schema, user_input
+                        ),
                         errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
                     )
                 old_name = self._editing_profile
@@ -2123,8 +2365,12 @@ class OptionsFlowHandler(OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
-                vol.Optional(CONF_PROFILE_DELETE, default=False): selector.BooleanSelector(),
-                vol.Optional(CONF_HORIZON_MODE, default="compass"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_PROFILE_DELETE, default=False
+                ): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_HORIZON_MODE, default="compass"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
                     )
@@ -2132,7 +2378,9 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Optional(CONF_HORIZON_PROFILE): selector.TextSelector(
                     selector.TextSelectorConfig(multiline=True)
                 ),
-                vol.Optional(CONF_POLICY_PRESET, default="balanced"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_POLICY_PRESET, default="balanced"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
                     )
@@ -2154,7 +2402,9 @@ class OptionsFlowHandler(OptionsFlow):
                 except vol.Invalid:
                     return self.async_show_form(
                         step_id="house_floors",
-                        data_schema=self.add_suggested_values_to_schema(schema, user_input),
+                        data_schema=self.add_suggested_values_to_schema(
+                            schema, user_input
+                        ),
                         errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
                     )
                 profiles[floor_id] = {CONF_PROFILE_OVERRIDES: user_input}
@@ -2185,16 +2435,22 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=room_options)
                 ),
-                vol.Optional(CONF_PROFILE_DELETE, default=False): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_PROFILE_DELETE, default=False
+                ): selector.BooleanSelector(),
                 vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
                 ),
-                vol.Optional(CONF_POLICY_PRESET, default="balanced"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_POLICY_PRESET, default="balanced"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
                     )
                 ),
-                vol.Optional(CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False
+                ): selector.BooleanSelector(),
                 vol.Optional(CONF_ROOM_TEMPERATURE_ENTITY): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=["sensor", "climate"])
                 ),
@@ -2248,8 +2504,12 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Required(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
                 ),
-                vol.Optional(CONF_PROFILE_DELETE, default=False): selector.BooleanSelector(),
-                vol.Optional(CONF_HORIZON_MODE, default="compass"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_PROFILE_DELETE, default=False
+                ): selector.BooleanSelector(),
+                vol.Optional(
+                    CONF_HORIZON_MODE, default="compass"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
                     )
@@ -2272,7 +2532,9 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Optional(CONF_FOV_RIGHT, default=90): selector.NumberSelector(
                     selector.NumberSelectorConfig(min=1, max=90, step=1, mode="slider")
                 ),
-                vol.Optional(CONF_POLICY_PRESET, default="balanced"): selector.SelectSelector(
+                vol.Optional(
+                    CONF_POLICY_PRESET, default="balanced"
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
                     )
@@ -2296,7 +2558,9 @@ class OptionsFlowHandler(OptionsFlow):
                 except vol.Invalid:
                     return self.async_show_form(
                         step_id="house_room_facade_edit",
-                        data_schema=self.add_suggested_values_to_schema(schema, user_input),
+                        data_schema=self.add_suggested_values_to_schema(
+                            schema, user_input
+                        ),
                         errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
                     )
                 profiles[key] = {CONF_PROFILE_OVERRIDES: user_input}
@@ -2558,9 +2822,7 @@ class OptionsFlowHandler(OptionsFlow):
                 }
             )
         else:
-            schema = _conditional_policy_schema(
-                {**self.options, **(user_input or {})}
-            )
+            schema = _conditional_policy_schema({**self.options, **(user_input or {})})
         if user_input is not None:
             self.optional_entities([CONF_ROOM_TEMPERATURE_ENTITY], user_input)
             if CONF_AWAY_ENTITY not in user_input:
@@ -2570,9 +2832,7 @@ class OptionsFlowHandler(OptionsFlow):
             if errors:
                 return self.async_show_form(
                     step_id="policy",
-                    data_schema=self.add_suggested_values_to_schema(
-                        schema, user_input
-                    ),
+                    data_schema=self.add_suggested_values_to_schema(schema, user_input),
                     errors=errors,
                 )
             self.options.update(user_input)

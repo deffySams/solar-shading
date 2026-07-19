@@ -49,6 +49,7 @@ from .const import (
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
+    CONF_COVER_LOCATION,
     CONF_DEFAULT_HEIGHT,
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
@@ -98,7 +99,13 @@ from .const import (
     CONF_MIN_ELEVATION,
     CONF_MIN_POSITION,
     CONF_NIGHT_END_TIME,
+    CONF_NIGHT_EVENING_EARLIEST_TIME,
+    CONF_NIGHT_EVENING_LATEST_TIME,
+    CONF_NIGHT_EVENING_MODE,
     CONF_NIGHT_MODE,
+    CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_LATEST_TIME,
+    CONF_NIGHT_MORNING_MODE,
     CONF_NIGHT_START_TIME,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
@@ -137,10 +144,10 @@ from .const import (
 )
 from .forecast import extract_daily_forecast_summary
 from .helpers import get_datetime_from_str, get_last_updated, get_safe_state
+from .cover_physics import estimate_power_with_cover
 from .overview import (
     configuration_warnings,
     derive_window_status,
-    estimate_power_with_cover,
 )
 from .profiles import resolve_effective_options
 from .solar_radiation import async_fetch_open_meteo_solar_summary
@@ -187,9 +194,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self._sun_end_time = None
         self._sun_start_time = None
         # self._end_time = None
-        self.manual_reset = self.options.get(
-            CONF_MANUAL_OVERRIDE_RESET, False
-        )
+        self.manual_reset = self.options.get(CONF_MANUAL_OVERRIDE_RESET, False)
         self.manual_duration = self.options.get(
             CONF_MANUAL_OVERRIDE_DURATION, {"minutes": 15}
         )
@@ -399,18 +404,20 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         )
         power_without_cover = normal_cover.transmitted_solar_power_w
         power_density_without_cover = normal_cover.transmitted_solar_power_w_m2
+        cover_location = options.get(CONF_COVER_LOCATION, "exterior")
         power_with_target_cover = estimate_power_with_cover(
-            power_without_cover, state
+            power_without_cover, state, cover_location
         )
         power_density_with_target_cover = estimate_power_with_cover(
-            power_density_without_cover, state
+            power_density_without_cover, state, cover_location
         )
         cover_count = len(self.entities)
         if power_without_cover is not None and power_without_cover <= 0:
             power_with_actual_cover = 0.0
         elif available_positions and len(available_positions) == cover_count:
             power_with_actual_cover = sum(
-                estimate_power_with_cover(power_without_cover, position) or 0.0
+                estimate_power_with_cover(power_without_cover, position, cover_location)
+                or 0.0
                 for position in available_positions
             )
         else:
@@ -448,7 +455,11 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "configuration_warnings": warnings,
                 "current_cover_positions": current_cover_positions,
                 "current_cover_position_average": current_position_average,
-                "cover_attenuation_model": "linear_open_fraction",
+                "cover_location": cover_location,
+                "closed_cover_residual_factor": (
+                    normal_cover.closed_cover_residual_factor
+                ),
+                "cover_attenuation_model": "location_residual_linear",
                 "solar_power_without_cover_w_per_window": (
                     round(power_without_cover, 2)
                     if power_without_cover is not None
@@ -492,9 +503,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "floor_name": options.get(CONF_FLOOR_NAME),
                 "room_name": options.get(CONF_ROOM_NAME),
                 "use_facade_azimuth": options.get(CONF_USE_FACADE_AZIMUTH, False),
-                "facade_reference_azimuth": options.get(
-                    CONF_FACADE_REFERENCE_AZIMUTH
-                ),
+                "facade_reference_azimuth": options.get(CONF_FACADE_REFERENCE_AZIMUTH),
                 "facade_offset": options.get(CONF_FACADE_OFFSET),
                 "azimuth_window": options.get(CONF_AZIMUTH),
                 "field_of_view": [
@@ -519,6 +528,20 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "horizon_profile": options.get(CONF_HORIZON_PROFILE),
                 "horizon_mode": options.get(CONF_HORIZON_MODE, "window"),
                 "night_mode": options.get(CONF_NIGHT_MODE, "solar"),
+                "night_evening_mode": options.get(CONF_NIGHT_EVENING_MODE),
+                "night_morning_mode": options.get(CONF_NIGHT_MORNING_MODE),
+                "night_evening_earliest_time": options.get(
+                    CONF_NIGHT_EVENING_EARLIEST_TIME
+                ),
+                "night_evening_latest_time": options.get(
+                    CONF_NIGHT_EVENING_LATEST_TIME
+                ),
+                "night_morning_earliest_time": options.get(
+                    CONF_NIGHT_MORNING_EARLIEST_TIME
+                ),
+                "night_morning_latest_time": options.get(
+                    CONF_NIGHT_MORNING_LATEST_TIME
+                ),
                 "night_start_time": options.get(CONF_NIGHT_START_TIME),
                 "night_end_time": options.get(CONF_NIGHT_END_TIME),
                 "blind_spot": options.get(CONF_BLIND_SPOT_ELEVATION),
@@ -544,9 +567,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "right_reveal_shadow_pct": round(
                     normal_cover.right_reveal_shadow * 100, 2
                 ),
-                "top_reveal_shadow_pct": round(
-                    normal_cover.top_reveal_shadow * 100, 2
-                ),
+                "top_reveal_shadow_pct": round(normal_cover.top_reveal_shadow * 100, 2),
                 "total_reveal_shadow_pct": round(
                     normal_cover.total_reveal_shadow * 100, 2
                 ),
@@ -597,12 +618,14 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 ),
                 "open_data_current_direct_normal_irradiance_w_m2": (
                     round(normal_cover.open_data_current_direct_normal_irradiance, 2)
-                    if normal_cover.open_data_current_direct_normal_irradiance is not None
+                    if normal_cover.open_data_current_direct_normal_irradiance
+                    is not None
                     else None
                 ),
                 "open_data_today_max_direct_normal_irradiance_w_m2": (
                     round(normal_cover.open_data_today_max_direct_normal_irradiance, 2)
-                    if normal_cover.open_data_today_max_direct_normal_irradiance is not None
+                    if normal_cover.open_data_today_max_direct_normal_irradiance
+                    is not None
                     else None
                 ),
                 "open_data_today_shortwave_radiation_sum_mj_m2": (
@@ -747,9 +770,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "heat_gain_policy_weighted_score": round(
                     normal_cover.policy_weighted_score, 4
                 ),
-                "heat_gain_policy_raw_score": round(
-                    normal_cover.policy_raw_score, 4
-                ),
+                "heat_gain_policy_raw_score": round(normal_cover.policy_raw_score, 4),
                 "heat_gain_policy_preset_score": round(
                     normal_cover.policy_preset_score, 4
                 ),
@@ -871,7 +892,9 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 return_response=True,
             )
         except Exception as err:  # noqa: BLE001
-            self.logger.debug("Unable to fetch forecast for %s: %s", weather_entity, err)
+            self.logger.debug(
+                "Unable to fetch forecast for %s: %s", weather_entity, err
+            )
             return {}
 
         entity_response = response.get(weather_entity)
@@ -1062,10 +1085,23 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             )
         cover_data.horizon_mode = options.get(CONF_HORIZON_MODE, "window")
         cover_data.night_mode = options.get(CONF_NIGHT_MODE, "solar")
-        cover_data.night_start_time = options.get(
-            CONF_NIGHT_START_TIME, "22:00:00"
-        )
+        cover_data.night_start_time = options.get(CONF_NIGHT_START_TIME, "22:00:00")
         cover_data.night_end_time = options.get(CONF_NIGHT_END_TIME, "06:00:00")
+        cover_data.night_evening_mode = options.get(CONF_NIGHT_EVENING_MODE)
+        cover_data.night_morning_mode = options.get(CONF_NIGHT_MORNING_MODE)
+        cover_data.night_evening_earliest_time = options.get(
+            CONF_NIGHT_EVENING_EARLIEST_TIME
+        )
+        cover_data.night_evening_latest_time = options.get(
+            CONF_NIGHT_EVENING_LATEST_TIME
+        )
+        cover_data.night_morning_earliest_time = options.get(
+            CONF_NIGHT_MORNING_EARLIEST_TIME
+        )
+        cover_data.night_morning_latest_time = options.get(
+            CONF_NIGHT_MORNING_LATEST_TIME
+        )
+        cover_data.cover_location = options.get(CONF_COVER_LOCATION, "exterior")
         cover_data.heat_protection_control_mode = options.get(
             CONF_HEAT_PROTECTION_CONTROL_MODE, "scaling"
         )

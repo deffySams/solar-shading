@@ -14,9 +14,10 @@ from custom_components.solar_shading.overview import (
 
 
 class OverviewTests(unittest.TestCase):
-    def test_linear_cover_power_is_explicit_and_clamped(self):
-        self.assertEqual(estimate_power_with_cover(800, 0), 0)
-        self.assertEqual(estimate_power_with_cover(800, 25), 200)
+    def test_location_aware_cover_power_is_explicit_and_clamped(self):
+        self.assertEqual(estimate_power_with_cover(800, 0, "exterior"), 80)
+        self.assertAlmostEqual(estimate_power_with_cover(800, 0, "interior"), 440)
+        self.assertEqual(estimate_power_with_cover(800, 25, "exterior"), 260)
         self.assertEqual(estimate_power_with_cover(800, 100), 800)
         self.assertEqual(estimate_power_with_cover(800, 120), 800)
         self.assertIsNone(estimate_power_with_cover(None, 50))

@@ -16,6 +16,10 @@ from .forecast import (
     after_preemptive_start,
     temperature_risk,
 )
+from .cover_physics import (
+    closed_cover_residual_factor,
+    maximum_open_position_for_limit,
+)
 from .helpers import get_domain, get_safe_state
 from .sun import SunData
 from .config_context_adapter import ConfigContextAdapter
@@ -474,7 +478,10 @@ class AdaptiveGeneralCover(ABC):
         """Return where the active solar radiation value came from."""
         if self.solar_radiation_sensor_value is not None:
             return "sensor"
-        if self.use_open_data_solar_radiation and self.solar_radiation_value is not None:
+        if (
+            self.use_open_data_solar_radiation
+            and self.solar_radiation_value is not None
+        ):
             return "open_meteo"
         return None
 
@@ -619,7 +626,10 @@ class AdaptiveGeneralCover(ABC):
             return False
         if not self.forecast_preemptive_active:
             return False
-        if self.forecast_today_max_temp is None or self.forecast_hot_day_threshold is None:
+        if (
+            self.forecast_today_max_temp is None
+            or self.forecast_hot_day_threshold is None
+        ):
             return False
         return float(self.forecast_today_max_temp) >= float(
             self.forecast_hot_day_threshold
@@ -688,10 +698,16 @@ class AdaptiveGeneralCover(ABC):
         power = self.transmitted_solar_power_w_m2
         if power is None or power <= 0:
             return None
-        limit = float(self.max_transmitted_solar_power_w_m2)
-        if power <= limit:
-            return None
-        return int(np.clip(round((limit / power) * 100), 0, 100))
+        return maximum_open_position_for_limit(
+            power,
+            self.max_transmitted_solar_power_w_m2,
+            getattr(self, "cover_location", "exterior"),
+        )
+
+    @property
+    def closed_cover_residual_factor(self) -> float:
+        """Return remaining solar gain at a fully closed cover."""
+        return closed_cover_residual_factor(getattr(self, "cover_location", "exterior"))
 
     @property
     def forecast_today_max_temp(self) -> float | None:
@@ -738,13 +754,10 @@ class AdaptiveGeneralCover(ABC):
     @property
     def forecast_risk_factor(self) -> float:
         """Return the composite forecast risk factor."""
-        risk = (
-            self.forecast_temperature_risk
-            * (
-                self.forecast_solar_radiation_risk
-                if self.forecast_solar_radiation_risk is not None
-                else 1.0
-            )
+        risk = self.forecast_temperature_risk * (
+            self.forecast_solar_radiation_risk
+            if self.forecast_solar_radiation_risk is not None
+            else 1.0
         )
         if not self.forecast_preemptive_active:
             return 0.0
@@ -817,7 +830,10 @@ class AdaptiveGeneralCover(ABC):
     @property
     def forecast_temperature_policy_pressure(self) -> float:
         """Return the policy strictness caused by very-hot forecast."""
-        if not self.heat_protection_temperature_allowed or not self.forecast_preemptive_active:
+        if (
+            not self.heat_protection_temperature_allowed
+            or not self.forecast_preemptive_active
+        ):
             return 0.0
         return very_hot_policy_pressure(
             self.forecast_temperature_risk,
@@ -832,9 +848,8 @@ class AdaptiveGeneralCover(ABC):
             return "no_temperature_signal"
         if not self.heat_protection_temperature_allowed:
             return "below_hot"
-        if (
-            self.forecast_very_hot_day_threshold is not None
-            and float(signal) >= float(self.forecast_very_hot_day_threshold)
+        if self.forecast_very_hot_day_threshold is not None and float(signal) >= float(
+            self.forecast_very_hot_day_threshold
         ):
             return "very_hot_saturated"
         if self.forecast_temperature_risk > 0:
@@ -875,7 +890,10 @@ class AdaptiveGeneralCover(ABC):
     def hot_day_signal(self) -> float | None:
         """Return the hottest selected forecast temperature signal."""
         values: list[float] = []
-        if self.use_forecast_max_temp_today and self.forecast_today_max_temp is not None:
+        if (
+            self.use_forecast_max_temp_today
+            and self.forecast_today_max_temp is not None
+        ):
             values.append(float(self.forecast_today_max_temp))
         if (
             self.use_forecast_max_temp_tomorrow
@@ -1164,31 +1182,85 @@ class AdaptiveGeneralCover(ABC):
     @property
     def sunset_valid(self) -> bool:
         """Determine whether the configured night mode is active."""
-        if getattr(self, "night_mode", "solar") == "time":
-            start = self._parse_clock_time(
+        now = self._local_evaluation_datetime()
+        legacy_mode = getattr(self, "night_mode", "solar")
+        evening_mode = getattr(self, "night_evening_mode", None) or (
+            "fixed" if legacy_mode == "time" else "sunset"
+        )
+        morning_mode = getattr(self, "night_morning_mode", None) or (
+            "fixed" if legacy_mode == "time" else "sunrise"
+        )
+
+        if evening_mode == "fixed":
+            evening_time = self._parse_clock_time(
                 getattr(self, "night_start_time", "22:00:00")
             )
-            end = self._parse_clock_time(
+            after_evening = evening_time is not None and now.time() >= evening_time
+        else:
+            evening_boundary = self._solar_boundary(
+                self.sun_data.sunset(),
+                self.sunset_off,
+                getattr(self, "night_evening_earliest_time", None),
+                getattr(self, "night_evening_latest_time", None),
+            )
+            after_evening = now >= evening_boundary
+
+        if morning_mode == "fixed":
+            morning_time = self._parse_clock_time(
                 getattr(self, "night_end_time", "06:00:00")
             )
-            if start is not None and end is not None:
-                now = self.evaluation_datetime or datetime.now(ZoneInfo(self.timezone))
-                if now.tzinfo is not None:
-                    now = now.astimezone(ZoneInfo(self.timezone))
-                current = now.time().replace(tzinfo=None)
-                if start <= end:
-                    return start <= current < end
-                return current >= start or current < end
-
-        sunset = self.sun_data.sunset().replace(tzinfo=None)
-        sunrise = self.sun_data.sunrise().replace(tzinfo=None)
-        now_utc = (self.evaluation_datetime or datetime.now(UTC)).replace(tzinfo=None)
-        after_sunset = now_utc > (sunset + timedelta(minutes=self.sunset_off))
-        before_sunrise = now_utc < (sunrise + timedelta(minutes=self.sunrise_off))
+            before_morning = morning_time is not None and now.time() < morning_time
+        else:
+            morning_boundary = self._solar_boundary(
+                self.sun_data.sunrise(),
+                self.sunrise_off,
+                getattr(self, "night_morning_earliest_time", None),
+                getattr(self, "night_morning_latest_time", None),
+            )
+            before_morning = now < morning_boundary
         self.logger.debug(
-            "After sunset plus offset? %s", (after_sunset or before_sunrise)
+            "Night active after evening boundary or before morning boundary? %s",
+            after_evening or before_morning,
         )
-        return after_sunset or before_sunrise
+        return after_evening or before_morning
+
+    def _local_evaluation_datetime(self) -> datetime:
+        """Return the evaluation time in the configured local timezone."""
+        timezone = ZoneInfo(self.timezone)
+        now = self.evaluation_datetime or datetime.now(timezone)
+        if now.tzinfo is None:
+            return now.replace(tzinfo=timezone)
+        return now.astimezone(timezone)
+
+    def _solar_boundary(
+        self,
+        event: datetime,
+        offset_minutes: int,
+        earliest_time: str | time | None,
+        latest_time: str | time | None,
+    ) -> datetime:
+        """Return one local solar boundary after offset and optional clock clamps."""
+        timezone = ZoneInfo(self.timezone)
+        if event.tzinfo is None:
+            event = event.replace(tzinfo=UTC)
+        boundary = event.astimezone(timezone) + timedelta(minutes=offset_minutes)
+        earliest = self._parse_clock_time(earliest_time)
+        latest = self._parse_clock_time(latest_time)
+        if earliest is not None:
+            boundary = max(
+                boundary,
+                boundary.replace(
+                    hour=earliest.hour, minute=earliest.minute, second=earliest.second
+                ),
+            )
+        if latest is not None:
+            boundary = min(
+                boundary,
+                boundary.replace(
+                    hour=latest.hour, minute=latest.minute, second=latest.second
+                ),
+            )
+        return boundary
 
     @staticmethod
     def _parse_clock_time(value: str | time | None) -> time | None:
@@ -1360,8 +1432,6 @@ class NormalCoverState:
         if self.cover.apply_min_position and result < self.cover.min_pos:
             return self.cover.min_pos
         return result
-
-
 
 
 @dataclass

@@ -103,9 +103,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source"
         },
         "data_description": {
@@ -132,6 +139,8 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
@@ -260,9 +269,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source"
         },
         "data_description": {
@@ -291,6 +307,8 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
@@ -332,9 +350,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
         },
@@ -363,6 +388,8 @@
           "reveal_top_depth": "Top reveal depth in meters. Increases shading when the sun is high.",
           "horizon_profile": "Optional JSON sky limits. Window view uses 0 left, 90 straight and 180 right; compass mode uses true azimuth from 0 to 359 degrees.",
           "glass_type": "Glazing preset used for reflection and transmission.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
+          "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
@@ -435,7 +462,7 @@
           "house_floors": "Floor profiles",
           "house_rooms": "Room profiles",
           "house_room_facades": "Room-facade profiles",
-          "house_bulk_assignment": "Assign multiple windows"
+          "house_bulk_assignment": "Windows & areas: assign and edit"
         }
       },
       "assignment": {
@@ -474,6 +501,7 @@
         "data": {
           "house_reference_azimuth": "Reference facade azimuth",
           "glass_type": "Default glazing",
+          "cover_location": "Default cover mounting location",
           "fov_left": "Default field of view left",
           "fov_right": "Default field of view right",
           "reveal_left_depth": "Default left reveal depth",
@@ -482,9 +510,16 @@
           "horizon_mode": "Horizon angle reference",
           "horizon_profile": "Default horizon profile",
           "default_percentage": "Day fallback position (% open)",
-          "night_mode": "Night control",
-          "night_start_time": "Night starts",
-          "night_end_time": "Night ends",
+          "night_evening_mode": "Evening boundary",
+          "night_start_time": "Fixed evening closing time",
+          "sunset_offset": "Minutes after sunset",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
+          "night_end_time": "Fixed morning opening time",
+          "sunrise_offset": "Minutes after sunrise",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "sunset_position": "Night position (% open)",
           "weather_entity": "Temperature forecast source",
           "use_forecast_max_temp_today": "Use today's maximum temperature",
@@ -507,6 +542,7 @@
         "data_description": {
           "house_reference_azimuth": "Compass azimuth of the reference facade, preferably the facade facing closest to north. Facade profiles store only their rotation from this axis.",
           "glass_type": "Default glazing preset. Its angle-dependent reflection and transmission determine how much incident solar irradiance enters the room.",
+          "cover_location": "Exterior covers are assumed to reject most absorbed heat before it reaches the room; interior covers retain substantially more heat behind the glass. This affects calculated power with the cover, not the uncovered window power.",
           "fov_left": "Maximum visible angle left of the window normal. Sun outside this angle cannot trigger direct-sun shading.",
           "fov_right": "Maximum visible angle right of the window normal. Sun outside this angle cannot trigger direct-sun shading.",
           "reveal_left_depth": "Default left reveal depth in meters. It reduces direct exposure when sunlight comes from the left.",
@@ -515,9 +551,16 @@
           "horizon_mode": "Compass mode expects true solar azimuth from 0 to 359 degrees. Window-view mode expects 0 left, 90 straight ahead and 180 right.",
           "horizon_profile": "JSON horizon inherited by windows that do not have a more specific facade, floor, room-wall or local horizon.",
           "default_percentage": "Fallback target when no direct-sun, night or heat-protection rule requests a stricter position. 100% means fully open.",
-          "night_mode": "Time mode uses the two fixed times. Solar mode uses sunset and sunrise.",
-          "night_start_time": "In fixed-time mode, the night position becomes active from this local time.",
-          "night_end_time": "In fixed-time mode, normal daylight calculation resumes at this local time.",
+          "night_evening_mode": "Choose a fixed local time or sunset plus the configured minute offset. This boundary activates the night position.",
+          "night_start_time": "Used only when the evening boundary is set to a fixed time.",
+          "sunset_offset": "Added to sunset when the evening boundary follows sunset. Example: 60 closes one hour after sunset.",
+          "night_evening_earliest_time": "Optional clamp for a sunset-based boundary. The night position never starts before this local time.",
+          "night_evening_latest_time": "Optional clamp for a sunset-based boundary. The night position starts no later than this local time.",
+          "night_morning_mode": "Choose a fixed local time or sunrise plus the configured minute offset. This boundary ends the night position.",
+          "night_end_time": "Used only when the morning boundary is set to a fixed time. Example: 08:00 opens at 08:00 regardless of sunrise.",
+          "sunrise_offset": "Added to sunrise when the morning boundary follows sunrise. Positive values keep the night position active longer.",
+          "night_morning_earliest_time": "Optional clamp for a sunrise-based boundary. Day operation never starts before this local time.",
+          "night_morning_latest_time": "Optional clamp for a sunrise-based boundary. Day operation starts no later than this local time.",
           "sunset_position": "Target outside the daylight interval. 100% keeps the cover open; lower values close it further.",
           "weather_entity": "Weather entity used only for outside temperature and maximum-temperature forecasts for today and tomorrow.",
           "use_forecast_max_temp_today": "Includes today's forecast maximum in the heat-protection temperature signal.",
@@ -533,7 +576,7 @@
           "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission. Crossing it commands the fixed binary target.",
           "binary_close_position": "Automatic open-position target after crossing the binary threshold. It does not disable manual movement; manual-override rules still apply.",
           "heat_power_limit_enabled": "Adds a continuous physical W/m2 cap in scaling mode. Disable it when preset behavior alone should determine the target.",
-          "max_transmitted_solar_power_w_m2": "Continuous cap for estimated transmitted solar power. The calculated open position is reduced approximately in proportion to the excess.",
+          "max_transmitted_solar_power_w_m2": "Continuous cap for estimated room-side solar power. The target position accounts for the selected interior/exterior cover mounting location.",
           "enable_away_mode": "Applies stricter thresholds and positions while the selected presence entity indicates that nobody is home.",
           "away_entity": "Presence source used by away mode. Person and device-tracker states other than home, an empty zone, or an off boolean count as away."
         },
@@ -586,31 +629,53 @@
       },
       "house_bulk_assignment": {
         "data": {
-          "bulk_window_entries": "Window groups",
+          "bulk_window_entries": "Windows to edit",
           "floor_name": "Home Assistant floor"
         },
         "data_description": {
-          "bulk_window_entries": "Select every existing Solar Shading entry that should receive the same house, floor, room and facade assignment. Each entry may already contain one or more covers.",
+          "bulk_window_entries": "Select every existing Solar Shading window group that belongs to the same room wall. Each group may already contain one or more covers.",
           "floor_name": "The next step lists only Home Assistant rooms assigned to this floor."
         },
-        "title": "Assign multiple windows: selection",
-        "description": "This changes profile assignments in one operation. Cover entities, window dimensions and physical window details remain unchanged."
+        "title": "Windows & areas: select windows and floor",
+        "description": "This is the central editor for floor, room and room-facade settings. The next step creates or updates the hierarchy and assigns all selected windows."
       },
       "house_bulk_assignment_details": {
         "data": {
           "room_name": "Home Assistant room",
-          "facade_name": "Facade profile",
-          "facade_offset": "Window azimuth correction",
+          "facade_name": "Room facade",
+          "bulk_facade_rotation": "Facade rotation from reference facade",
+          "facade_offset": "Window correction from facade",
+          "room_temperature_entity": "Room temperature source",
+          "has_additional_daylight_windows": "Room has daylight from other facades",
+          "policy_preset": "Heat-protection profile for this room wall",
+          "horizon_mode": "Horizon angle reference",
+          "horizon_profile": "Horizon for this room wall",
+          "reveal_left_depth": "Shared left reveal depth",
+          "reveal_right_depth": "Shared right reveal depth",
+          "reveal_top_depth": "Shared top reveal depth",
+          "fov_left": "Shared field of view left",
+          "fov_right": "Shared field of view right",
           "bulk_reset_local_overrides": "Use inherited house rules"
         },
         "data_description": {
           "room_name": "All selected window groups are assigned to this room and inherit its room profile.",
-          "facade_name": "All selected groups inherit this facade orientation and facade profile.",
-          "facade_offset": "Shared correction relative to the selected facade. Leave 0 for parallel windows.",
+          "facade_name": "Name this wall, for example East, Courtyard or Garden. Existing names update the same facade profile.",
+          "bulk_facade_rotation": "Signed rotation in degrees from the house reference facade. Effective azimuth = reference facade + this rotation + window correction.",
+          "facade_offset": "Correction for the selected windows relative to this facade. Leave 0 for windows parallel to the wall.",
+          "room_temperature_entity": "Optional sensor or climate entity shared by the room. It can activate heat protection at the house comfort threshold.",
+          "has_additional_daylight_windows": "Enable when this room also receives daylight through windows on another orientation.",
+          "policy_preset": "Shared behavior for this room wall. It overrides the house preset only at this level.",
+          "horizon_mode": "Use compass azimuth for measurements from a solar app, or window view for angles measured from inside.",
+          "horizon_profile": "Optional JSON horizon shared by the selected windows. Leave empty to inherit the facade or house horizon.",
+          "reveal_left_depth": "Left reveal depth in meters shared by the selected windows.",
+          "reveal_right_depth": "Right reveal depth in meters shared by the selected windows.",
+          "reveal_top_depth": "Top reveal depth in meters shared by the selected windows.",
+          "fov_left": "Visible angle left of the window normal shared by the selected windows.",
+          "fov_right": "Visible angle right of the window normal shared by the selected windows.",
           "bulk_reset_local_overrides": "Recommended: removes local geometry, horizon and policy switches plus local rule overrides, so later house-profile changes reach every selected window. Cover entities and exact window dimensions are retained."
         },
-        "title": "Assign multiple windows: room and facade",
-        "description": "The selected hierarchy is applied to all window groups. Local exceptions can still be added later in each window's detailed settings."
+        "title": "Windows & areas: edit room facade",
+        "description": "Saving creates or updates the floor, room, facade and room-facade profiles and assigns them to all selected windows. Window-specific exceptions remain available in detailed settings."
       },
       "house_facades": {
         "data": {
@@ -800,9 +865,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source"
         },
         "data_description": {
@@ -957,9 +1029,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source"
         },
         "data_description": {
@@ -1029,9 +1108,16 @@
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection",
           "night_mode": "Night control",
+          "night_evening_mode": "Evening boundary",
           "night_start_time": "Night starts",
+          "night_evening_earliest_time": "Evening: not earlier than",
+          "night_evening_latest_time": "Evening: not later than",
+          "night_morning_mode": "Morning boundary",
           "night_end_time": "Night ends",
+          "night_morning_earliest_time": "Morning: not earlier than",
+          "night_morning_latest_time": "Morning: not later than",
           "glass_type": "Glass type",
+          "cover_location": "Cover mounting location",
           "weather_entity": "Temperature forecast source",
           "distance_shaded_area": "Legacy glare / protection depth"
         },
@@ -1135,6 +1221,24 @@
       "options": {
         "time": "Fixed times",
         "solar": "Sunset and sunrise"
+      }
+    },
+    "night_evening_mode": {
+      "options": {
+        "fixed": "Fixed local time",
+        "sunset": "Sunset plus offset"
+      }
+    },
+    "night_morning_mode": {
+      "options": {
+        "fixed": "Fixed local time",
+        "sunrise": "Sunrise plus offset"
+      }
+    },
+    "cover_location": {
+      "options": {
+        "exterior": "Exterior cover",
+        "interior": "Interior cover"
       }
     },
     "heat_protection_control_mode": {
