@@ -155,6 +155,18 @@ from .solar_radiation import async_fetch_open_meteo_solar_summary
 LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
 
 
+def _effective_night_modes(options: dict) -> tuple[str, str]:
+    """Return explicit boundaries, including equivalent legacy fallbacks."""
+    legacy_mode = options.get(CONF_NIGHT_MODE, "solar")
+    evening_mode = options.get(CONF_NIGHT_EVENING_MODE) or (
+        "fixed" if legacy_mode == "time" else "sunset"
+    )
+    morning_mode = options.get(CONF_NIGHT_MORNING_MODE) or (
+        "fixed" if legacy_mode == "time" else "sunrise"
+    )
+    return evening_mode, morning_mode
+
+
 @dataclass
 class StateChangedData:
     """StateChangedData class."""
@@ -405,6 +417,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         power_without_cover = normal_cover.transmitted_solar_power_w
         power_density_without_cover = normal_cover.transmitted_solar_power_w_m2
         cover_location = options.get(CONF_COVER_LOCATION, "exterior")
+        night_evening_mode, night_morning_mode = _effective_night_modes(options)
         power_with_target_cover = estimate_power_with_cover(
             power_without_cover, state, cover_location
         )
@@ -528,8 +541,8 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "horizon_profile": options.get(CONF_HORIZON_PROFILE),
                 "horizon_mode": options.get(CONF_HORIZON_MODE, "window"),
                 "night_mode": options.get(CONF_NIGHT_MODE, "solar"),
-                "night_evening_mode": options.get(CONF_NIGHT_EVENING_MODE),
-                "night_morning_mode": options.get(CONF_NIGHT_MORNING_MODE),
+                "night_evening_mode": night_evening_mode,
+                "night_morning_mode": night_morning_mode,
                 "night_evening_earliest_time": options.get(
                     CONF_NIGHT_EVENING_EARLIEST_TIME
                 ),
@@ -1087,8 +1100,10 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         cover_data.night_mode = options.get(CONF_NIGHT_MODE, "solar")
         cover_data.night_start_time = options.get(CONF_NIGHT_START_TIME, "22:00:00")
         cover_data.night_end_time = options.get(CONF_NIGHT_END_TIME, "06:00:00")
-        cover_data.night_evening_mode = options.get(CONF_NIGHT_EVENING_MODE)
-        cover_data.night_morning_mode = options.get(CONF_NIGHT_MORNING_MODE)
+        (
+            cover_data.night_evening_mode,
+            cover_data.night_morning_mode,
+        ) = _effective_night_modes(options)
         cover_data.night_evening_earliest_time = options.get(
             CONF_NIGHT_EVENING_EARLIEST_TIME
         )
