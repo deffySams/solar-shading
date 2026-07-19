@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import selector
+from homeassistant.helpers import area_registry, selector
 
 from .const import (
     CONF_AWNING_ANGLE,
@@ -319,6 +319,18 @@ def _ha_selector_or_text(name: str):
     if selector_class is None:
         return selector.TextSelector()
     return selector_class()
+
+
+def _area_options_for_floor(hass, floor_id: str | None) -> list[dict[str, str]]:
+    """Return Home Assistant areas assigned to one floor."""
+    if not floor_id:
+        return []
+    registry = area_registry.async_get(hass)
+    return [
+        {"value": area.id, "label": area.name}
+        for area in sorted(registry.async_list_areas(), key=lambda item: item.name.casefold())
+        if area.floor_id == floor_id
+    ]
 
 
 CLIMATE_MODE = vol.Schema(
@@ -1020,10 +1032,6 @@ def _schema_subset(schema: vol.Schema, keys: set[str]) -> vol.Schema:
 
 LINKED_WINDOW_INITIAL_KEYS = {
     CONF_ENTITIES,
-    CONF_FLOOR_NAME,
-    CONF_ROOM_NAME,
-    CONF_FACADE_NAME,
-    CONF_FACADE_OFFSET,
     CONF_HEIGHT_WIN,
     CONF_WINDOW_WIDTH,
     CONF_INVERSE_STATE,
@@ -1300,6 +1308,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         self.type_blind: str | None = None
         self.config: dict[str, Any] = {}
         self.mode: str = "basic"
+        self._selected_floor_id: str | None = None
 
     @staticmethod
     @callback
@@ -1353,14 +1362,73 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             }
             selected_mode = user_input.get(CONF_MODE, SensorType.BLIND)
             self.config[CONF_MODE] = selected_mode
-            if selected_mode == SensorType.BLIND:
-                return await self.async_step_vertical()
-            if selected_mode == SensorType.AWNING:
-                return await self.async_step_horizontal()
-            if selected_mode == SensorType.TILT:
-                return await self.async_step_tilt()
+            if profile_id:
+                return await self.async_step_window_floor()
+            return await self._async_step_selected_window_type()
         return self.async_show_form(
             step_id="window", data_schema=_window_config_schema(self.hass)
+        )
+
+    async def _async_step_selected_window_type(self):
+        """Continue with the geometry form for the selected cover type."""
+        selected_mode = self.config.get(CONF_MODE, SensorType.BLIND)
+        if selected_mode == SensorType.AWNING:
+            return await self.async_step_horizontal()
+        if selected_mode == SensorType.TILT:
+            return await self.async_step_tilt()
+        return await self.async_step_vertical()
+
+    async def async_step_window_floor(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Select the Home Assistant floor for a linked window."""
+        schema = vol.Schema(
+            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
+        )
+        if user_input is not None:
+            self._selected_floor_id = user_input[CONF_FLOOR_NAME]
+            self.config.update(user_input)
+            return await self.async_step_window_room()
+        return self.async_show_form(
+            step_id="window_floor",
+            data_schema=self.add_suggested_values_to_schema(schema, self.config),
+        )
+
+    async def async_step_window_room(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Select a room from the areas assigned to the selected floor."""
+        floor_id = self._selected_floor_id or self.config.get(CONF_FLOOR_NAME)
+        room_options = _area_options_for_floor(self.hass, floor_id)
+        house = _house_options(self.hass, self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID))
+        facades = sorted((house.get(CONF_FACADE_PROFILES) or {}).keys())
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=room_options)
+                ),
+                vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=facades, custom_value=True)
+                ),
+                vol.Optional(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=-45,
+                        max=45,
+                        step=1,
+                        mode="box",
+                        unit_of_measurement="°",
+                    )
+                ),
+            }
+        )
+        if user_input is not None:
+            self.optional_entities([CONF_FACADE_NAME], user_input)
+            self.config.update(user_input)
+            return await self._async_step_selected_window_type()
+        return self.async_show_form(
+            step_id="window_room",
+            data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
         )
 
     async def async_step_vertical(self, user_input: dict[str, Any] | None = None):
@@ -1833,6 +1901,8 @@ class OptionsFlowHandler(OptionsFlow):
         self.options = _migrate_retired_options(dict(config_entry.options))
         self.entry_type = self.current_config.get(CONF_ENTRY_TYPE, ENTRY_TYPE_WINDOW)
         self._editing_profile: str | None = None
+        self._selected_floor_id: str | None = None
+        self._assignment_values: dict[str, Any] = {}
         self.sensor_type: SensorType = (
             self.current_config.get(CONF_SENSOR_TYPE) or SensorType.BLIND
         )
@@ -1939,7 +2009,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_assignment(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Assign a window to house, floor, room, and facade profiles."""
+        """Select the house profile and Home Assistant floor for a window."""
         profile_choices = [
             {"value": TEMPLATE_NONE, "label": "Kein Hausprofil"},
             *_house_profile_entry_options(self.hass),
@@ -1948,17 +2018,6 @@ class OptionsFlowHandler(OptionsFlow):
             (user_input or self.options).get(CONF_HOUSE_PROFILE_ENTRY_ID)
             or TEMPLATE_NONE
         )
-        house = _house_options(
-            self.hass,
-            None if selected_profile == TEMPLATE_NONE else selected_profile,
-        )
-        facades = sorted((house.get(CONF_FACADE_PROFILES) or {}).keys())
-        facade_selector = selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=facades,
-                custom_value=True,
-            )
-        )
         schema = vol.Schema(
             {
                 vol.Required(
@@ -1966,9 +2025,39 @@ class OptionsFlowHandler(OptionsFlow):
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=profile_choices)
                 ),
-                vol.Optional(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
-                vol.Optional(CONF_ROOM_NAME): _ha_selector_or_text("AreaSelector"),
-                vol.Optional(CONF_FACADE_NAME): facade_selector,
+                vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+            }
+        )
+        if user_input is not None:
+            self._assignment_values = dict(user_input)
+            self._selected_floor_id = user_input[CONF_FLOOR_NAME]
+            return await self.async_step_assignment_room()
+        values = dict(self.options)
+        values[CONF_HOUSE_PROFILE_ENTRY_ID] = selected_profile
+        return self.async_show_form(
+            step_id="assignment",
+            data_schema=self.add_suggested_values_to_schema(schema, values),
+        )
+
+    async def async_step_assignment_room(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Select a filtered room, facade, and local window overrides."""
+        selected_profile = self._assignment_values.get(CONF_HOUSE_PROFILE_ENTRY_ID)
+        house = _house_options(
+            self.hass,
+            None if selected_profile == TEMPLATE_NONE else selected_profile,
+        )
+        facades = sorted((house.get(CONF_FACADE_PROFILES) or {}).keys())
+        room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=room_options)
+                ),
+                vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=facades, custom_value=True)
+                ),
                 vol.Optional(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=-45,
@@ -1984,19 +2073,20 @@ class OptionsFlowHandler(OptionsFlow):
             }
         )
         if user_input is not None:
-            if user_input.get(CONF_HOUSE_PROFILE_ENTRY_ID) == TEMPLATE_NONE:
+            values = {**self._assignment_values, **user_input}
+            if values.get(CONF_HOUSE_PROFILE_ENTRY_ID) == TEMPLATE_NONE:
                 self.options.pop(CONF_HOUSE_PROFILE_ENTRY_ID, None)
-                user_input.pop(CONF_HOUSE_PROFILE_ENTRY_ID, None)
+                values.pop(CONF_HOUSE_PROFILE_ENTRY_ID, None)
             self.optional_entities(
-                [CONF_FLOOR_NAME, CONF_ROOM_NAME, CONF_FACADE_NAME], user_input
+                [CONF_FACADE_NAME], values
             )
-            self.options.update(user_input)
+            self.options.update(values)
             return await self._update_options()
-        values = dict(self.options)
-        values[CONF_HOUSE_PROFILE_ENTRY_ID] = selected_profile
+        values = {**self.options, **self._assignment_values}
         return self.async_show_form(
-            step_id="assignment",
+            step_id="assignment_room",
             data_schema=self.add_suggested_values_to_schema(schema, values),
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
         )
 
     async def async_step_house_facades(
@@ -2152,13 +2242,27 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_house_rooms(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Add, update, or delete a Home Assistant room profile."""
+        """Select a floor before editing a Home Assistant room profile."""
+        schema = vol.Schema(
+            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
+        )
+        if user_input is not None:
+            self._selected_floor_id = user_input[CONF_FLOOR_NAME]
+            return await self.async_step_house_room_edit()
+        return self.async_show_form(step_id="house_rooms", data_schema=schema)
+
+    async def async_step_house_room_edit(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Add, update, or delete a room profile from the selected floor."""
         facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
-                vol.Required(CONF_ROOM_NAME): _ha_selector_or_text("AreaSelector"),
+                vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=room_options)
+                ),
                 vol.Optional(CONF_PROFILE_DELETE, default=False): selector.BooleanSelector(),
-                vol.Optional(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
                 vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
                 ),
@@ -2177,25 +2281,43 @@ class OptionsFlowHandler(OptionsFlow):
             if delete:
                 profiles.pop(room_id, None)
             else:
-                floor_id = user_input.pop(CONF_FLOOR_NAME, None)
                 facade_name = user_input.pop(CONF_FACADE_NAME, None)
                 profiles[room_id] = {
-                    CONF_FLOOR_NAME: floor_id,
+                    CONF_FLOOR_NAME: self._selected_floor_id,
                     CONF_FACADE_NAME: facade_name,
                     CONF_PROFILE_OVERRIDES: user_input,
                 }
             self.options[CONF_ROOM_PROFILES] = profiles
             return await self._update_options()
-        return self.async_show_form(step_id="house_rooms", data_schema=schema)
+        return self.async_show_form(
+            step_id="house_room_edit",
+            data_schema=schema,
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
+        )
 
     async def async_step_house_room_facades(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
+        """Select a floor before editing one room-facade profile."""
+        schema = vol.Schema(
+            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
+        )
+        if user_input is not None:
+            self._selected_floor_id = user_input[CONF_FLOOR_NAME]
+            return await self.async_step_house_room_facade_edit()
+        return self.async_show_form(step_id="house_room_facades", data_schema=schema)
+
+    async def async_step_house_room_facade_edit(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Add, update, or delete one facade/wall profile inside a room."""
         facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
-                vol.Required(CONF_ROOM_NAME): _ha_selector_or_text("AreaSelector"),
+                vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=room_options)
+                ),
                 vol.Required(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
                 ),
@@ -2246,14 +2368,18 @@ class OptionsFlowHandler(OptionsFlow):
                     )
                 except vol.Invalid:
                     return self.async_show_form(
-                        step_id="house_room_facades",
+                        step_id="house_room_facade_edit",
                         data_schema=self.add_suggested_values_to_schema(schema, user_input),
                         errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
                     )
                 profiles[key] = {CONF_PROFILE_OVERRIDES: user_input}
             self.options[CONF_ROOM_FACADE_PROFILES] = profiles
             return await self._update_options()
-        return self.async_show_form(step_id="house_room_facades", data_schema=schema)
+        return self.async_show_form(
+            step_id="house_room_facade_edit",
+            data_schema=schema,
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
+        )
 
     async def async_step_automation(self, user_input: dict[str, Any] | None = None):
         """Manage automation options."""

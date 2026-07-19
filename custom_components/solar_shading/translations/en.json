@@ -19,6 +19,30 @@
         "title": "Assign window defaults",
         "description": "A linked window inherits house, floor, facade and room settings. Only its cover entity, exact dimensions and optional local corrections remain at the window."
       },
+      "window_floor": {
+        "data": {
+          "floor_name": "Home Assistant floor"
+        },
+        "data_description": {
+          "floor_name": "First select the floor from Home Assistant. The next step lists only rooms assigned to this floor."
+        },
+        "title": "Window profile: select floor",
+        "description": "The floor profile is inherited by this window and limits the room selection in the next step."
+      },
+      "window_room": {
+        "data": {
+          "room_name": "Home Assistant room",
+          "facade_name": "Facade profile",
+          "facade_offset": "Window azimuth correction"
+        },
+        "data_description": {
+          "room_name": "Only Home Assistant rooms assigned to the previously selected floor are available.",
+          "facade_name": "The selected facade profile supplies orientation, shared geometry, horizon and heat-protection defaults.",
+          "facade_offset": "Signed correction in degrees for a window that is not exactly parallel to the selected facade. Leave 0 for a parallel window."
+        },
+        "title": "Window profile: select room and facade",
+        "description": "This assignment determines which floor, room, facade and room-facade profiles the window inherits."
+      },
       "automation": {
         "data": {
           "delta_position": "Minimum position adjustment",
@@ -414,6 +438,7 @@
   },
   "error": {
     "invalid_horizon_profile": "Invalid horizon profile JSON.",
+    "no_rooms_for_floor": "No Home Assistant rooms are assigned to this floor. Assign the room to the floor in Home Assistant first.",
     "window_width_required_for_reveals": "Window width is required when reveal depths are set.",
     "full_threshold_must_exceed_partial": "The strict heat-protection threshold must be greater than or equal to the partial threshold.",
     "full_position_must_exceed_partial": "The strict open target must be lower than or equal to the partial open target.",
@@ -425,39 +450,52 @@
       "init": {
         "menu_options": {
           "automation": "Modify Automation Configuration",
-          "assignment": "House, floor, room and facade",
+          "assignment": "Window profile assignment",
           "blind": "Fine-tune Blind Settings",
           "climate": "Edit Climate Configuration",
           "weather": "Edit Weather Configuration",
           "policy": "Edit Weights & Thresholds",
           "blind_spot": "Setup Blindspot",
           "interp": "Range Adjustment",
-          "house_defaults": "House defaults",
-          "house_expert": "House expert tuning",
-          "house_facades": "Facades",
-          "house_floors": "Floors",
-          "house_rooms": "Rooms",
-          "house_room_facades": "Room facades / walls"
+          "house_defaults": "House profile: rules and defaults",
+          "house_expert": "House profile: expert tuning",
+          "house_facades": "Facade profiles",
+          "house_floors": "Floor profiles",
+          "house_rooms": "Room profiles",
+          "house_room_facades": "Room-facade profiles"
         }
       },
       "assignment": {
         "data": {
           "house_profile_entry_id": "House profile",
-          "floor_name": "Home Assistant floor",
-          "room_name": "Home Assistant area / room",
-          "facade_name": "Facade",
+          "floor_name": "Home Assistant floor"
+        },
+        "data_description": {
+          "house_profile_entry_id": "Select the house profile whose common rules and profile hierarchy this window should inherit.",
+          "floor_name": "The next step lists only Home Assistant rooms assigned to this floor."
+        },
+        "title": "Window profile: select house and floor",
+        "description": "A window inherits values from house, floor, facade, room and room-facade profiles in that order."
+      },
+      "assignment_room": {
+        "data": {
+          "room_name": "Home Assistant room",
+          "facade_name": "Facade profile",
           "facade_offset": "Window azimuth correction",
           "use_local_geometry": "Override inherited geometry and glazing",
           "use_local_horizon": "Override inherited horizon only",
           "use_local_policy": "Override inherited rules and heat protection"
         },
         "data_description": {
+          "room_name": "Only Home Assistant rooms assigned to the previously selected floor are available. The matching room profile is inherited automatically.",
+          "facade_name": "Select the facade profile for this wall. Its rotation from the reference facade determines the base window azimuth.",
           "facade_offset": "Correction relative to the selected facade. Leave 0 for windows parallel to that facade.",
           "use_local_geometry": "Enable only when this window needs different field of view, reveals or glazing.",
           "use_local_horizon": "Enable for a window-specific horizon while keeping all other inherited geometry.",
           "use_local_policy": "Enable only for a genuine exception. House changes no longer control the locally overridden rule fields."
         },
-        "title": "Window assignment"
+        "title": "Window profile: select room and facade",
+        "description": "Local overrides are exceptions. Leave them disabled so future house-profile changes continue to reach this window."
       },
       "house_defaults": {
         "data": {
@@ -494,13 +532,37 @@
         },
         "data_description": {
           "house_reference_azimuth": "Compass azimuth of the reference facade, preferably the facade facing closest to north. Facade profiles store only their rotation from this axis.",
+          "glass_type": "Default glazing preset. Its angle-dependent reflection and transmission determine how much incident solar irradiance enters the room.",
+          "fov_left": "Maximum visible angle left of the window normal. Sun outside this angle cannot trigger direct-sun shading.",
+          "fov_right": "Maximum visible angle right of the window normal. Sun outside this angle cannot trigger direct-sun shading.",
+          "reveal_left_depth": "Default left reveal depth in meters. It reduces direct exposure when sunlight comes from the left.",
+          "reveal_right_depth": "Default right reveal depth in meters. It reduces direct exposure when sunlight comes from the right.",
+          "reveal_top_depth": "Default top reveal depth in meters. It reduces direct exposure at high solar elevation.",
+          "horizon_mode": "Compass mode expects true solar azimuth from 0 to 359 degrees. Window-view mode expects 0 left, 90 straight ahead and 180 right.",
           "horizon_profile": "JSON horizon inherited by windows that do not have a more specific facade, floor, room-wall or local horizon.",
+          "default_percentage": "Fallback target when no direct-sun, night or heat-protection rule requests a stricter position. 100% means fully open.",
           "night_mode": "Time mode uses the two fixed times. Solar mode uses sunset and sunrise.",
+          "night_start_time": "In fixed-time mode, the night position becomes active from this local time.",
+          "night_end_time": "In fixed-time mode, normal daylight calculation resumes at this local time.",
+          "sunset_position": "Target outside the daylight interval. 100% keeps the cover open; lower values close it further.",
+          "weather_entity": "Weather entity used only for outside temperature and maximum-temperature forecasts for today and tomorrow.",
+          "use_forecast_max_temp_today": "Includes today's forecast maximum in the heat-protection temperature signal.",
+          "use_forecast_max_temp_tomorrow": "Also includes tomorrow's forecast maximum. The higher selected value controls the forecast signal.",
+          "use_open_data_solar_radiation": "Uses Open-Meteo current and forecast irradiance. A configured local irradiance sensor has priority for the current value.",
+          "solar_radiation_entity": "Optional local irradiance sensor in W/m2. Its current value overrides Open-Meteo for the live calculation.",
+          "forecast_hot_day_threshold": "Forecast temperature in degrees Celsius from which heat-protection calculation is allowed.",
+          "forecast_very_hot_day_threshold": "Forecast temperature in degrees Celsius from which the strongest forecast pressure is reached.",
+          "forecast_preemptive_start_time": "Forecast-only interventions are blocked before this local time; measured current conditions remain available.",
+          "policy_preset": "Selects understandable predefined weighting and threshold values. Expert values are needed only for deliberate deviations.",
+          "heat_protection_control_mode": "Scaling calculates a variable target from physical input and the preset. Binary commands one fixed target when its W/m2 threshold is crossed.",
           "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission. Crossing it commands the fixed binary target.",
           "binary_close_position": "Automatic open-position target after crossing the binary threshold. It does not disable manual movement; manual-override rules still apply.",
-          "max_transmitted_solar_power_w_m2": "Continuous cap for estimated transmitted solar power. The calculated open position is reduced approximately in proportion to the excess."
+          "heat_power_limit_enabled": "Adds a continuous physical W/m2 cap in scaling mode. Disable it when preset behavior alone should determine the target.",
+          "max_transmitted_solar_power_w_m2": "Continuous cap for estimated transmitted solar power. The calculated open position is reduced approximately in proportion to the excess.",
+          "enable_away_mode": "Applies stricter thresholds and positions while the selected presence entity indicates that nobody is home.",
+          "away_entity": "Presence source used by away mode. Person and device-tracker states other than home, an empty zone, or an off boolean count as away."
         },
-        "title": "Rules and defaults for the whole house",
+        "title": "House profile: rules and defaults",
         "description": "These values are inherited by every linked window unless a more specific profile explicitly overrides them."
       },
       "house_expert": {
@@ -531,14 +593,39 @@
         },
         "data_description": {
           "solar_radiation_reference_w_m2": "Incoming direct irradiance before window geometry and glazing. Current W/m2 divided by this value becomes the irradiance factor; a lower value reacts more strongly.",
+          "forecast_influence_strength": "Controls how strongly forecast temperature and forecast irradiance increase the physical solar-gain response. 0 ignores the forecast uplift; 1 allows the full uplift.",
+          "heat_power_outside_temp_threshold": "The continuous transmitted-power cap becomes active when measured outside temperature reaches this value, or when an allowed hot forecast triggers pre-emptive protection.",
+          "heat_protection_min_outside_temp": "Cold lockout in degrees Celsius. Below this measured outside temperature, heat protection is suppressed even when the forecast is hot.",
+          "hot_day_close_enabled": "Enables an additional maximum-open limit on forecast hot days while direct sun reaches the window.",
+          "hot_day_close_threshold": "Forecast temperature from which the hot-day maximum-open limit is applied.",
+          "hot_day_close_position": "Maximum open position on a hot forecast day. The result may close further if another rule is stricter.",
+          "very_hot_day_close_position": "Maximum open position when the forecast reaches the very-hot threshold. The result may close further if another rule is stricter.",
+          "show_expert_weights": "Replaces preset component weights with the five individual weights below. Leave disabled for consistent house-wide behavior.",
+          "weight_direct_exposure": "Relative importance of the visible, unshaded glass fraction after field of view, reveals and horizon gating.",
+          "weight_incidence": "Relative importance of the sun's incidence angle on the window. A perpendicular beam receives the strongest incidence value.",
+          "weight_glazing": "Relative importance of angle-dependent glazing transmission after reflection losses.",
+          "weight_forecast_temperature": "Relative importance of forecast temperature between the hot and very-hot thresholds.",
+          "weight_solar_radiation": "Relative importance of incoming irradiance divided by the configured strong-sun reference.",
           "partial_close_threshold": "Expert-only dimensionless risk index. Hidden preset mode is recommended when you do not want to tune normalized scores.",
-          "full_close_threshold": "Expert-only dimensionless risk index at which the strict scaling target is reached."
+          "full_close_threshold": "Expert-only dimensionless risk index at which the strict scaling target is reached.",
+          "partial_close_position": "Open-position target when the normalized risk first crosses the partial threshold. Between both thresholds the target is interpolated continuously.",
+          "full_close_position": "Strict open-position target reached at or above the full threshold. Lower percentages mean more closed.",
+          "away_score_multiplier": "Multiplies the normalized heat-risk value while away before it is compared with the thresholds.",
+          "away_threshold_reduction": "Subtracts this value from both normalized thresholds while away, causing protection to start earlier.",
+          "away_position_offset": "Subtracts this many percentage points from calculated open targets while away.",
+          "sunset_offset": "Minutes added to the calculated sunset boundary in solar night mode. Negative values activate the night position earlier.",
+          "sunrise_offset": "Minutes added to the calculated sunrise boundary in solar night mode. Positive values keep the night position active longer."
         },
-        "title": "House expert tuning"
+        "title": "House profile: expert tuning",
+        "description": "These values expose the normalized policy mathematics. House presets are preferable unless a measured behavior needs deliberate correction."
       },
       "house_facades": {
-        "data": {"profile_action": "Facade to edit"},
-        "title": "Select or add facade"
+        "data": {"profile_action": "Facade profile to edit or create"},
+        "data_description": {
+          "profile_action": "Select an existing facade profile or create a new one. All assigned windows inherit its rotation, geometry, horizon and preset."
+        },
+        "title": "Facade profiles",
+        "description": "Facade profiles describe shared outside walls relative to the house reference facade."
       },
       "house_facade_edit": {
         "data": {
@@ -555,9 +642,20 @@
           "policy_preset": "Heat-protection preset"
         },
         "data_description": {
-          "facade_offset": "Signed rotation in degrees from the house reference facade. The effective window azimuth is reference plus facade rotation plus window correction."
+          "profile_name": "Stable, readable name such as North, East courtyard or Garden. Rooms and windows reference this profile by name.",
+          "delete_profile": "Deletes this facade profile from the house. Existing room and window assignments should be changed first.",
+          "facade_offset": "Signed rotation in degrees from the house reference facade. Effective window azimuth = reference facade + facade rotation + window correction.",
+          "horizon_mode": "Compass mode stores true azimuth from 0 to 359 degrees. Window-view mode stores 0 left, 90 straight and 180 right.",
+          "horizon_profile": "Shared JSON horizon for this facade. A floor, room-facade or window-specific horizon can override it.",
+          "fov_left": "Shared visible angle left of the normal for windows on this facade.",
+          "fov_right": "Shared visible angle right of the normal for windows on this facade.",
+          "reveal_left_depth": "Shared left reveal depth in meters used for geometric self-shading.",
+          "reveal_right_depth": "Shared right reveal depth in meters used for geometric self-shading.",
+          "reveal_top_depth": "Shared top reveal depth in meters used for geometric self-shading.",
+          "policy_preset": "Heat-protection preset inherited by windows on this facade unless a room, room-facade or local window profile overrides it."
         },
-        "title": "Facade defaults"
+        "title": "Edit facade profile",
+        "description": "The rotation establishes the compass orientation; the remaining values are shared defaults for this facade."
       },
       "house_floors": {
         "data": {
@@ -567,22 +665,57 @@
           "horizon_profile": "Floor horizon",
           "policy_preset": "Heat-protection preset"
         },
-        "title": "Floor defaults"
+        "data_description": {
+          "floor_name": "Select a floor directly from the Home Assistant floor registry. The profile is stored under its stable HA floor ID.",
+          "delete_profile": "Deletes only the Solar Shading floor profile; the Home Assistant floor itself is not changed.",
+          "horizon_mode": "Defines whether this floor's horizon angles use compass azimuth or the local window-view coordinate system.",
+          "horizon_profile": "Shared horizon for this floor, useful when distant obstacles have negligible parallax. More specific room-facade and window horizons override it.",
+          "policy_preset": "Heat-protection preset inherited by rooms and windows on this floor unless a more specific profile overrides it."
+        },
+        "title": "Edit floor profile",
+        "description": "The selected Home Assistant floor becomes a reusable Solar Shading profile layer."
       },
       "house_rooms": {
         "data": {
-          "room_name": "Home Assistant area / room",
+          "floor_name": "Home Assistant floor"
+        },
+        "data_description": {
+          "floor_name": "First select the floor. The next step lists only Home Assistant rooms assigned to this floor."
+        },
+        "title": "Room profiles: select floor",
+        "description": "Room profiles are built from Home Assistant's existing floor and area structure."
+      },
+      "house_room_edit": {
+        "data": {
+          "room_name": "Home Assistant room",
           "delete_profile": "Delete this room profile",
-          "floor_name": "Floor inherited by this room",
-          "facade_name": "Default facade for this room",
+          "facade_name": "Default facade profile for this room",
           "policy_preset": "Heat-protection preset",
           "has_additional_daylight_windows": "Room has daylight windows on other facades"
         },
-        "title": "Room defaults"
+        "data_description": {
+          "room_name": "Only Home Assistant rooms assigned to the previously selected floor are available. The profile uses the stable HA area ID.",
+          "delete_profile": "Deletes only the Solar Shading room profile; the Home Assistant room itself is not changed.",
+          "facade_name": "Default facade profile inherited by windows in this room when no different facade is selected at the window.",
+          "policy_preset": "Heat-protection preset for every window in this room unless a room-facade or window profile overrides it.",
+          "has_additional_daylight_windows": "Reduces unnecessary closing because the room can still receive daylight through windows on another facade."
+        },
+        "title": "Edit room profile",
+        "description": "The room automatically inherits its selected floor profile and can add a default facade and room-wide behavior."
       },
       "house_room_facades": {
         "data": {
-          "room_name": "Home Assistant area / room",
+          "floor_name": "Home Assistant floor"
+        },
+        "data_description": {
+          "floor_name": "First select the floor. The next step lists only its Home Assistant rooms before a wall/facade profile is edited."
+        },
+        "title": "Room-facade profiles: select floor",
+        "description": "A room-facade profile represents one specific outside wall inside one Home Assistant room."
+      },
+      "house_room_facade_edit": {
+        "data": {
+          "room_name": "Home Assistant room",
           "facade_name": "Facade / wall in this room",
           "delete_profile": "Delete this room-facade profile",
           "horizon_mode": "Horizon angle reference",
@@ -594,7 +727,20 @@
           "fov_right": "Field of view right",
           "policy_preset": "Heat-protection preset"
         },
-        "title": "Room-facade / wall defaults",
+        "data_description": {
+          "room_name": "Only rooms assigned to the previously selected Home Assistant floor are available.",
+          "facade_name": "Select the house facade profile represented by this room wall. The combination of room ID and facade name identifies the profile.",
+          "delete_profile": "Deletes only this room/facade override. The room profile, facade profile and Home Assistant area remain unchanged.",
+          "horizon_mode": "Defines whether this wall horizon uses true compass azimuth or window-view angles.",
+          "horizon_profile": "Horizon for this exact room wall. It overrides house, floor and facade horizons but remains overridable at an individual window.",
+          "reveal_left_depth": "Left reveal depth in meters shared by windows in this room wall.",
+          "reveal_right_depth": "Right reveal depth in meters shared by windows in this room wall.",
+          "reveal_top_depth": "Top reveal depth in meters shared by windows in this room wall.",
+          "fov_left": "Visible angle left of the normal shared by windows in this room wall.",
+          "fov_right": "Visible angle right of the normal shared by windows in this room wall.",
+          "policy_preset": "Heat-protection preset for this room wall. It overrides house, floor, facade and room presets."
+        },
+        "title": "Edit room-facade profile",
         "description": "This is the narrowest shared profile before individual window overrides. Future wall thermal mass, damping and phase-shift parameters will belong to this layer."
       },
       "automation": {

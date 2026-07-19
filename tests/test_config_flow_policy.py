@@ -1,5 +1,9 @@
 ﻿import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
+
 from custom_components.solar_shading.config_flow import (
+    _area_options_for_floor,
     _migrate_retired_options,
     _validate_policy_input,
 )
@@ -61,6 +65,33 @@ class ConfigFlowPolicyValidationTests(unittest.TestCase):
             CONF_FULL_CLOSE_POSITION: 60,
         })
         self.assertNotIn(CONF_FULL_CLOSE_POSITION, errors)
+
+class FloorRoomSelectionTests(unittest.TestCase):
+    @patch("custom_components.solar_shading.config_flow.area_registry.async_get")
+    def test_only_rooms_from_selected_floor_are_offered(self, async_get):
+        registry = async_get.return_value
+        registry.async_list_areas.return_value = [
+            SimpleNamespace(id="office", name="Office", floor_id="ground"),
+            SimpleNamespace(id="bedroom", name="Bedroom", floor_id="upper"),
+            SimpleNamespace(id="living", name="Living room", floor_id="ground"),
+            SimpleNamespace(id="outside", name="Outside", floor_id=None),
+        ]
+
+        options = _area_options_for_floor(SimpleNamespace(), "ground")
+
+        self.assertEqual(
+            options,
+            [
+                {"value": "living", "label": "Living room"},
+                {"value": "office", "label": "Office"},
+            ],
+        )
+
+    @patch("custom_components.solar_shading.config_flow.area_registry.async_get")
+    def test_no_floor_returns_no_room_options(self, async_get):
+        self.assertEqual(_area_options_for_floor(SimpleNamespace(), None), [])
+        async_get.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

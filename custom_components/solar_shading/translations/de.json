@@ -19,6 +19,30 @@
         "title": "Fenster-Defaults zuordnen",
         "description": "Ein verknuepftes Fenster erbt Haus-, Stockwerk-, Fassaden- und Raumwerte. Am Fenster bleiben nur Cover, genaue Abmessungen und optionale lokale Korrekturen."
       },
+      "window_floor": {
+        "data": {
+          "floor_name": "Home-Assistant-Stockwerk"
+        },
+        "data_description": {
+          "floor_name": "Zuerst das Stockwerk aus Home Assistant auswählen. Im nächsten Schritt erscheinen nur Räume, die diesem Stockwerk zugeordnet sind."
+        },
+        "title": "Fensterprofil: Stockwerk auswählen",
+        "description": "Das Fenster erbt das Stockwerksprofil; außerdem begrenzt die Auswahl die Raumliste im nächsten Schritt."
+      },
+      "window_room": {
+        "data": {
+          "room_name": "Home-Assistant-Raum",
+          "facade_name": "Fassadenprofil",
+          "facade_offset": "Azimutkorrektur dieses Fensters"
+        },
+        "data_description": {
+          "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten.",
+          "facade_name": "Das Fassadenprofil liefert Ausrichtung, gemeinsame Geometrie, Horizont und Hitzeschutz-Defaults.",
+          "facade_offset": "Vorzeichenbehaftete Korrektur in Grad, falls das Fenster nicht exakt parallel zur gewählten Fassade liegt. Bei parallelen Fenstern 0 lassen."
+        },
+        "title": "Fensterprofil: Raum und Fassade auswählen",
+        "description": "Diese Zuordnung bestimmt, welche Stockwerks-, Raum-, Fassaden- und Raumfassadenprofile das Fenster erbt."
+      },
       "automation": {
         "data": {
           "delta_position": "Minimale Positionsanpassung",
@@ -414,6 +438,7 @@
   },
   "error": {
     "invalid_horizon_profile": "Ungueltiges Horizontprofil-JSON.",
+    "no_rooms_for_floor": "Diesem Stockwerk sind in Home Assistant keine Räume zugeordnet. Ordne den Raum dort zuerst dem Stockwerk zu.",
     "window_width_required_for_reveals": "Fensterbreite ist erforderlich, sobald Laibungstiefen gesetzt sind.",
     "full_threshold_must_exceed_partial": "Die strenge Waermeschutz-Schwelle muss groesser oder gleich der Teil-Schwelle sein.",
     "full_position_must_exceed_partial": "Das strenge Offen-Ziel muss kleiner oder gleich dem Teil-Offen-Ziel sein.",
@@ -425,39 +450,52 @@
       "init": {
         "menu_options": {
           "automation": "Automatisierungskonfiguration Ã¤ndern",
-          "assignment": "Haus, Stockwerk, Raum und Fassade",
+          "assignment": "Fensterprofil zuordnen",
           "blind": "Jalousien-Einstellungen anpassen",
           "climate": "Klimakonfiguration bearbeiten",
           "weather": "Wetterkonfiguration bearbeiten",
           "policy": "Gewichte & Schwellen bearbeiten",
           "blind_spot": "Blindenbereich einrichten",
           "interp": "Bereichsanpassung",
-          "house_defaults": "Hausregeln und Defaults",
-          "house_expert": "Haus-Feinabstimmung",
-          "house_facades": "Fassaden",
-          "house_floors": "Stockwerke",
-          "house_rooms": "Raeume",
-          "house_room_facades": "Raumfassaden / Waende"
+          "house_defaults": "Hausprofil: Regeln und Standardwerte",
+          "house_expert": "Hausprofil: Feinabstimmung",
+          "house_facades": "Fassadenprofile",
+          "house_floors": "Stockwerksprofile",
+          "house_rooms": "Raumprofile",
+          "house_room_facades": "Raumfassadenprofile"
         }
       },
       "assignment": {
         "data": {
           "house_profile_entry_id": "Hausprofil",
-          "floor_name": "Home-Assistant-Stockwerk",
-          "room_name": "Home-Assistant-Bereich / Raum",
-          "facade_name": "Fassade",
+          "floor_name": "Home-Assistant-Stockwerk"
+        },
+        "data_description": {
+          "house_profile_entry_id": "Wähle das Hausprofil, dessen gemeinsame Regeln und Profilhierarchie dieses Fenster erben soll.",
+          "floor_name": "Im nächsten Schritt erscheinen nur Home-Assistant-Räume, die diesem Stockwerk zugeordnet sind."
+        },
+        "title": "Fensterprofil: Haus und Stockwerk auswählen",
+        "description": "Ein Fenster erbt nacheinander Werte aus Haus-, Stockwerks-, Fassaden-, Raum- und Raumfassadenprofil."
+      },
+      "assignment_room": {
+        "data": {
+          "room_name": "Home-Assistant-Raum",
+          "facade_name": "Fassadenprofil",
           "facade_offset": "Azimutkorrektur dieses Fensters",
           "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen"
         },
         "data_description": {
-          "facade_offset": "Korrektur relativ zur ausgewaehlten Fassade. Fuer ein paralleles Fenster auf 0 lassen.",
-          "use_local_geometry": "Nur aktivieren, wenn dieses Fenster ein anderes Sichtfeld, andere Laibungen oder anderes Glas braucht.",
-          "use_local_horizon": "Fuer einen eigenen Fensterhorizont, waehrend die restliche Geometrie vererbt bleibt.",
-          "use_local_policy": "Nur fuer echte Ausnahmen. Die lokal ueberschriebenen Regeln folgen danach nicht mehr globalen Hausaenderungen."
+          "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten. Das zugehörige Raumprofil wird automatisch geerbt.",
+          "facade_name": "Wähle das Fassadenprofil dieser Wand. Seine Drehung zur Referenzfassade bestimmt den Basis-Azimut des Fensters.",
+          "facade_offset": "Korrektur relativ zur gewählten Fassade. Für ein paralleles Fenster auf 0 lassen.",
+          "use_local_geometry": "Nur aktivieren, wenn dieses Fenster ein anderes Sichtfeld, andere Laibungen oder anderes Glas benötigt.",
+          "use_local_horizon": "Für einen eigenen Fensterhorizont, während die restliche Geometrie vererbt bleibt.",
+          "use_local_policy": "Nur für echte Ausnahmen. Lokal überschriebene Regeln folgen danach nicht mehr den entsprechenden Änderungen am Hausprofil."
         },
-        "title": "Fenster zuordnen"
+        "title": "Fensterprofil: Raum und Fassade auswählen",
+        "description": "Lokale Abweichungen sind Ausnahmen. Deaktiviert lassen, damit spätere Änderungen am Hausprofil dieses Fenster weiterhin erreichen."
       },
       "house_defaults": {
         "data": {
@@ -470,7 +508,7 @@
           "reveal_top_depth": "Standard-Laibung oben",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Standard-Horizontprofil",
-          "default_percentage": "Tages-Fallback (% offen)",
+          "default_percentage": "Standardposition am Tag (% offen)",
           "night_mode": "Nachtsteuerung",
           "night_start_time": "Nacht beginnt",
           "night_end_time": "Nacht endet",
@@ -478,72 +516,121 @@
           "weather_entity": "Quelle der Temperaturprognose",
           "use_forecast_max_temp_today": "Heutige Maximaltemperatur verwenden",
           "use_forecast_max_temp_tomorrow": "Morgige Maximaltemperatur verwenden",
-          "use_open_data_solar_radiation": "Open-Meteo-Solarstrahlung verwenden",
+          "use_open_data_solar_radiation": "Solarstrahlung von Open-Meteo verwenden",
           "solar_radiation_entity": "Lokaler Solarstrahlungssensor",
-          "forecast_hot_day_threshold": "Heisser Tag ab Prognosetemperatur",
-          "forecast_very_hot_day_threshold": "Sehr heisser Tag ab Prognosetemperatur",
-          "forecast_preemptive_start_time": "Fruehester Forecast-Eingriff",
+          "forecast_hot_day_threshold": "Heißer Tag ab Prognosetemperatur",
+          "forecast_very_hot_day_threshold": "Sehr heißer Tag ab Prognosetemperatur",
+          "forecast_preemptive_start_time": "Frühester prognosebasierter Eingriff",
           "policy_preset": "Hitzeschutz-Preset",
           "heat_protection_control_mode": "Hitzeschutz-Verhalten",
-          "binary_close_threshold_w_m2": "Binaer schliessen ab (W/m2 Glas)",
-          "binary_close_position": "Festes Binaerziel (% offen)",
-          "heat_power_limit_enabled": "Durchgelassene Solarleistung stufenlos begrenzen",
-          "max_transmitted_solar_power_w_m2": "Maximal durchgelassene Solarleistung (W/m2 Glas)",
+          "binary_close_threshold_w_m2": "Fest schließen ab (W/m² durch Glas)",
+          "binary_close_position": "Feste Zielposition (% offen)",
+          "heat_power_limit_enabled": "Durchgelassene Solarleistung begrenzen",
+          "max_transmitted_solar_power_w_m2": "Maximal durchgelassene Solarleistung (W/m² Glas)",
           "enable_away_mode": "Bei Abwesenheit strenger reagieren",
-          "away_entity": "Abwesenheits-Entitaet"
+          "away_entity": "Abwesenheitsentität"
         },
         "data_description": {
           "house_reference_azimuth": "Kompass-Azimut der Referenzfassade, am besten der am weitesten nach Norden gerichteten Fassade. Fassaden speichern nur ihre Drehung relativ zu dieser Achse.",
-          "horizon_profile": "JSON-Horizont fuer Fenster ohne spezielleren Fassaden-, Stockwerks-, Raumwand- oder Fensterhorizont.",
-          "night_mode": "Zeitgefuehrt nutzt die beiden festen Uhrzeiten. Sonnengefuehrt nutzt Sonnenuntergang und Sonnenaufgang.",
-          "binary_close_threshold_w_m2": "Geschaetzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Beim Ueberschreiten wird das feste Ziel angefahren.",
-          "binary_close_position": "Automatisches Ziel beim Ueberschreiten der Binaerschwelle. Manuelle Fahrten bleiben ueber die bestehende Override-Logik moeglich.",
-          "max_transmitted_solar_power_w_m2": "Stufenloser Grenzwert der geschaetzten durchgelassenen Solarleistung. Die Offenposition wird ungefaehr proportional zur Ueberschreitung reduziert."
+          "glass_type": "Standardverglasung. Winkelabhängige Reflexion und Transmission bestimmen, wie viel der auftreffenden Solarstrahlung in den Raum gelangt.",
+          "fov_left": "Maximal sichtbarer Winkel links von der Fensternormalen. Sonne außerhalb dieses Winkels kann keine direkte Beschattung auslösen.",
+          "fov_right": "Maximal sichtbarer Winkel rechts von der Fensternormalen. Sonne außerhalb dieses Winkels kann keine direkte Beschattung auslösen.",
+          "reveal_left_depth": "Standardtiefe der linken Laibung in Metern. Sie reduziert die direkte Exposition bei Sonne von links.",
+          "reveal_right_depth": "Standardtiefe der rechten Laibung in Metern. Sie reduziert die direkte Exposition bei Sonne von rechts.",
+          "reveal_top_depth": "Standardtiefe der oberen Laibung in Metern. Sie reduziert die direkte Exposition bei hohem Sonnenstand.",
+          "horizon_mode": "Kompassmodus erwartet den echten Sonnenazimut von 0 bis 359 Grad. Fenstersicht verwendet 0 links, 90 geradeaus und 180 rechts.",
+          "horizon_profile": "JSON-Horizont für Fenster ohne spezielleren Fassaden-, Stockwerks-, Raumwand- oder Fensterhorizont.",
+          "default_percentage": "Fallback-Ziel, wenn keine direkte Sonne, Nacht- oder Hitzeschutzregel eine strengere Position verlangt. 100 % bedeutet vollständig offen.",
+          "night_mode": "Zeitgeführt nutzt die beiden festen Uhrzeiten. Sonnengeführt nutzt Sonnenuntergang und Sonnenaufgang.",
+          "night_start_time": "Im zeitgeführten Modus wird ab dieser lokalen Uhrzeit die Nachtposition aktiv.",
+          "night_end_time": "Im zeitgeführten Modus beginnt ab dieser lokalen Uhrzeit wieder die Tagesberechnung.",
+          "sunset_position": "Zielposition außerhalb des Tagesintervalls. 100 % lässt die Beschattung offen; kleinere Werte schließen weiter.",
+          "weather_entity": "Wetterentität ausschließlich für Außentemperatur sowie Maximaltemperatur-Prognosen von heute und morgen.",
+          "use_forecast_max_temp_today": "Nimmt die heutige prognostizierte Maximaltemperatur in das Hitzeschutz-Temperatursignal auf.",
+          "use_forecast_max_temp_tomorrow": "Nimmt zusätzlich die morgige Maximaltemperatur auf. Der höhere ausgewählte Wert steuert das Prognosesignal.",
+          "use_open_data_solar_radiation": "Verwendet aktuelle und prognostizierte Solarstrahlung von Open-Meteo. Ein lokaler Strahlungssensor hat für den Istwert Vorrang.",
+          "solar_radiation_entity": "Optionaler lokaler Strahlungssensor in W/m². Sein Istwert ersetzt Open-Meteo in der laufenden Berechnung.",
+          "forecast_hot_day_threshold": "Prognosetemperatur in Grad Celsius, ab der die Hitzeschutzberechnung freigegeben wird.",
+          "forecast_very_hot_day_threshold": "Prognosetemperatur in Grad Celsius, ab der der stärkste Prognoseeinfluss erreicht ist.",
+          "forecast_preemptive_start_time": "Rein prognosebasierte Eingriffe sind vor dieser lokalen Uhrzeit gesperrt; gemessene Istwerte bleiben nutzbar.",
+          "policy_preset": "Wählt verständliche, vordefinierte Gewichtungen und Schwellen. Expertenwerte werden nur für gezielte Abweichungen benötigt.",
+          "heat_protection_control_mode": "Stufenlos berechnet eine variable Zielposition aus Physik und Preset. Binär fährt ein festes Ziel, sobald die W/m²-Schwelle überschritten ist.",
+          "binary_close_threshold_w_m2": "Geschätzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Beim Überschreiten wird das feste Ziel angefahren.",
+          "binary_close_position": "Automatisches Ziel beim Überschreiten der Binärschwelle. Manuelle Fahrten bleiben über die bestehende Override-Logik möglich.",
+          "heat_power_limit_enabled": "Ergänzt im stufenlosen Modus eine physikalische W/m²-Obergrenze. Deaktivieren, wenn ausschließlich das Preset die Zielposition bestimmen soll.",
+          "max_transmitted_solar_power_w_m2": "Stufenloser Grenzwert der geschätzten durchgelassenen Solarleistung. Die Offenposition wird ungefähr proportional zur Überschreitung reduziert.",
+          "enable_away_mode": "Verwendet strengere Schwellen und Positionen, solange die gewählte Anwesenheitsentität Abwesenheit meldet.",
+          "away_entity": "Anwesenheitsquelle. Person und Tracker ungleich home, eine leere Zone oder ein ausgeschalteter Boolean gelten als abwesend."
         },
-        "title": "Regeln und Defaults fuer das ganze Haus",
-        "description": "Alle verknuepften Fenster erben diese Werte, solange eine feinere Ebene sie nicht ausdruecklich ueberschreibt."
+        "title": "Hausprofil: Regeln und Standardwerte",
+        "description": "Alle verknüpften Fenster erben diese Werte, solange ein feineres Profil sie nicht ausdrücklich überschreibt."
       },
       "house_expert": {
         "data": {
-          "solar_radiation_reference_w_m2": "Einstrahlung, die als starke Sonne zaehlt (W/m2)",
-          "forecast_influence_strength": "Forecast-Einfluss",
-          "heat_power_outside_temp_threshold": "Stufenloses Leistungslimit ab Aussentemperatur",
-          "heat_protection_min_outside_temp": "Hitzeschutz deaktivieren unter Aussentemperatur",
-          "hot_day_close_enabled": "Offenposition an heissen Tagen begrenzen",
-          "hot_day_close_threshold": "Heiss-Tag-Limit ab Prognosetemperatur",
-          "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
-          "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
+          "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung für starke Sonne (W/m²)",
+          "forecast_influence_strength": "Stärke des Prognoseeinflusses",
+          "heat_power_outside_temp_threshold": "Leistungslimit ab Außentemperatur",
+          "heat_protection_min_outside_temp": "Hitzeschutz gesperrt unter Außentemperatur",
+          "hot_day_close_enabled": "Offenposition an heißen Tagen begrenzen",
+          "hot_day_close_threshold": "Heiß-Tag-Limit ab Prognosetemperatur",
+          "hot_day_close_position": "Maximum an heißen Tagen (% offen)",
+          "very_hot_day_close_position": "Maximum an sehr heißen Tagen (% offen)",
           "show_expert_weights": "Einzelne Expertengewichte verwenden",
           "weight_direct_exposure": "Gewicht: geometrische Exposition",
           "weight_incidence": "Gewicht: Einfallswinkel",
           "weight_glazing": "Gewicht: Glastransmission",
           "weight_forecast_temperature": "Gewicht: Prognosetemperatur",
           "weight_solar_radiation": "Gewicht: Solarstrahlung",
-          "partial_close_threshold": "Normiertes Risiko, ab dem Skalierung beginnt",
-          "full_close_threshold": "Normiertes Risiko fuer das strenge Ziel",
-          "partial_close_position": "Startziel der Skalierung (% offen)",
-          "full_close_position": "Strenges Skalierungsziel (% offen)",
+          "partial_close_threshold": "Expertenwert: Regelung beginnt ab Risikowert",
+          "full_close_threshold": "Expertenwert: strenges Ziel ab Risikowert",
+          "partial_close_position": "Erste Zielposition (% offen)",
+          "full_close_position": "Strenge Zielposition (% offen)",
           "away_score_multiplier": "Risiko-Multiplikator bei Abwesenheit",
           "away_threshold_reduction": "Schwellenabsenkung bei Abwesenheit",
-          "away_position_offset": "Zusaetzliche Reduktion bei Abwesenheit (% offen)",
+          "away_position_offset": "Zusätzliche Reduktion bei Abwesenheit (% offen)",
           "sunset_offset": "Versatz zum Sonnenuntergang",
           "sunrise_offset": "Versatz zum Sonnenaufgang"
         },
         "data_description": {
-          "solar_radiation_reference_w_m2": "Einfallende direkte Strahlung vor Fenstergeometrie und Glas. Aktuelle W/m2 geteilt durch diesen Wert ergeben den Einstrahlungsfaktor; ein kleinerer Wert reagiert staerker.",
-          "partial_close_threshold": "Nur fuer Experten: dimensionsloser Risikoindex. Fuer eine Einrichtung ohne Scores den Preset- oder Binaermodus verwenden.",
-          "full_close_threshold": "Nur fuer Experten: dimensionsloser Risikoindex, bei dem das strenge Skalierungsziel erreicht wird."
+          "solar_radiation_reference_w_m2": "Einfallende direkte Strahlung vor Fenstergeometrie und Glas. Aktuelle W/m² geteilt durch diesen Wert ergeben den Einstrahlungsfaktor; ein kleinerer Wert reagiert stärker.",
+          "forecast_influence_strength": "Bestimmt, wie stark Prognosetemperatur und prognostizierte Solarstrahlung den physikalischen Wärmeeintrag verstärken. 0 ignoriert die Verstärkung, 1 erlaubt den vollen Einfluss.",
+          "heat_power_outside_temp_threshold": "Das stufenlose Leistungslimit wird ab dieser gemessenen Außentemperatur aktiv oder wenn eine zulässige Heißwetterprognose den präventiven Schutz auslöst.",
+          "heat_protection_min_outside_temp": "Kältesperre in Grad Celsius. Unter dieser gemessenen Außentemperatur bleibt Hitzeschutz trotz heißer Prognose aus.",
+          "hot_day_close_enabled": "Aktiviert bei direkter Sonne eine zusätzliche maximale Offenposition für prognostizierte heiße Tage.",
+          "hot_day_close_threshold": "Prognosetemperatur, ab der die maximale Offenposition für heiße Tage angewendet wird.",
+          "hot_day_close_position": "Maximale Offenposition an einem prognostizierten heißen Tag. Eine strengere andere Regel darf weiter schließen.",
+          "very_hot_day_close_position": "Maximale Offenposition ab der Sehr-heiß-Schwelle. Eine strengere andere Regel darf weiter schließen.",
+          "show_expert_weights": "Ersetzt die Preset-Gewichte durch die fünf Einzelgewichte darunter. Für ein einheitliches Hausverhalten deaktiviert lassen.",
+          "weight_direct_exposure": "Relative Bedeutung des sichtbaren, unverschatteten Glasanteils nach Sichtfeld-, Laibungs- und Horizontprüfung.",
+          "weight_incidence": "Relative Bedeutung des Einfallswinkels auf das Fenster. Senkrechter Strahlungseinfall erhält den höchsten Wert.",
+          "weight_glazing": "Relative Bedeutung der winkelabhängigen Glastransmission nach Reflexionsverlusten.",
+          "weight_forecast_temperature": "Relative Bedeutung der Prognosetemperatur zwischen Heiß- und Sehr-heiß-Schwelle.",
+          "weight_solar_radiation": "Relative Bedeutung der einfallenden Strahlung geteilt durch die eingestellte Starksonnen-Referenz.",
+          "partial_close_threshold": "Nur für Experten: dimensionsloser Risikoindex, ab dem die stufenlose Regelung beginnt. Ohne Scores den Preset- oder Binärmodus verwenden.",
+          "full_close_threshold": "Nur für Experten: dimensionsloser Risikoindex, ab dem das strenge stufenlose Ziel erreicht ist.",
+          "partial_close_position": "Offenposition beim Erreichen der ersten Risikoschwelle. Zwischen beiden Schwellen wird die Zielposition kontinuierlich interpoliert.",
+          "full_close_position": "Strenge Offenposition ab der zweiten Risikoschwelle. Kleinere Prozentwerte bedeuten weiter geschlossen.",
+          "away_score_multiplier": "Multipliziert bei Abwesenheit den normierten Wärmerisikowert, bevor er mit den Schwellen verglichen wird.",
+          "away_threshold_reduction": "Zieht diesen Wert bei Abwesenheit von beiden normierten Schwellen ab; der Schutz beginnt dadurch früher.",
+          "away_position_offset": "Zieht bei Abwesenheit diese Anzahl Prozentpunkte von berechneten Offenpositionen ab.",
+          "sunset_offset": "Minuten, die im sonnengeführten Nachtmodus zur Sonnenuntergangsgrenze addiert werden. Negative Werte aktivieren die Nachtposition früher.",
+          "sunrise_offset": "Minuten, die im sonnengeführten Nachtmodus zur Sonnenaufgangsgrenze addiert werden. Positive Werte halten die Nachtposition länger aktiv."
         },
-        "title": "Haus-Feinabstimmung"
+        "title": "Hausprofil: Feinabstimmung",
+        "description": "Diese Werte legen die normierte Regelmathematik offen. Haus-Presets sind vorzuziehen, solange kein gemessenes Verhalten gezielt korrigiert werden muss."
       },
       "house_facades": {
-        "data": {"profile_action": "Fassade bearbeiten oder neu anlegen"},
-        "title": "Fassade auswaehlen"
+        "data": {"profile_action": "Fassadenprofil bearbeiten oder neu anlegen"},
+        "data_description": {
+          "profile_action": "Ein vorhandenes Fassadenprofil wählen oder ein neues anlegen. Zugeordnete Fenster erben Drehung, Geometrie, Horizont und Preset."
+        },
+        "title": "Fassadenprofile",
+        "description": "Fassadenprofile beschreiben gemeinsame Außenwände relativ zur Referenzfassade des Hauses."
       },
       "house_facade_edit": {
         "data": {
           "profile_name": "Fassadenname",
-          "delete_profile": "Diese Fassade loeschen",
+          "delete_profile": "Dieses Fassadenprofil löschen",
           "facade_offset": "Drehung relativ zur Referenzfassade",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Fassadenhorizont",
@@ -555,36 +642,82 @@
           "policy_preset": "Hitzeschutz-Preset"
         },
         "data_description": {
-          "facade_offset": "Vorzeichenbehaftete Drehung zur Haus-Referenzfassade. Fensterazimut = Referenz + Fassadendrehung + Fensterkorrektur."
+          "profile_name": "Stabiler, verständlicher Name wie Nord, Ost-Hof oder Garten. Räume und Fenster referenzieren dieses Profil über den Namen.",
+          "delete_profile": "Löscht dieses Fassadenprofil aus dem Hausprofil. Vorhandene Raum- und Fensterzuordnungen sollten vorher geändert werden.",
+          "facade_offset": "Vorzeichenbehaftete Drehung in Grad zur Referenzfassade. Fensterazimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
+          "horizon_mode": "Kompassmodus speichert echte Azimute von 0 bis 359 Grad. Fenstersicht speichert 0 links, 90 geradeaus und 180 rechts.",
+          "horizon_profile": "Gemeinsamer JSON-Horizont dieser Fassade. Stockwerks-, Raumfassaden- oder Fensterhorizonte können ihn überschreiben.",
+          "fov_left": "Gemeinsamer sichtbarer Winkel links der Normalen für Fenster dieser Fassade.",
+          "fov_right": "Gemeinsamer sichtbarer Winkel rechts der Normalen für Fenster dieser Fassade.",
+          "reveal_left_depth": "Gemeinsame linke Laibungstiefe in Metern für die geometrische Eigenverschattung.",
+          "reveal_right_depth": "Gemeinsame rechte Laibungstiefe in Metern für die geometrische Eigenverschattung.",
+          "reveal_top_depth": "Gemeinsame obere Laibungstiefe in Metern für die geometrische Eigenverschattung.",
+          "policy_preset": "Hitzeschutz-Preset für Fenster dieser Fassade, solange Raum-, Raumfassaden- oder Fensterprofil nichts Spezifischeres vorgibt."
         },
-        "title": "Fassaden-Defaults"
+        "title": "Fassadenprofil bearbeiten",
+        "description": "Die Drehung legt die Kompassausrichtung fest; die übrigen Werte sind gemeinsame Standardwerte dieser Fassade."
       },
       "house_floors": {
         "data": {
           "floor_name": "Home-Assistant-Stockwerk",
-          "delete_profile": "Dieses Stockwerksprofil loeschen",
+          "delete_profile": "Dieses Stockwerksprofil löschen",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Stockwerkshorizont",
           "policy_preset": "Hitzeschutz-Preset"
         },
-        "title": "Stockwerks-Defaults"
+        "data_description": {
+          "floor_name": "Stockwerk direkt aus dem Home-Assistant-Stockwerksregister auswählen. Das Profil wird unter der stabilen HA-Stockwerks-ID gespeichert.",
+          "delete_profile": "Löscht nur das Solar-Shading-Stockwerksprofil; das Home-Assistant-Stockwerk bleibt unverändert.",
+          "horizon_mode": "Legt fest, ob die Horizontwinkel dieses Stockwerks Kompass-Azimut oder lokale Fenstersicht verwenden.",
+          "horizon_profile": "Gemeinsamer Horizont des Stockwerks, sinnvoll bei weit entfernten Hindernissen ohne relevante Parallaxe. Raumfassaden- und Fensterhorizonte überschreiben ihn.",
+          "policy_preset": "Hitzeschutz-Preset für Räume und Fenster dieses Stockwerks, solange ein feineres Profil nichts anderes vorgibt."
+        },
+        "title": "Stockwerksprofil bearbeiten",
+        "description": "Das gewählte Home-Assistant-Stockwerk wird als wiederverwendbare Solar-Shading-Profilebene übernommen."
       },
       "house_rooms": {
         "data": {
-          "room_name": "Home-Assistant-Bereich / Raum",
-          "delete_profile": "Dieses Raumprofil loeschen",
-          "floor_name": "Stockwerk dieses Raums",
-          "facade_name": "Standardfassade dieses Raums",
+          "floor_name": "Home-Assistant-Stockwerk"
+        },
+        "data_description": {
+          "floor_name": "Zuerst das Stockwerk auswählen. Im nächsten Schritt erscheinen nur Home-Assistant-Räume dieses Stockwerks."
+        },
+        "title": "Raumprofile: Stockwerk auswählen",
+        "description": "Raumprofile übernehmen die vorhandene Stockwerks- und Bereichsstruktur aus Home Assistant."
+      },
+      "house_room_edit": {
+        "data": {
+          "room_name": "Home-Assistant-Raum",
+          "delete_profile": "Dieses Raumprofil löschen",
+          "facade_name": "Standard-Fassadenprofil dieses Raums",
           "policy_preset": "Hitzeschutz-Preset",
           "has_additional_daylight_windows": "Raum hat Tageslichtfenster an weiteren Fassaden"
         },
-        "title": "Raum-Defaults"
+        "data_description": {
+          "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten. Gespeichert wird die stabile HA-Bereichs-ID.",
+          "delete_profile": "Löscht nur das Solar-Shading-Raumprofil; der Home-Assistant-Raum bleibt unverändert.",
+          "facade_name": "Standard-Fassadenprofil für Fenster dieses Raums, sofern am Fenster keine andere Fassade gewählt wird.",
+          "policy_preset": "Hitzeschutz-Preset für alle Fenster des Raums, solange Raumfassaden- oder Fensterprofil nichts Spezifischeres vorgibt.",
+          "has_additional_daylight_windows": "Reduziert unnötiges Schließen, weil der Raum über Fenster einer weiteren Fassade weiterhin Tageslicht erhält."
+        },
+        "title": "Raumprofil bearbeiten",
+        "description": "Der Raum erbt automatisch sein gewähltes Stockwerksprofil und kann Standardfassade sowie raumweites Verhalten ergänzen."
       },
       "house_room_facades": {
         "data": {
-          "room_name": "Home-Assistant-Bereich / Raum",
+          "floor_name": "Home-Assistant-Stockwerk"
+        },
+        "data_description": {
+          "floor_name": "Zuerst das Stockwerk auswählen. Im nächsten Schritt wird vor der Wand-/Fassadenauswahl nur dessen Raumliste angeboten."
+        },
+        "title": "Raumfassadenprofile: Stockwerk auswählen",
+        "description": "Ein Raumfassadenprofil beschreibt eine konkrete Außenwand innerhalb eines Home-Assistant-Raums."
+      },
+      "house_room_facade_edit": {
+        "data": {
+          "room_name": "Home-Assistant-Raum",
           "facade_name": "Fassade / Wand in diesem Raum",
-          "delete_profile": "Dieses Raumfassadenprofil loeschen",
+          "delete_profile": "Dieses Raumfassadenprofil löschen",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Horizont dieser Raumfassade",
           "reveal_left_depth": "Laibung links",
@@ -594,8 +727,21 @@
           "fov_right": "Sichtfeld rechts",
           "policy_preset": "Hitzeschutz-Preset"
         },
-        "title": "Defaults fuer Raumfassade / Wand",
-        "description": "Das ist die feinste gemeinsame Ebene vor einem einzelnen Fenster. Spaetere Wand-Thermik, Daempfung und Phasenverschiebung gehoeren hierhin."
+        "data_description": {
+          "room_name": "Es werden nur Räume des zuvor gewählten Home-Assistant-Stockwerks angeboten.",
+          "facade_name": "Fassadenprofil dieser Raumwand. Die Kombination aus Raum-ID und Fassadenname identifiziert das Raumfassadenprofil.",
+          "delete_profile": "Löscht nur diese Raum-/Fassadenabweichung. Raumprofil, Fassadenprofil und Home-Assistant-Bereich bleiben erhalten.",
+          "horizon_mode": "Legt fest, ob der Horizont dieser Wand echte Kompass-Azimute oder lokale Fenstersichtwinkel verwendet.",
+          "horizon_profile": "Horizont genau dieser Raumwand. Er überschreibt Haus-, Stockwerks- und Fassadenhorizont, kann aber am einzelnen Fenster nochmals überschrieben werden.",
+          "reveal_left_depth": "Linke Laibungstiefe in Metern für Fenster dieser Raumwand.",
+          "reveal_right_depth": "Rechte Laibungstiefe in Metern für Fenster dieser Raumwand.",
+          "reveal_top_depth": "Obere Laibungstiefe in Metern für Fenster dieser Raumwand.",
+          "fov_left": "Gemeinsamer sichtbarer Winkel links der Normalen für Fenster dieser Raumwand.",
+          "fov_right": "Gemeinsamer sichtbarer Winkel rechts der Normalen für Fenster dieser Raumwand.",
+          "policy_preset": "Hitzeschutz-Preset dieser Raumwand. Es überschreibt Haus-, Stockwerks-, Fassaden- und Raum-Preset."
+        },
+        "title": "Raumfassadenprofil bearbeiten",
+        "description": "Das ist die feinste gemeinsame Profilebene vor einem einzelnen Fenster. Spätere Wandthermik, Dämpfung und Phasenverschiebung gehören hierhin."
       },
       "automation": {
         "data": {
