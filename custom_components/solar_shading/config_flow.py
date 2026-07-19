@@ -1740,7 +1740,7 @@ class OptionsFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
         self.current_config: dict = dict(config_entry.data)
-        self._config_entry_id = config_entry.entry_id
+        self._house_entry_id = config_entry.entry_id
         self.options = _migrate_retired_options(dict(config_entry.options))
         self.entry_type = self.current_config.get(CONF_ENTRY_TYPE, ENTRY_TYPE_WINDOW)
         self._editing_profile: str | None = None
@@ -1912,7 +1912,7 @@ class OptionsFlowHandler(OptionsFlow):
                     continue
                 updated = apply_bulk_profile_assignment(
                     dict(entry.options),
-                    house_profile_entry_id=self._config_entry_id,
+                    house_profile_entry_id=self._house_entry_id,
                     floor_id=self._selected_floor_id or "",
                     room_id=user_input[CONF_ROOM_NAME],
                     facade_name=user_input.get(CONF_FACADE_NAME),
