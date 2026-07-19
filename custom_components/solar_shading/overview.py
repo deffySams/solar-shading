@@ -211,8 +211,11 @@ def build_overview_payload(hass: HomeAssistant) -> dict[str, Any]:
             continue
         windows.append(build_window_snapshot(entry, coordinator))
 
-    def total(key: str) -> float:
-        return round(sum(float(window.get(key) or 0.0) for window in windows), 2)
+    def total(key: str, *, require_all: bool = False) -> float | None:
+        values = [window.get(key) for window in windows]
+        if require_all and any(value is None for value in values):
+            return None
+        return round(sum(float(value or 0.0) for value in values), 2)
 
     return {
         "generated_at": datetime.now(UTC).isoformat(),
@@ -227,7 +230,7 @@ def build_overview_payload(hass: HomeAssistant) -> dict[str, Any]:
                 "solar_power_with_target_cover_w_total"
             ),
             "solar_power_with_actual_cover_w": total(
-                "solar_power_with_actual_cover_w_total"
+                "solar_power_with_actual_cover_w_total", require_all=True
             ),
         },
         "windows": windows,

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 from custom_components.solar_shading.const import CONF_HEIGHT_WIN, CONF_WINDOW_WIDTH
 from custom_components.solar_shading.overview import (
+    build_overview_payload,
     build_window_snapshot,
     configuration_warnings,
     derive_window_status,
@@ -92,6 +93,32 @@ class OverviewTests(unittest.TestCase):
         self.assertEqual(snapshot["actual_open_position"], 30)
         self.assertEqual(len(snapshot["covers"]), 2)
         self.assertEqual(snapshot["solar_power_with_actual_cover_w_total"], 300)
+
+    def test_summary_keeps_unknown_actual_power_unknown(self):
+        entry = SimpleNamespace(
+            entry_id="entry-1",
+            title="Window",
+            data={"name": "Window", "sensor_type": "cover_blind"},
+        )
+        coordinator = SimpleNamespace(
+            data=SimpleNamespace(
+                states={"state": 50, "window_status": "cover_unavailable"},
+                attributes={
+                    "current_cover_positions": {"cover.a": None},
+                    "solar_power_without_cover_w_total": 500,
+                    "solar_power_with_target_cover_w_total": 250,
+                    "solar_power_with_actual_cover_w_total": None,
+                },
+            )
+        )
+        hass = SimpleNamespace(
+            config_entries=SimpleNamespace(async_entries=lambda _domain: [entry]),
+            data={"solar_shading": {"entry-1": coordinator}},
+        )
+
+        payload = build_overview_payload(hass)
+
+        self.assertIsNone(payload["summary"]["solar_power_with_actual_cover_w"])
 
 
 if __name__ == "__main__":

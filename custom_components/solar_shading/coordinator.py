@@ -406,14 +406,15 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             power_density_without_cover, state
         )
         cover_count = len(self.entities)
-        power_with_actual_cover = (
-            sum(
+        if power_without_cover is not None and power_without_cover <= 0:
+            power_with_actual_cover = 0.0
+        elif available_positions and len(available_positions) == cover_count:
+            power_with_actual_cover = sum(
                 estimate_power_with_cover(power_without_cover, position) or 0.0
                 for position in available_positions
             )
-            if available_positions and len(available_positions) == cover_count
-            else None
-        )
+        else:
+            power_with_actual_cover = None
         warnings = configuration_warnings(
             options,
             entities=self.entities,
