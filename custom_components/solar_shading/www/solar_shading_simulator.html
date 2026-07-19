@@ -1215,7 +1215,8 @@
               <div class="metric"><div class="name">Solarstrahlung</div><div class="val" id="solarRadiationCell"></div></div>
               <div class="metric"><div class="name">Normierte Solarstrahlung</div><div class="val" id="incomingSolarRadiationFactorCell"></div></div>
               <div class="metric"><div class="name">Effektiver Solar-Gain</div><div class="val" id="effectiveGainCell"></div></div>
-              <div class="metric"><div class="name">Durchgelassene Solarleistung</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Solarleistung ohne Cover</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Solarleistung mit berechnetem Cover</div><div class="val" id="coveredHeatPowerCell"></div></div>
               <div class="metric"><div class="name">Solarleistungs-Limit</div><div class="val" id="heatPowerLimitCell"></div></div>
               <div class="metric"><div class="name">Forecast heute</div><div class="val" id="forecastTodayCell"></div></div>
               <div class="metric"><div class="name">Forecast-Risiko</div><div class="val" id="forecastRiskCell"></div></div>
@@ -3107,6 +3108,9 @@
       setText("heatPowerCell", attrs.transmitted_solar_power_w_m2 === null
         ? "kein Strahlungswert"
         : `${round(attrs.transmitted_solar_power_w_m2, 1)} W/m2${attrs.transmitted_solar_power_w === null ? "" : ` / ${round(attrs.transmitted_solar_power_w, 0)} W Fenster`} (HA Python)`);
+      setText("coveredHeatPowerCell", attrs.solar_power_with_target_cover_w_per_window === null
+        ? "kein Strahlungswert"
+        : `${round(attrs.solar_power_with_target_cover_w_per_window, 0)} W bei ${open} % offen (lineares Covermodell)`);
       setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
         ? `kein Deckel (${attrs.heat_power_limit_trigger})`
         : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
@@ -3421,6 +3425,9 @@
         setText("heatPowerCell", transmittedSolarPowerWm2 === null
           ? "kein Strahlungswert"
           : `${round(transmittedSolarPowerWm2, 1)} W/m2${transmittedSolarPowerW === null ? "" : ` / ${round(transmittedSolarPowerW, 0)} W Fenster`}`);
+        setText("coveredHeatPowerCell", transmittedSolarPowerW === null
+          ? "kein Strahlungswert"
+          : `${round(transmittedSolarPowerW * clamp(open, 0, 100) / 100, 0)} W bei ${open} % offen (lineares Covermodell)`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
             ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(transmittedSolarPowerWm2, 0)} W/m2, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2)`

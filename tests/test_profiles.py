@@ -4,6 +4,7 @@ import unittest
 
 from custom_components.solar_shading.const import (
     CONF_AZIMUTH,
+    CONF_ENTITIES,
     CONF_FACADE_NAME,
     CONF_FACADE_OFFSET,
     CONF_FACADE_PROFILES,
@@ -22,16 +23,53 @@ from custom_components.solar_shading.const import (
     CONF_ROOM_NAME,
     CONF_ROOM_PROFILES,
     CONF_ROOM_TEMPERATURE_ENTITY,
+    CONF_USE_LOCAL_GEOMETRY,
     CONF_USE_LOCAL_HORIZON,
+    CONF_USE_LOCAL_POLICY,
     CONF_WINDOW_OVERRIDES,
+    CONF_WINDOW_WIDTH,
 )
 from custom_components.solar_shading.profiles import (
+    apply_bulk_profile_assignment,
     resolve_profile_options,
     room_facade_key,
 )
 
 
 class ProfileResolutionTests(unittest.TestCase):
+    def test_bulk_assignment_keeps_physical_window_details(self):
+        original = {
+            CONF_ENTITIES: ["cover.a", "cover.b"],
+            CONF_WINDOW_WIDTH: 1.4,
+            CONF_ROOM_TEMPERATURE_ENTITY: "sensor.local_temperature",
+            CONF_USE_LOCAL_GEOMETRY: True,
+            CONF_USE_LOCAL_HORIZON: True,
+            CONF_USE_LOCAL_POLICY: True,
+            CONF_WINDOW_OVERRIDES: {CONF_GLASS_TYPE: "single_clear"},
+        }
+
+        result = apply_bulk_profile_assignment(
+            original,
+            house_profile_entry_id="house-1",
+            floor_id="floor-1",
+            room_id="living",
+            facade_name="east",
+            facade_offset=2,
+        )
+
+        self.assertEqual(result[CONF_ENTITIES], ["cover.a", "cover.b"])
+        self.assertEqual(result[CONF_WINDOW_WIDTH], 1.4)
+        self.assertEqual(result[CONF_HOUSE_PROFILE_ENTRY_ID], "house-1")
+        self.assertEqual(result[CONF_FLOOR_NAME], "floor-1")
+        self.assertEqual(result[CONF_ROOM_NAME], "living")
+        self.assertEqual(result[CONF_FACADE_NAME], "east")
+        self.assertEqual(result[CONF_FACADE_OFFSET], 2)
+        self.assertFalse(result[CONF_USE_LOCAL_GEOMETRY])
+        self.assertFalse(result[CONF_USE_LOCAL_HORIZON])
+        self.assertFalse(result[CONF_USE_LOCAL_POLICY])
+        self.assertEqual(result[CONF_WINDOW_OVERRIDES], {})
+        self.assertNotIn(CONF_ROOM_TEMPERATURE_ENTITY, result)
+
     def test_resolves_all_layers_in_order(self):
         house = {
             CONF_HOUSE_REFERENCE_AZIMUTH: 12,

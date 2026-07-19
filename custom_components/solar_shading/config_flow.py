@@ -16,43 +16,57 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import area_registry, selector
 
 from .const import (
-    CONF_AWNING_ANGLE,
-    CONF_AZIMUTH,
     CONF_AWAY_ENTITY,
     CONF_AWAY_POSITION_OFFSET,
     CONF_AWAY_SCORE_MULTIPLIER,
     CONF_AWAY_THRESHOLD_REDUCTION,
+    CONF_AWNING_ANGLE,
+    CONF_AZIMUTH,
+    CONF_BINARY_CLOSE_POSITION,
+    CONF_BINARY_CLOSE_THRESHOLD,
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
+    CONF_BULK_RESET_LOCAL_OVERRIDES,
+    CONF_BULK_WINDOW_ENTRIES,
     CONF_DEFAULT_HEIGHT,
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
     CONF_DISTANCE,
-    CONF_ENABLE_BLIND_SPOT,
     CONF_ENABLE_AWAY_MODE,
+    CONF_ENABLE_BLIND_SPOT,
+    CONF_ENABLE_HEAT_GAIN_POLICY,
+    CONF_ENABLE_MAX_POSITION,
+    CONF_ENABLE_MIN_POSITION,
     CONF_END_ENTITY,
     CONF_END_TIME,
     CONF_ENTITIES,
+    CONF_ENTRY_TYPE,
     CONF_FACADE_NAME,
     CONF_FACADE_OFFSET,
+    CONF_FACADE_PROFILES,
     CONF_FACADE_REFERENCE_AZIMUTH,
-    CONF_FOV_LEFT,
-    CONF_FOV_RIGHT,
     CONF_FLOOR_NAME,
+    CONF_FLOOR_PROFILES,
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_FORECAST_INFLUENCE_STRENGTH,
     CONF_FORECAST_PREEMPTIVE_START_TIME,
     CONF_FORECAST_VERY_HOT_DAY_THRESHOLD,
+    CONF_FOV_LEFT,
+    CONF_FOV_RIGHT,
     CONF_FULL_CLOSE_POSITION,
     CONF_FULL_CLOSE_THRESHOLD,
     CONF_GLASS_TYPE,
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
-    CONF_MAX_TRANSMITTED_SOLAR_POWER,
+    CONF_HEAT_PROTECTION_CONTROL_MODE,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEIGHT_WIN,
+    CONF_HORIZON_MODE,
     CONF_HORIZON_PROFILE,
+    CONF_HOUSE_DEFAULTS,
+    CONF_HOUSE_PROFILE_ENTRY_ID,
+    CONF_HOUSE_REFERENCE_AZIMUTH,
     CONF_INTERP,
     CONF_INTERP_END,
     CONF_INTERP_LIST,
@@ -66,66 +80,57 @@ from .const import (
     CONF_MANUAL_THRESHOLD,
     CONF_MAX_ELEVATION,
     CONF_MAX_POSITION,
+    CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_MIN_ELEVATION,
+    CONF_MIN_POSITION,
     CONF_MODE,
-    CONF_ENABLE_HEAT_GAIN_POLICY,
+    CONF_NIGHT_END_TIME,
+    CONF_NIGHT_MODE,
+    CONF_NIGHT_START_TIME,
+    CONF_PARTIAL_CLOSE_POSITION,
+    CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_POLICY_PRESET,
+    CONF_PROFILE_ACTION,
+    CONF_PROFILE_DELETE,
+    CONF_PROFILE_NAME,
+    CONF_PROFILE_OVERRIDES,
     CONF_RETURN_SUNSET,
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
-    CONF_ROOM_NAME,
+    CONF_ROOM_FACADE_PROFILES,
     CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
+    CONF_ROOM_NAME,
+    CONF_ROOM_PROFILES,
     CONF_ROOM_TEMPERATURE_ENTITY,
-    CONF_PARTIAL_CLOSE_POSITION,
-    CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SENSOR_TYPE,
     CONF_SHOW_EXPERT_WEIGHTS,
+    CONF_SOLAR_RADIATION_ENTITY,
+    CONF_SOLAR_RADIATION_REFERENCE,
     CONF_START_ENTITY,
     CONF_START_TIME,
     CONF_SUNRISE_OFFSET,
     CONF_SUNSET_OFFSET,
     CONF_SUNSET_POS,
+    CONF_TEMPLATE_ENTRY,
     CONF_TILT_DEPTH,
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
-    CONF_TEMPLATE_ENTRY,
     CONF_USE_FACADE_AZIMUTH,
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
     CONF_USE_FORECAST_MAX_TEMP_TOMORROW,
+    CONF_USE_LOCAL_GEOMETRY,
+    CONF_USE_LOCAL_HORIZON,
+    CONF_USE_LOCAL_POLICY,
     CONF_USE_OPEN_DATA_SOLAR_RADIATION,
+    CONF_WEATHER_ENTITY,
     CONF_WEIGHT_DIRECT_EXPOSURE,
     CONF_WEIGHT_FORECAST_TEMPERATURE,
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
-    CONF_WEATHER_ENTITY,
-    CONF_SOLAR_RADIATION_ENTITY,
-    CONF_SOLAR_RADIATION_REFERENCE,
-    CONF_WINDOW_WIDTH,
-    CONF_BINARY_CLOSE_POSITION,
-    CONF_BINARY_CLOSE_THRESHOLD,
-    CONF_ENTRY_TYPE,
-    CONF_FACADE_PROFILES,
-    CONF_FLOOR_PROFILES,
-    CONF_HEAT_PROTECTION_CONTROL_MODE,
-    CONF_HORIZON_MODE,
-    CONF_HOUSE_DEFAULTS,
-    CONF_HOUSE_PROFILE_ENTRY_ID,
-    CONF_HOUSE_REFERENCE_AZIMUTH,
-    CONF_NIGHT_END_TIME,
-    CONF_NIGHT_MODE,
-    CONF_NIGHT_START_TIME,
-    CONF_PROFILE_ACTION,
-    CONF_PROFILE_DELETE,
-    CONF_PROFILE_NAME,
-    CONF_PROFILE_OVERRIDES,
-    CONF_ROOM_FACADE_PROFILES,
-    CONF_ROOM_PROFILES,
-    CONF_USE_LOCAL_GEOMETRY,
-    CONF_USE_LOCAL_HORIZON,
-    CONF_USE_LOCAL_POLICY,
     CONF_WINDOW_OVERRIDES,
+    CONF_WINDOW_WIDTH,
     DOMAIN,
     ENTRY_TYPE_HOUSE,
     ENTRY_TYPE_OPTIONS,
@@ -136,18 +141,18 @@ from .const import (
     NIGHT_MODE_OPTIONS,
     POLICY_PRESET_OPTIONS,
     SensorType,
-    CONF_MIN_POSITION,
-    CONF_ENABLE_MAX_POSITION,
-    CONF_ENABLE_MIN_POSITION,
-)
-from .profiles import (
-    built_in_house_defaults,
-    default_house_profile_options,
-    room_facade_key,
 )
 from .migration import (
     LEGACY_MAX_TRANSMITTED_SOLAR_POWER,
+)
+from .migration import (
     migrate_retired_options as _migrate_retired_options,
+)
+from .profiles import (
+    apply_bulk_profile_assignment,
+    built_in_house_defaults,
+    default_house_profile_options,
+    room_facade_key,
 )
 
 # DEFAULT_NAME = "Adaptive Cover"
@@ -1735,11 +1740,13 @@ class OptionsFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
         self.current_config: dict = dict(config_entry.data)
+        self._config_entry_id = config_entry.entry_id
         self.options = _migrate_retired_options(dict(config_entry.options))
         self.entry_type = self.current_config.get(CONF_ENTRY_TYPE, ENTRY_TYPE_WINDOW)
         self._editing_profile: str | None = None
         self._selected_floor_id: str | None = None
         self._assignment_values: dict[str, Any] = {}
+        self._bulk_window_entry_ids: list[str] = []
         self.sensor_type: SensorType = (
             self.current_config.get(CONF_SENSOR_TYPE) or SensorType.BLIND
         )
@@ -1758,6 +1765,7 @@ class OptionsFlowHandler(OptionsFlow):
                     "house_floors",
                     "house_rooms",
                     "house_room_facades",
+                    "house_bulk_assignment",
                 ],
             )
 
@@ -1839,6 +1847,86 @@ class OptionsFlowHandler(OptionsFlow):
             data_schema=self.add_suggested_values_to_schema(
                 HOUSE_EXPERT_OPTIONS, self._house_defaults()
             ),
+        )
+
+    async def async_step_house_bulk_assignment(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Select window groups and their Home Assistant floor."""
+        window_choices = _template_entry_options(self.hass)
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_BULK_WINDOW_ENTRIES): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=window_choices,
+                        multiple=True,
+                    )
+                ),
+                vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+            }
+        )
+        if user_input is not None:
+            self._bulk_window_entry_ids = list(
+                user_input[CONF_BULK_WINDOW_ENTRIES]
+            )
+            self._selected_floor_id = user_input[CONF_FLOOR_NAME]
+            return await self.async_step_house_bulk_assignment_details()
+        return self.async_show_form(
+            step_id="house_bulk_assignment",
+            data_schema=schema,
+            errors={} if window_choices else {"base": "no_window_entries"},
+        )
+
+    async def async_step_house_bulk_assignment_details(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Assign the selected window groups to one room and facade."""
+        facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=room_options)
+                ),
+                vol.Optional(CONF_FACADE_NAME): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=facades, custom_value=True)
+                ),
+                vol.Optional(CONF_FACADE_OFFSET, default=0): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=-45,
+                        max=45,
+                        step=1,
+                        mode="box",
+                        unit_of_measurement="°",
+                    )
+                ),
+                vol.Optional(
+                    CONF_BULK_RESET_LOCAL_OVERRIDES, default=True
+                ): selector.BooleanSelector(),
+            }
+        )
+        if user_input is not None:
+            for entry_id in self._bulk_window_entry_ids:
+                entry = self.hass.config_entries.async_get_entry(entry_id)
+                if entry is None or entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
+                    continue
+                updated = apply_bulk_profile_assignment(
+                    dict(entry.options),
+                    house_profile_entry_id=self._config_entry_id,
+                    floor_id=self._selected_floor_id or "",
+                    room_id=user_input[CONF_ROOM_NAME],
+                    facade_name=user_input.get(CONF_FACADE_NAME),
+                    facade_offset=user_input.get(CONF_FACADE_OFFSET, 0),
+                    reset_local_overrides=user_input.get(
+                        CONF_BULK_RESET_LOCAL_OVERRIDES, True
+                    ),
+                )
+                self.hass.config_entries.async_update_entry(entry, options=updated)
+            return await self._update_options()
+        return self.async_show_form(
+            step_id="house_bulk_assignment_details",
+            data_schema=schema,
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
         )
 
     async def async_step_assignment(

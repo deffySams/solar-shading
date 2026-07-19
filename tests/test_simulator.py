@@ -1,7 +1,7 @@
 """Tests for the browser simulator backend bridge."""
 
-from types import SimpleNamespace
 import unittest
+from types import SimpleNamespace
 
 from custom_components.solar_shading.simulator import (
     SolarShadingSimulationView,
@@ -103,6 +103,14 @@ class SimulatorBackendTest(unittest.TestCase):
         self.assertEqual(
             result["attributes"]["heat_protection_activation_reason"],
             "forecast_hot",
+        )
+        attributes = result["attributes"]
+        self.assertAlmostEqual(
+            attributes["solar_power_with_target_cover_w_per_window"],
+            attributes["solar_power_without_cover_w_per_window"]
+            * result["open_position"]
+            / 100,
+            places=2,
         )
 
     def test_simulator_opens_without_direct_sun(self):

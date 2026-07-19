@@ -13,26 +13,31 @@ from homeassistant.helpers.event import (
 )
 
 from .const import (
+    _LOGGER,
     CONF_AWAY_ENTITY,
-    CONF_ENTRY_TYPE,
     CONF_END_ENTITY,
     CONF_ENTITIES,
+    CONF_ENTRY_TYPE,
     CONF_HOUSE_PROFILE_ENTRY_ID,
     CONF_ROOM_TEMPERATURE_ENTITY,
     CONF_SOLAR_RADIATION_ENTITY,
     CONF_WEATHER_ENTITY,
     DOMAIN,
     ENTRY_TYPE_HOUSE,
-    _LOGGER,
 )
 from .coordinator import AdaptiveDataUpdateCoordinator
 from .migration import migrate_retired_options
+from .overview import SolarShadingOverviewView
 from .profiles import resolve_effective_options
 from .simulator import SolarShadingSimulationView
 
 PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.BUTTON]
 CONF_SUN = ["sun.sun"]
-WWW_ASSETS = ("solar_shading_simulator.html", "solar_shading_horizon_preview.html")
+WWW_ASSETS = (
+    "solar_shading_simulator.html",
+    "solar_shading_horizon_preview.html",
+    "solar_shading_overview.html",
+)
 
 
 async def async_initialize_integration(
@@ -60,7 +65,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault("house_profiles", {})
-    _async_register_simulator_api(hass)
+    _async_register_api_views(hass)
     await _async_install_www_assets(hass)
 
     if entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_HOUSE:
@@ -164,9 +169,12 @@ def _install_www_assets(www_path: str) -> None:
         copy2(source, target)
 
 
-def _async_register_simulator_api(hass: HomeAssistant) -> None:
-    """Register the simulator API once."""
-    if hass.data[DOMAIN].get("simulator_api_registered"):
+def _async_register_api_views(hass: HomeAssistant) -> None:
+    """Register the integration API views once."""
+    if hass.data[DOMAIN].get("api_views_registered"):
         return
-    hass.http.register_view(SolarShadingSimulationView)
-    hass.data[DOMAIN]["simulator_api_registered"] = True
+    if not hass.data[DOMAIN].get("simulator_api_registered"):
+        hass.http.register_view(SolarShadingSimulationView)
+        hass.data[DOMAIN]["simulator_api_registered"] = True
+    hass.http.register_view(SolarShadingOverviewView)
+    hass.data[DOMAIN]["api_views_registered"] = True

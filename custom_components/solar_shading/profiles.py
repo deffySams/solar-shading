@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .const import (
     CONF_AWAY_ENTITY,
@@ -316,6 +316,36 @@ class ProfileResolution:
 def room_facade_key(room_id: str, facade_name: str) -> str:
     """Build a stable key for one wall/facade in a room."""
     return f"{room_id}::{facade_name}"
+
+
+def apply_bulk_profile_assignment(
+    window_options: dict[str, Any],
+    *,
+    house_profile_entry_id: str,
+    floor_id: str,
+    room_id: str,
+    facade_name: str | None,
+    facade_offset: float = 0,
+    reset_local_overrides: bool = True,
+) -> dict[str, Any]:
+    """Apply one shared hierarchy assignment without changing cover entities."""
+    updated = dict(window_options)
+    updated[CONF_HOUSE_PROFILE_ENTRY_ID] = house_profile_entry_id
+    updated[CONF_FLOOR_NAME] = floor_id
+    updated[CONF_ROOM_NAME] = room_id
+    updated[CONF_FACADE_OFFSET] = facade_offset
+    if facade_name:
+        updated[CONF_FACADE_NAME] = facade_name
+    else:
+        updated.pop(CONF_FACADE_NAME, None)
+
+    if reset_local_overrides:
+        updated[CONF_USE_LOCAL_GEOMETRY] = False
+        updated[CONF_USE_LOCAL_HORIZON] = False
+        updated[CONF_USE_LOCAL_POLICY] = False
+        updated[CONF_WINDOW_OVERRIDES] = {}
+        updated.pop(CONF_ROOM_TEMPERATURE_ENTITY, None)
+    return updated
 
 
 def _overrides(profile: Any) -> dict[str, Any]:

@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from .calculation import AdaptiveVerticalCover, NormalCoverState
 from .config_context_adapter import ConfigContextAdapter
 from .const import _LOGGER
+from .overview import estimate_power_with_cover
 
 SIMULATOR_API_URL = "/api/solar_shading/simulate"
 
@@ -258,6 +259,9 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
     cover.hass = _SimulationHass(hass, fake_states)
     cover.sun_data = _SimulationSunData(cover.sol_elev > 0, now)
     open_position = int(round(NormalCoverState(cover).get_state()))
+    power_with_target_cover = estimate_power_with_cover(
+        cover.transmitted_solar_power_w, open_position
+    )
     attrs = {
         "local_solar_angle": _round(cover.local_solar_angle, 2),
         "effective_lower_horizon_elevation": _round(cover.effective_lower_horizon_elevation, 2),
@@ -281,6 +285,13 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
             cover.transmitted_solar_power_w_m2, 2
         ),
         "transmitted_solar_power_w": _round(cover.transmitted_solar_power_w, 2),
+        "solar_power_without_cover_w_per_window": _round(
+            cover.transmitted_solar_power_w, 2
+        ),
+        "solar_power_with_target_cover_w_per_window": _round(
+            power_with_target_cover, 2
+        ),
+        "cover_attenuation_model": "linear_open_fraction",
         "heat_power_limit_active": cover.heat_power_limit_active,
         "heat_power_limit_trigger": cover.heat_power_limit_trigger,
         "heat_power_limited_open_position": cover.heat_power_limited_open_position,

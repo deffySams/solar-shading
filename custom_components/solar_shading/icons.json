@@ -14,6 +14,11 @@
         }
       }
     },
+    "sensor": {
+      "window_status": {
+        "default": "mdi:window-shutter-cog"
+      }
+    },
     "switch": {
       "control_toggle": {
         "default": "mdi:toggle-switch-outline",

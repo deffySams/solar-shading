@@ -401,6 +401,7 @@
     "error": {
       "invalid_horizon_profile": "Ungültiges Horizontprofil-JSON.",
       "no_rooms_for_floor": "Diesem Stockwerk sind in Home Assistant keine Räume zugeordnet. Ordne den Raum dort zuerst dem Stockwerk zu.",
+      "no_window_entries": "Es sind keine Solar-Shading-Fenstereinträge für die Zuordnung vorhanden.",
       "window_width_required_for_reveals": "Die Fensterbreite ist erforderlich, sobald Laibungstiefen gesetzt sind.",
       "full_threshold_must_exceed_partial": "Die strenge Hitzeschutzschwelle muss größer oder gleich der ersten Schwelle sein.",
       "full_position_must_exceed_partial": "Die strenge Offenposition muss kleiner oder gleich der ersten Offenposition sein.",
@@ -433,7 +434,8 @@
           "house_facades": "Fassadenprofile",
           "house_floors": "Stockwerksprofile",
           "house_rooms": "Raumprofile",
-          "house_room_facades": "Raumfassadenprofile"
+          "house_room_facades": "Raumfassadenprofile",
+          "house_bulk_assignment": "Mehrere Fenster zuordnen"
         }
       },
       "assignment": {
@@ -581,6 +583,34 @@
         },
         "title": "Hausprofil: Feinabstimmung",
         "description": "Diese Werte legen die normierte Regelmathematik offen. Haus-Presets sind vorzuziehen, solange kein gemessenes Verhalten gezielt korrigiert werden muss."
+      },
+      "house_bulk_assignment": {
+        "data": {
+          "bulk_window_entries": "Fenstergruppen",
+          "floor_name": "Home-Assistant-Stockwerk"
+        },
+        "data_description": {
+          "bulk_window_entries": "Wähle alle vorhandenen Solar-Shading-Einträge, die dieselbe Haus-, Stockwerks-, Raum- und Fassadenzuordnung erhalten sollen. Jeder Eintrag kann bereits ein oder mehrere Cover enthalten.",
+          "floor_name": "Im nächsten Schritt erscheinen nur Home-Assistant-Räume, die diesem Stockwerk zugeordnet sind."
+        },
+        "title": "Mehrere Fenster zuordnen: Auswahl",
+        "description": "Die Profilzuordnung wird gemeinsam geändert. Cover-Entitäten, Fenstermaße und physische Fensterdetails bleiben erhalten."
+      },
+      "house_bulk_assignment_details": {
+        "data": {
+          "room_name": "Home-Assistant-Raum",
+          "facade_name": "Fassadenprofil",
+          "facade_offset": "Azimutkorrektur der Fenster",
+          "bulk_reset_local_overrides": "Geerbte Hausregeln verwenden"
+        },
+        "data_description": {
+          "room_name": "Alle ausgewählten Fenstergruppen werden diesem Raum zugeordnet und erben sein Raumprofil.",
+          "facade_name": "Alle ausgewählten Gruppen erben diese Fassadenausrichtung und dieses Fassadenprofil.",
+          "facade_offset": "Gemeinsame Korrektur relativ zur ausgewählten Fassade. Für parallele Fenster 0 belassen.",
+          "bulk_reset_local_overrides": "Empfohlen: entfernt lokale Geometrie-, Horizont- und Regelschalter sowie lokale Regelabweichungen, damit spätere Änderungen am Hausprofil alle ausgewählten Fenster erreichen. Cover-Entitäten und exakte Fenstermaße bleiben erhalten."
+        },
+        "title": "Mehrere Fenster zuordnen: Raum und Fassade",
+        "description": "Die gewählte Hierarchie wird auf alle Fenstergruppen angewendet. Lokale Ausnahmen können später weiterhin in den Fenstereinstellungen ergänzt werden."
       },
       "house_facades": {
         "data": {

@@ -26,28 +26,24 @@ from homeassistant.core import (
 from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .compat import state_attr
-from .config_context_adapter import ConfigContextAdapter
-from .forecast import extract_daily_forecast_summary
-from .solar_radiation import async_fetch_open_meteo_solar_summary
-from .profiles import resolve_effective_options
-
 from .calculation import (
     AdaptiveHorizontalCover,
     AdaptiveTiltCover,
     AdaptiveVerticalCover,
     NormalCoverState,
 )
+from .compat import state_attr
+from .config_context_adapter import ConfigContextAdapter
 from .const import (
     _LOGGER,
     ATTR_POSITION,
     ATTR_TILT_POSITION,
-    CONF_AWNING_ANGLE,
-    CONF_AZIMUTH,
     CONF_AWAY_ENTITY,
     CONF_AWAY_POSITION_OFFSET,
     CONF_AWAY_SCORE_MULTIPLIER,
     CONF_AWAY_THRESHOLD_REDUCTION,
+    CONF_AWNING_ANGLE,
+    CONF_AZIMUTH,
     CONF_BINARY_CLOSE_POSITION,
     CONF_BINARY_CLOSE_THRESHOLD,
     CONF_BLIND_SPOT_ELEVATION,
@@ -57,8 +53,9 @@ from .const import (
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
     CONF_DISTANCE,
-    CONF_ENABLE_BLIND_SPOT,
     CONF_ENABLE_AWAY_MODE,
+    CONF_ENABLE_BLIND_SPOT,
+    CONF_ENABLE_HEAT_GAIN_POLICY,
     CONF_ENABLE_MAX_POSITION,
     CONF_ENABLE_MIN_POSITION,
     CONF_END_ENTITY,
@@ -67,24 +64,23 @@ from .const import (
     CONF_FACADE_NAME,
     CONF_FACADE_OFFSET,
     CONF_FACADE_REFERENCE_AZIMUTH,
-    CONF_FOV_LEFT,
-    CONF_FOV_RIGHT,
     CONF_FLOOR_NAME,
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_FORECAST_INFLUENCE_STRENGTH,
     CONF_FORECAST_PREEMPTIVE_START_TIME,
     CONF_FORECAST_VERY_HOT_DAY_THRESHOLD,
+    CONF_FOV_LEFT,
+    CONF_FOV_RIGHT,
     CONF_FULL_CLOSE_POSITION,
     CONF_FULL_CLOSE_THRESHOLD,
     CONF_GLASS_TYPE,
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
-    CONF_MAX_TRANSMITTED_SOLAR_POWER,
-    CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEAT_PROTECTION_CONTROL_MODE,
+    CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEIGHT_WIN,
-    CONF_HORIZON_PROFILE,
     CONF_HORIZON_MODE,
+    CONF_HORIZON_PROFILE,
     CONF_INTERP,
     CONF_INTERP_END,
     CONF_INTERP_LIST,
@@ -98,23 +94,25 @@ from .const import (
     CONF_MANUAL_THRESHOLD,
     CONF_MAX_ELEVATION,
     CONF_MAX_POSITION,
+    CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_MIN_ELEVATION,
     CONF_MIN_POSITION,
     CONF_NIGHT_END_TIME,
     CONF_NIGHT_MODE,
     CONF_NIGHT_START_TIME,
-    CONF_ENABLE_HEAT_GAIN_POLICY,
+    CONF_PARTIAL_CLOSE_POSITION,
+    CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_POLICY_PRESET,
     CONF_RETURN_SUNSET,
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
-    CONF_ROOM_NAME,
     CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
+    CONF_ROOM_NAME,
     CONF_ROOM_TEMPERATURE_ENTITY,
-    CONF_PARTIAL_CLOSE_POSITION,
-    CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SHOW_EXPERT_WEIGHTS,
+    CONF_SOLAR_RADIATION_ENTITY,
+    CONF_SOLAR_RADIATION_REFERENCE,
     CONF_START_ENTITY,
     CONF_START_TIME,
     CONF_SUNRISE_OFFSET,
@@ -127,19 +125,25 @@ from .const import (
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
     CONF_USE_FORECAST_MAX_TEMP_TOMORROW,
     CONF_USE_OPEN_DATA_SOLAR_RADIATION,
+    CONF_WEATHER_ENTITY,
     CONF_WEIGHT_DIRECT_EXPOSURE,
     CONF_WEIGHT_FORECAST_TEMPERATURE,
     CONF_WEIGHT_GLAZING,
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
-    CONF_WEATHER_ENTITY,
-    CONF_SOLAR_RADIATION_ENTITY,
-    CONF_SOLAR_RADIATION_REFERENCE,
     CONF_WINDOW_WIDTH,
     DOMAIN,
     LOGGER,
 )
+from .forecast import extract_daily_forecast_summary
 from .helpers import get_datetime_from_str, get_last_updated, get_safe_state
+from .overview import (
+    configuration_warnings,
+    derive_window_status,
+    estimate_power_with_cover,
+)
+from .profiles import resolve_effective_options
+from .solar_radiation import async_fetch_open_meteo_solar_summary
 
 LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
 
@@ -379,9 +383,59 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             self.logger.debug("Sun start time: %s, Sun end time: %s", start, end)
         else:
             start, end = self._sun_start_time, self._sun_end_time
+
+        current_cover_positions = {
+            entity: self._get_current_position(entity) for entity in self.entities
+        }
+        available_positions = [
+            position
+            for position in current_cover_positions.values()
+            if position is not None
+        ]
+        current_position_average = (
+            round(sum(available_positions) / len(available_positions), 2)
+            if available_positions
+            else None
+        )
+        power_without_cover = normal_cover.transmitted_solar_power_w
+        power_density_without_cover = normal_cover.transmitted_solar_power_w_m2
+        power_with_target_cover = estimate_power_with_cover(
+            power_without_cover, state
+        )
+        power_density_with_target_cover = estimate_power_with_cover(
+            power_density_without_cover, state
+        )
+        cover_count = len(self.entities)
+        power_with_actual_cover = (
+            sum(
+                estimate_power_with_cover(power_without_cover, position) or 0.0
+                for position in available_positions
+            )
+            if available_positions and len(available_positions) == cover_count
+            else None
+        )
+        warnings = configuration_warnings(
+            options,
+            entities=self.entities,
+            current_positions=current_cover_positions,
+            solar_radiation_value=normal_cover.solar_radiation_value,
+        )
+        control_enabled = self.control_toggle is not False
+        window_status = derive_window_status(
+            target_position=state,
+            decision_reason=normal_cover.decision_reason,
+            activation_reason=normal_cover.heat_protection_activation_reason,
+            direct_sun_valid=normal_cover.direct_sun_valid,
+            control_enabled=control_enabled,
+            manual_override=self.manager.binary_cover_manual,
+            cover_available=bool(available_positions),
+            configuration_warnings=warnings,
+            full_close_position=normal_cover.effective_full_close_position,
+        )
         return AdaptiveCoverData(
             states={
                 "state": state,
+                "window_status": window_status,
                 "start": start,
                 "end": end,
                 "sun_motion": normal_cover.valid,
@@ -389,6 +443,41 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "manual_list": self.manager.manual_controlled,
             },
             attributes={
+                "control_enabled": control_enabled,
+                "configuration_warnings": warnings,
+                "current_cover_positions": current_cover_positions,
+                "current_cover_position_average": current_position_average,
+                "cover_attenuation_model": "linear_open_fraction",
+                "solar_power_without_cover_w_per_window": (
+                    round(power_without_cover, 2)
+                    if power_without_cover is not None
+                    else None
+                ),
+                "solar_power_without_cover_w_total": (
+                    round(power_without_cover * cover_count, 2)
+                    if power_without_cover is not None
+                    else None
+                ),
+                "solar_power_with_target_cover_w_per_window": (
+                    round(power_with_target_cover, 2)
+                    if power_with_target_cover is not None
+                    else None
+                ),
+                "solar_power_with_target_cover_w_total": (
+                    round(power_with_target_cover * cover_count, 2)
+                    if power_with_target_cover is not None
+                    else None
+                ),
+                "solar_power_with_actual_cover_w_total": (
+                    round(power_with_actual_cover, 2)
+                    if power_with_actual_cover is not None
+                    else None
+                ),
+                "solar_power_with_target_cover_w_m2": (
+                    round(power_density_with_target_cover, 2)
+                    if power_density_with_target_cover is not None
+                    else None
+                ),
                 "house_profile": self.profile_resolution.house_profile_name,
                 "house_profile_entry_id": (
                     self.profile_resolution.house_profile_entry_id

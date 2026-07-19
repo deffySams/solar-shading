@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Solar Shading Fensterkontrolle</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f5f6f7; --surface:#fff; --line:#d6d9dc; --text:#202124; --muted:#646b72; --accent:#1769aa; --ok:#177245; --warn:#a45100; --bad:#b3261e; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header { background:var(--surface); border-bottom:1px solid var(--line); }
+    .bar, main { width:min(1440px,100%); margin:auto; padding:16px 20px; }
+    .bar { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    h1 { margin:0; font-size:22px; font-weight:650; letter-spacing:0; }
+    h2 { margin:0 0 12px; font-size:17px; letter-spacing:0; }
+    button, select, input { min-height:38px; border:1px solid var(--line); border-radius:4px; background:var(--surface); color:var(--text); padding:7px 10px; font:inherit; }
+    button { cursor:pointer; font-weight:600; }
+    button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+    button.icon { width:38px; padding:0; font-size:21px; line-height:1; }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent); outline-offset:1px; }
+    main { display:grid; gap:16px; }
+    .summary { display:grid; grid-template-columns:repeat(6,minmax(120px,1fr)); border:1px solid var(--line); background:var(--surface); }
+    .metric { padding:12px 14px; border-right:1px solid var(--line); min-width:0; }
+    .metric:last-child { border-right:0; }
+    .metric span { display:block; color:var(--muted); font-size:12px; }
+    .metric strong { display:block; margin-top:3px; font-size:20px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .filters { display:grid; grid-template-columns:minmax(200px,2fr) repeat(4,minmax(130px,1fr)) auto; gap:8px; align-items:center; }
+    .check { display:flex; align-items:center; gap:7px; white-space:nowrap; }
+    .check input { min-height:auto; width:18px; height:18px; }
+    .table-wrap { overflow:auto; border:1px solid var(--line); background:var(--surface); }
+    table { width:100%; border-collapse:collapse; min-width:1050px; }
+    th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; }
+    th { position:sticky; top:0; background:var(--surface); color:var(--muted); font-size:12px; font-weight:650; z-index:1; }
+    tbody tr { cursor:pointer; }
+    tbody tr:hover, tbody tr:focus { background:color-mix(in srgb,var(--accent) 7%,var(--surface)); }
+    td.num { text-align:right; font-variant-numeric:tabular-nums; }
+    .status { display:inline-block; border-radius:3px; padding:3px 7px; background:#e8f3ed; color:var(--ok); font-size:12px; font-weight:650; white-space:nowrap; }
+    .status.warn { background:#fff1df; color:var(--warn); }
+    .status.bad { background:#fce8e6; color:var(--bad); }
+    .muted { color:var(--muted); }
+    .empty { padding:32px; text-align:center; color:var(--muted); }
+    dialog { width:min(900px,calc(100% - 24px)); max-height:calc(100vh - 32px); padding:0; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--text); }
+    dialog::backdrop { background:rgba(0,0,0,.42); }
+    .dialog-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:15px 18px; background:var(--surface); border-bottom:1px solid var(--line); }
+    .dialog-body { padding:18px; display:grid; gap:20px; }
+    .details { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); }
+    .details > div { padding:10px 12px; background:var(--surface); min-width:0; }
+    .details span { display:block; color:var(--muted); font-size:12px; }
+    .details strong { display:block; margin-top:3px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .formula { border-left:4px solid var(--accent); padding:10px 12px; background:color-mix(in srgb,var(--accent) 6%,var(--surface)); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    ul { margin:0; padding-left:20px; }
+    code { overflow-wrap:anywhere; }
+    .error { padding:12px 14px; color:var(--bad); background:#fce8e6; border:1px solid #f3b8b3; }
+    @media (prefers-color-scheme:dark) { :root { --bg:#111416; --surface:#1b1f22; --line:#3a4045; --text:#edf0f2; --muted:#adb5bc; --accent:#63a9df; --ok:#70d2a1; --warn:#ffb769; --bad:#ff8a82; } .status { background:#17382a; } .status.warn { background:#422a10; } .status.bad,.error { background:#451d1b; } }
+    @media (max-width:900px) { .summary { grid-template-columns:repeat(3,1fr); } .metric:nth-child(3) { border-right:0; } .metric:nth-child(-n+3) { border-bottom:1px solid var(--line); } .filters { grid-template-columns:1fr 1fr; } .filters input:first-child { grid-column:1/-1; } .details { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:560px) { .bar,main { padding:12px; } h1 { font-size:18px; } .summary { grid-template-columns:1fr 1fr; } .metric { border-bottom:1px solid var(--line); } .metric:nth-child(2n) { border-right:0; } .metric:nth-last-child(-n+2) { border-bottom:0; } .filters { grid-template-columns:1fr; } .filters input:first-child { grid-column:auto; } .details { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header><div class="bar"><h1>Solar Shading Fensterkontrolle</h1><button id="refresh" class="primary" type="button">Aktualisieren</button></div></header>
+  <main>
+    <div id="error" class="error" hidden></div>
+    <section class="summary" aria-label="Zusammenfassung">
+      <div class="metric"><span>Fenstergruppen</span><strong id="sum-windows">-</strong></div>
+      <div class="metric"><span>Cover</span><strong id="sum-covers">-</strong></div>
+      <div class="metric"><span>Hinweise</span><strong id="sum-warnings">-</strong></div>
+      <div class="metric"><span>Ohne Cover</span><strong id="sum-open">-</strong></div>
+      <div class="metric"><span>Mit Zielposition</span><strong id="sum-target">-</strong></div>
+      <div class="metric"><span>Mit Istposition</span><strong id="sum-actual">-</strong></div>
+    </section>
+    <section class="filters" aria-label="Filter">
+      <input id="search" type="search" placeholder="Fenster, Raum oder Cover suchen">
+      <select id="floor" aria-label="Stockwerk"><option value="">Alle Stockwerke</option></select>
+      <select id="room" aria-label="Raum"><option value="">Alle R&auml;ume</option></select>
+      <select id="facade" aria-label="Fassade"><option value="">Alle Fassaden</option></select>
+      <select id="status" aria-label="Status"><option value="">Alle Status</option></select>
+      <label class="check"><input id="issues" type="checkbox">Nur Hinweise</label>
+    </section>
+    <section class="table-wrap">
+      <table>
+        <thead><tr><th>Fenstergruppe</th><th>Stockwerk / Raum</th><th>Fassade</th><th>Status</th><th>Cover</th><th>Ziel offen</th><th>Ist offen</th><th>Ohne Cover</th><th>Mit Ziel</th><th>Mit Ist</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" hidden>Keine passenden Fenstergruppen.</div>
+    </section>
+  </main>
+  <dialog id="detail"><div class="dialog-head"><h2 id="detail-title"></h2><button id="close" class="icon" type="button" aria-label="Schlie&szlig;en" title="Schlie&szlig;en">&times;</button></div><div id="detail-body" class="dialog-body"></div></dialog>
+  <script>
+    const labels={configuration_incomplete:'Einrichtung unvollst&auml;ndig',cover_unavailable:'Cover nicht verf&uuml;gbar',control_disabled:'Steuerung aus',manual_override:'Manuelle &Uuml;bersteuerung',night_position:'Nachtposition',cold_lockout:'K&auml;ltesperre',no_direct_sun:'Keine direkte Sonne',heat_protection_inactive:'Hitzeschutz inaktiv',binary_shading:'Bin&auml;rer Hitzeschutz',power_limited:'Leistungsbegrenzung',strong_shading:'Starker Hitzeschutz',partial_shading:'Teilweiser Hitzeschutz',monitoring:'Beobachtung'};
+    const warningLabels={no_cover_entities:'Keine Cover zugeordnet',covers_unavailable:'Alle Cover nicht verf&uuml;gbar',some_covers_unavailable:'Einige Cover nicht verf&uuml;gbar',missing_house_profile:'Kein Hausprofil zugeordnet',missing_floor:'Kein Stockwerk zugeordnet',missing_room:'Kein Raum zugeordnet',missing_facade:'Keine Fassade zugeordnet',no_room_temperature_sensor:'Kein Raumtemperatursensor geerbt',clear_horizon_assumed:'Freier Horizont wird angenommen',missing_window_dimensions:'Fensterma&szlig;e fehlen',no_current_solar_radiation:'Keine aktuelle Sonnenstrahlung'};
+    const state={windows:[]};
+    const $=id=>document.getElementById(id);
+    const esc=value=>String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    const watts=value=>value==null?'n/v':`${Number(value).toLocaleString('de-DE',{maximumFractionDigits:1})} W`;
+    const pct=value=>value==null?'n/v':`${Number(value).toLocaleString('de-DE',{maximumFractionDigits:1})} %`;
+    function token(){try{return JSON.parse(localStorage.getItem('hassTokens')||'{}').access_token||''}catch{return''}}
+    function tone(window){if(['configuration_incomplete','cover_unavailable'].includes(window.status))return'bad';if(window.warnings.length||['manual_override','control_disabled'].includes(window.status))return'warn';return''}
+    function optionValues(id,key,allLabel){const el=$(id),current=el.value,values=[...new Set(state.windows.map(w=>w[key]).filter(Boolean))].sort();el.innerHTML=`<option value="">${allLabel}</option>`+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');el.value=values.includes(current)?current:''}
+    function render(){optionValues('floor','floor','Alle Stockwerke');optionValues('room','room','Alle R&auml;ume');optionValues('facade','facade','Alle Fassaden');const status=$('status'),selected=status.value,statuses=[...new Set(state.windows.map(w=>w.status).filter(Boolean))].sort();status.innerHTML='<option value="">Alle Status</option>'+statuses.map(v=>`<option value="${esc(v)}">${labels[v]||esc(v)}</option>`).join('');status.value=statuses.includes(selected)?selected:'';renderRows()}
+    function renderRows(){const q=$('search').value.trim().toLowerCase(),filters=['floor','room','facade','status'];const windows=state.windows.filter(w=>!filters.some(k=>$(k).value&&w[k]!==$(k).value)).filter(w=>!$('issues').checked||w.warnings.length).filter(w=>!q||JSON.stringify(w).toLowerCase().includes(q));$('rows').innerHTML=windows.map(w=>`<tr tabindex="0" data-id="${esc(w.entry_id)}"><td><strong>${esc(w.name)}</strong><br><span class="muted">${esc(w.house_profile||'Kein Hausprofil')}</span></td><td>${esc(w.floor||'-')} / ${esc(w.room||'-')}</td><td>${esc(w.facade||'-')}</td><td><span class="status ${tone(w)}">${labels[w.status]||esc(w.status)}</span></td><td>${w.covers.length}</td><td class="num">${pct(w.target_open_position)}</td><td class="num">${pct(w.actual_open_position)}</td><td class="num">${watts(w.solar_power_without_cover_w_total)}</td><td class="num">${watts(w.solar_power_with_target_cover_w_total)}</td><td class="num">${watts(w.solar_power_with_actual_cover_w_total)}</td></tr>`).join('');$('empty').hidden=windows.length>0;document.querySelectorAll('tbody tr').forEach(row=>{const open=()=>showDetail(state.windows.find(w=>w.entry_id===row.dataset.id));row.onclick=open;row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}})}
+    function showDetail(w){$('detail-title').textContent=w.name;const coverList=w.covers.length?w.covers.map(c=>`<li><code>${esc(c.entity_id)}</code>: ${pct(c.open_position)}${c.available?'':' (nicht verf&uuml;gbar)'}</li>`).join(''):'<li>Keine Cover zugeordnet</li>';const warnings=w.warnings.length?w.warnings.map(x=>`<li>${warningLabels[x]||esc(x)}</li>`).join(''):'<li>Keine</li>';const trace=(w.decision_trace||[]).map(x=>`<li><code>${esc(JSON.stringify(x))}</code></li>`).join('')||'<li>Keine Daten</li>';$('detail-body').innerHTML=`<div class="details"><div><span>Status</span><strong>${labels[w.status]||esc(w.status)}</strong></div><div><span>Entscheidung</span><strong>${esc(w.decision_reason||'-')}</strong></div><div><span>Aktivierung</span><strong>${esc(w.activation_reason||'-')}</strong></div><div><span>Zielposition</span><strong>${pct(w.target_open_position)}</strong></div><div><span>Mittlere Istposition</span><strong>${pct(w.actual_open_position)}</strong></div><div><span>Einstrahlung</span><strong>${w.solar_radiation_value_w_m2==null?'n/v':esc(w.solar_radiation_value_w_m2)+' W/m&sup2;'}</strong></div><div><span>Ohne Cover pro Fenster</span><strong>${watts(w.solar_power_without_cover_w_per_window)}</strong></div><div><span>Ohne Cover gesamt</span><strong>${watts(w.solar_power_without_cover_w_total)}</strong></div><div><span>Mit Ziel gesamt</span><strong>${watts(w.solar_power_with_target_cover_w_total)}</strong></div><div><span>Mit Ist gesamt</span><strong>${watts(w.solar_power_with_actual_cover_w_total)}</strong></div><div><span>Raumtemperatur</span><strong>${w.room_temperature==null?'n/v':esc(w.room_temperature)+' &deg;C'}</strong></div><div><span>Temperaturschwelle</span><strong>${w.room_temperature_threshold==null?'n/v':esc(w.room_temperature_threshold)+' &deg;C'}</strong></div></div><div><h2>Leistungsrechnung</h2><div class="formula">P_ohne = Einstrahlung &times; Geometrie &times; Glastransmission &times; Fensterfl&auml;che<br>P_mit = P_ohne &times; &Ouml;ffnungsposition / 100<br>Modell: ${esc(w.cover_attenuation_model||'n/v')}</div></div><div><h2>Cover</h2><ul>${coverList}</ul></div><div><h2>Konfigurationshinweise</h2><ul>${warnings}</ul></div><div><h2>Vererbung</h2><div class="formula">${esc((w.configuration_layers||[]).join(' &gt; ')||'Keine Profilschichten')}</div></div><div><h2>Entscheidungsweg</h2><ul>${trace}</ul></div>`;$('detail').showModal()}
+    async function load(){try{$('error').hidden=true;const headers=token()?{Authorization:`Bearer ${token()}`}:{},response=await fetch('/api/solar_shading/overview',{headers});if(!response.ok)throw new Error(`API ${response.status}`);const data=await response.json();state.windows=data.windows||[];const s=data.summary||{};$('sum-windows').textContent=s.window_groups??0;$('sum-covers').textContent=s.covers??0;$('sum-warnings').textContent=s.warnings??0;$('sum-open').textContent=watts(s.solar_power_without_cover_w);$('sum-target').textContent=watts(s.solar_power_with_target_cover_w);$('sum-actual').textContent=watts(s.solar_power_with_actual_cover_w);render()}catch(error){$('error').textContent=`Daten konnten nicht geladen werden: ${error.message}`;$('error').hidden=false}}
+    $('refresh').onclick=load;$('close').onclick=()=>$('detail').close();['search','floor','room','facade','status','issues'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',renderRows));load();setInterval(load,60000);
+  </script>
+</body>
+</html>

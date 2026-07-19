@@ -401,6 +401,7 @@
     "error": {
       "invalid_horizon_profile": "Invalid horizon profile JSON.",
       "no_rooms_for_floor": "No Home Assistant rooms are assigned to this floor. Assign the room to the floor in Home Assistant first.",
+      "no_window_entries": "No Solar Shading window entries are available for assignment.",
       "window_width_required_for_reveals": "Window width is required when reveal depths are set.",
       "full_threshold_must_exceed_partial": "The strict heat-protection threshold must be greater than or equal to the partial threshold.",
       "full_position_must_exceed_partial": "The strict open target must be lower than or equal to the partial open target.",
@@ -433,7 +434,8 @@
           "house_facades": "Facade profiles",
           "house_floors": "Floor profiles",
           "house_rooms": "Room profiles",
-          "house_room_facades": "Room-facade profiles"
+          "house_room_facades": "Room-facade profiles",
+          "house_bulk_assignment": "Assign multiple windows"
         }
       },
       "assignment": {
@@ -581,6 +583,34 @@
         },
         "title": "House profile: expert tuning",
         "description": "These values expose the normalized policy mathematics. House presets are preferable unless a measured behavior needs deliberate correction."
+      },
+      "house_bulk_assignment": {
+        "data": {
+          "bulk_window_entries": "Window groups",
+          "floor_name": "Home Assistant floor"
+        },
+        "data_description": {
+          "bulk_window_entries": "Select every existing Solar Shading entry that should receive the same house, floor, room and facade assignment. Each entry may already contain one or more covers.",
+          "floor_name": "The next step lists only Home Assistant rooms assigned to this floor."
+        },
+        "title": "Assign multiple windows: selection",
+        "description": "This changes profile assignments in one operation. Cover entities, window dimensions and physical window details remain unchanged."
+      },
+      "house_bulk_assignment_details": {
+        "data": {
+          "room_name": "Home Assistant room",
+          "facade_name": "Facade profile",
+          "facade_offset": "Window azimuth correction",
+          "bulk_reset_local_overrides": "Use inherited house rules"
+        },
+        "data_description": {
+          "room_name": "All selected window groups are assigned to this room and inherit its room profile.",
+          "facade_name": "All selected groups inherit this facade orientation and facade profile.",
+          "facade_offset": "Shared correction relative to the selected facade. Leave 0 for parallel windows.",
+          "bulk_reset_local_overrides": "Recommended: removes local geometry, horizon and policy switches plus local rule overrides, so later house-profile changes reach every selected window. Cover entities and exact window dimensions are retained."
+        },
+        "title": "Assign multiple windows: room and facade",
+        "description": "The selected hierarchy is applied to all window groups. Local exceptions can still be added later in each window's detailed settings."
       },
       "house_facades": {
         "data": {
