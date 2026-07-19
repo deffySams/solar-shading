@@ -434,18 +434,27 @@
         "title": "Range Adjustment",
         "description": "Adjust the values at which your Cover effectively opens or closes. Ideal for Covers that don't fully open at 0% or close at 100%. \n The first two sliders are for a 2 point adjustment, the list options are for a multiple point adjustment"
       }
+    },
+    "error": {
+      "invalid_horizon_profile": "Invalid horizon profile JSON.",
+      "no_rooms_for_floor": "No Home Assistant rooms are assigned to this floor. Assign the room to the floor in Home Assistant first.",
+      "window_width_required_for_reveals": "Window width is required when reveal depths are set.",
+      "full_threshold_must_exceed_partial": "The strict heat-protection threshold must be greater than or equal to the partial threshold.",
+      "full_position_must_exceed_partial": "The strict open target must be lower than or equal to the partial open target.",
+      "full_open_position_must_be_lower": "The strict open target must be lower than or equal to the partial open target.",
+      "away_entity_required": "An away entity must be selected when away-from-home mode is enabled."
     }
   },
-  "error": {
-    "invalid_horizon_profile": "Invalid horizon profile JSON.",
-    "no_rooms_for_floor": "No Home Assistant rooms are assigned to this floor. Assign the room to the floor in Home Assistant first.",
-    "window_width_required_for_reveals": "Window width is required when reveal depths are set.",
-    "full_threshold_must_exceed_partial": "The strict heat-protection threshold must be greater than or equal to the partial threshold.",
-    "full_position_must_exceed_partial": "The strict open target must be lower than or equal to the partial open target.",
-    "full_open_position_must_be_lower": "The strict open target must be lower than or equal to the partial open target.",
-    "away_entity_required": "An away entity must be selected when away-from-home mode is enabled."
-  },
   "options": {
+    "error": {
+      "invalid_horizon_profile": "Invalid horizon profile JSON.",
+      "no_rooms_for_floor": "No Home Assistant rooms are assigned to this floor. Assign the room to the floor in Home Assistant first.",
+      "window_width_required_for_reveals": "Window width is required when reveal depths are set.",
+      "full_threshold_must_exceed_partial": "The strict heat-protection threshold must be greater than or equal to the partial threshold.",
+      "full_position_must_exceed_partial": "The strict open target must be lower than or equal to the partial open target.",
+      "full_open_position_must_be_lower": "The strict open target must be lower than or equal to the partial open target.",
+      "away_entity_required": "An away entity must be selected when away-from-home mode is enabled."
+    },
     "step": {
       "init": {
         "menu_options": {

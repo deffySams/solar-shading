@@ -434,18 +434,27 @@
         "title": "Bereichsanpassung",
         "description": "Passen Sie die Werte an, bei denen Ihre Abdeckung effektiv Ã¶ffnet oder schlieÃŸt. Ideal fÃ¼r Abdeckungen, die nicht vollstÃ¤ndig bei 0% Ã¶ffnen oder bei 100% schlieÃŸen. \n Die ersten beiden Schieberegler sind fÃ¼r eine 2-Punkte-Anpassung, die Listenauswahl ist fÃ¼r eine Mehrpunkt-Anpassung."
       }
+    },
+    "error": {
+      "invalid_horizon_profile": "Ungültiges Horizontprofil-JSON.",
+      "no_rooms_for_floor": "Diesem Stockwerk sind in Home Assistant keine Räume zugeordnet. Ordne den Raum dort zuerst dem Stockwerk zu.",
+      "window_width_required_for_reveals": "Die Fensterbreite ist erforderlich, sobald Laibungstiefen gesetzt sind.",
+      "full_threshold_must_exceed_partial": "Die strenge Hitzeschutzschwelle muss größer oder gleich der ersten Schwelle sein.",
+      "full_position_must_exceed_partial": "Die strenge Offenposition muss kleiner oder gleich der ersten Offenposition sein.",
+      "full_open_position_must_be_lower": "Die strenge Offenposition muss kleiner oder gleich der ersten Offenposition sein.",
+      "away_entity_required": "Für den Abwesenheitsmodus muss eine Abwesenheitsentität gewählt werden."
     }
   },
-  "error": {
-    "invalid_horizon_profile": "Ungueltiges Horizontprofil-JSON.",
-    "no_rooms_for_floor": "Diesem Stockwerk sind in Home Assistant keine Räume zugeordnet. Ordne den Raum dort zuerst dem Stockwerk zu.",
-    "window_width_required_for_reveals": "Fensterbreite ist erforderlich, sobald Laibungstiefen gesetzt sind.",
-    "full_threshold_must_exceed_partial": "Die strenge Waermeschutz-Schwelle muss groesser oder gleich der Teil-Schwelle sein.",
-    "full_position_must_exceed_partial": "Das strenge Offen-Ziel muss kleiner oder gleich dem Teil-Offen-Ziel sein.",
-    "full_open_position_must_be_lower": "Das strenge Offen-Ziel muss kleiner oder gleich dem Teil-Offen-Ziel sein.",
-    "away_entity_required": "F?r den Abwesenheitsmodus muss eine Abwesenheits-Entit?t gew?hlt werden."
-  },
   "options": {
+    "error": {
+      "invalid_horizon_profile": "Ungültiges Horizontprofil-JSON.",
+      "no_rooms_for_floor": "Diesem Stockwerk sind in Home Assistant keine Räume zugeordnet. Ordne den Raum dort zuerst dem Stockwerk zu.",
+      "window_width_required_for_reveals": "Die Fensterbreite ist erforderlich, sobald Laibungstiefen gesetzt sind.",
+      "full_threshold_must_exceed_partial": "Die strenge Hitzeschutzschwelle muss größer oder gleich der ersten Schwelle sein.",
+      "full_position_must_exceed_partial": "Die strenge Offenposition muss kleiner oder gleich der ersten Offenposition sein.",
+      "full_open_position_must_be_lower": "Die strenge Offenposition muss kleiner oder gleich der ersten Offenposition sein.",
+      "away_entity_required": "Für den Abwesenheitsmodus muss eine Abwesenheitsentität gewählt werden."
+    },
     "step": {
       "init": {
         "menu_options": {
