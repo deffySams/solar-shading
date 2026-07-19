@@ -456,7 +456,9 @@
           "policy": "Gewichte & Schwellen bearbeiten",
           "blind_spot": "Blindenbereich einrichten",
           "interp": "Bereichsanpassung",
-          "house_defaults": "Hausprofil: Regeln und Standardwerte",
+          "house_setup": "Hausprofil: Achse, Fenster und Geometrie",
+          "house_night": "Hausprofil: Morgen und Abend",
+          "house_heat": "Hausprofil: Hitzeschutz-Regeln",
           "house_expert": "Hausprofil: Feinabstimmung",
           "house_facades": "Fassadenprofile",
           "house_floors": "Stockwerksprofile",
@@ -583,6 +585,108 @@
         "title": "Hausprofil: Regeln und Standardwerte",
         "description": "Alle verknüpften Fenster erben diese Werte, solange ein feineres Profil sie nicht ausdrücklich überschreibt."
       },
+      "house_setup": {
+        "data": {
+          "house_reference_azimuth": "Azimut der Referenzfassade",
+          "glass_type": "Standardverglasung",
+          "cover_location": "Standard-Montageort des Sonnenschutzes",
+          "fov_left": "Standard-Sichtfeld links",
+          "fov_right": "Standard-Sichtfeld rechts",
+          "reveal_left_depth": "Standard-Laibung links",
+          "reveal_right_depth": "Standard-Laibung rechts",
+          "reveal_top_depth": "Standard-Laibung oben",
+          "horizon_mode": "Winkelbezug des Horizonts",
+          "horizon_profile": "Standard-Horizontprofil",
+          "default_percentage": "Standardposition am Tag (% offen)"
+        },
+        "data_description": {
+          "house_reference_azimuth": "Kompass-Azimut der Referenzfassade. Wirksamer Fensterazimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
+          "glass_type": "Standard für Reflexion und Transmission aller Fenster ohne lokale Abweichung.",
+          "cover_location": "Außenliegender Sonnenschutz hält Wärme wirksamer außerhalb des Raums als innenliegender.",
+          "fov_left": "Maximal sichtbarer Winkel links von der Fensternormalen.",
+          "fov_right": "Maximal sichtbarer Winkel rechts von der Fensternormalen.",
+          "reveal_left_depth": "Standardtiefe der linken Laibung in Metern.",
+          "reveal_right_depth": "Standardtiefe der rechten Laibung in Metern.",
+          "reveal_top_depth": "Standardtiefe der oberen Laibung in Metern.",
+          "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+          "horizon_profile": "Optionaler JSON-Horizont. Leer bedeutet freie Sicht, solange kein feineres Profil abweicht.",
+          "default_percentage": "Normale Tagesposition ohne strengere Regel. 100 % bedeutet vollständig offen."
+        },
+        "title": "Hausprofil: Achse, Fenster und Geometrie",
+        "description": "Diese baulichen Standardwerte werden von allen verknüpften Fenstern geerbt."
+      },
+      "house_night": {
+        "data": {
+          "night_evening_mode": "Abendgrenze",
+          "night_start_time": "Feste Schließzeit am Abend",
+          "sunset_offset": "Minuten nach Sonnenuntergang",
+          "night_evening_earliest_time": "Abends nicht früher als",
+          "night_evening_latest_time": "Abends nicht später als",
+          "night_morning_mode": "Morgengrenze",
+          "night_end_time": "Feste Öffnungszeit am Morgen",
+          "sunrise_offset": "Minuten nach Sonnenaufgang",
+          "night_morning_earliest_time": "Morgens nicht früher als",
+          "night_morning_latest_time": "Morgens nicht später als",
+          "sunset_position": "Nachtposition (% offen)"
+        },
+        "data_description": {
+          "night_evening_mode": "Feste Uhrzeit oder Sonnenuntergang plus Versatz.",
+          "night_start_time": "Wird nur bei fester Abendgrenze verwendet.",
+          "sunset_offset": "Beispiel: 60 aktiviert die Nachtposition eine Stunde nach Sonnenuntergang.",
+          "night_evening_earliest_time": "Optionale früheste Grenze bei Sonnenführung.",
+          "night_evening_latest_time": "Optionale späteste Grenze bei Sonnenführung.",
+          "night_morning_mode": "Feste Uhrzeit oder Sonnenaufgang plus Versatz.",
+          "night_end_time": "Wird nur bei fester Morgengrenze verwendet.",
+          "sunrise_offset": "Positive Werte halten die Nachtposition nach Sonnenaufgang länger aktiv.",
+          "night_morning_earliest_time": "Optionale früheste Öffnungsgrenze.",
+          "night_morning_latest_time": "Optionale späteste Öffnungsgrenze.",
+          "sunset_position": "Position außerhalb des Tagesintervalls; 100 % bleibt offen."
+        },
+        "title": "Hausprofil: Morgen und Abend",
+        "description": "Morgen- und Abendgrenze werden unabhängig eingestellt."
+      },
+      "house_heat": {
+        "data": {
+          "weather_entity": "Quelle der Temperaturprognose",
+          "use_forecast_max_temp_today": "Heutige Maximaltemperatur verwenden",
+          "use_forecast_max_temp_tomorrow": "Morgige Maximaltemperatur verwenden",
+          "use_open_data_solar_radiation": "Solarstrahlung von Open-Meteo verwenden",
+          "solar_radiation_entity": "Lokaler Solarstrahlungssensor",
+          "forecast_hot_day_threshold": "Heißer Tag ab Prognosetemperatur",
+          "forecast_very_hot_day_threshold": "Sehr heißer Tag ab Prognosetemperatur",
+          "forecast_preemptive_start_time": "Frühester prognosebasierter Eingriff",
+          "room_heat_protection_threshold": "Hitzeschutz sofort ab Raumtemperatur",
+          "policy_preset": "Hitzeschutz-Preset",
+          "heat_protection_control_mode": "Hitzeschutz-Verhalten",
+          "binary_close_threshold_w_m2": "Fest schließen ab (W/m² durch Glas)",
+          "binary_close_position": "Feste Zielposition (% offen)",
+          "heat_power_limit_enabled": "Durchgelassene Solarleistung begrenzen",
+          "max_transmitted_solar_power_w_m2": "Maximal durchgelassene Solarleistung (W/m² Glas)",
+          "enable_away_mode": "Bei Abwesenheit strenger reagieren",
+          "away_entity": "Abwesenheitsentität"
+        },
+        "data_description": {
+          "weather_entity": "Nur für Außentemperatur und Maximaltemperaturen heute und morgen.",
+          "use_forecast_max_temp_today": "Gibt Hitzeschutz ab der Heiß-Tag-Schwelle frei.",
+          "use_forecast_max_temp_tomorrow": "Verstärkt eine aktive Regelung, aktiviert sie heute aber nicht allein.",
+          "use_open_data_solar_radiation": "Nutzt Open-Meteo-Strahlung; ein lokaler Sensor hat für den Istwert Vorrang.",
+          "solar_radiation_entity": "Optionaler Istwert der direkten Strahlung in W/m².",
+          "forecast_hot_day_threshold": "Ab dieser Prognosetemperatur darf Hitzeschutz reagieren.",
+          "forecast_very_hot_day_threshold": "Ab dieser Prognosetemperatur gilt der stärkste Einfluss.",
+          "forecast_preemptive_start_time": "Vor dieser Uhrzeit sind rein prognosebasierte Eingriffe gesperrt.",
+          "room_heat_protection_threshold": "Ein Raumtemperatursensor gibt ab diesem Messwert Hitzeschutz sofort frei.",
+          "policy_preset": "Gemeinsames Hitzeschutzverhalten des Hauses.",
+          "heat_protection_control_mode": "Stufenlos berechnet variable Ziele; binär fährt nach Überschreiten der Schwelle ein festes Ziel.",
+          "binary_close_threshold_w_m2": "Durch Glas gelangende Solarleistung nach Geometrie, Einfallswinkel und Transmission.",
+          "binary_close_position": "Automatisches Ziel nach Überschreiten der Binärschwelle.",
+          "heat_power_limit_enabled": "Begrenzt im stufenlosen Modus die geschätzte raumseitige Solarleistung.",
+          "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung durch einen Quadratmeter Glas.",
+          "enable_away_mode": "Verwendet bei gemeldeter Abwesenheit strengere Ziele.",
+          "away_entity": "Quelle zur Erkennung der Abwesenheit."
+        },
+        "title": "Hausprofil: Hitzeschutz-Regeln",
+        "description": "Diese Regeln gelten im Haus, solange Raum oder Fenster sie nicht gezielt überschreiben."
+      },
       "house_expert": {
         "data": {
           "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung für starke Sonne (W/m²)",
@@ -642,12 +746,24 @@
       "house_bulk_assignment_details": {
         "data": {
           "room_name": "Home-Assistant-Raum",
-          "facade_name": "Raumfassade",
+          "facade_name": "Raumfassade"
+        },
+        "data_description": {
+          "room_name": "Alle ausgewählten Fenstergruppen werden diesem Raum zugeordnet.",
+          "facade_name": "Vorhandene Fassade auswählen oder eine neue Bezeichnung eingeben."
+        },
+        "title": "Fenster & Bereiche: Raum und Fassade wählen",
+        "description": "Im nächsten Schritt werden vorhandene Regeln und Geometriewerte geladen."
+      },
+      "house_bulk_assignment_settings": {
+        "data": {
           "bulk_facade_rotation": "Fassadendrehung zur Referenzfassade",
           "facade_offset": "Fensterkorrektur zur Fassade",
           "room_temperature_entity": "Raumtemperaturquelle",
           "has_additional_daylight_windows": "Raum erhält Tageslicht von weiteren Fassaden",
-          "policy_preset": "Hitzeschutzprofil dieser Raumfassade",
+          "bulk_room_policy_preset": "Hitzeschutzprofil des Raums",
+          "bulk_room_facade_policy_preset": "Abweichendes Profil dieser Raumfassade",
+          "bulk_override_room_facade_geometry": "Eigene Geometrie für diese Raumfassade",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Horizont dieser Raumfassade",
           "reveal_left_depth": "Gemeinsame Laibungstiefe links",
@@ -658,13 +774,13 @@
           "bulk_reset_local_overrides": "Geerbte Hausregeln verwenden"
         },
         "data_description": {
-          "room_name": "Alle ausgewählten Fenstergruppen werden diesem Raum zugeordnet und erben sein Raumprofil.",
-          "facade_name": "Benenne diese Wand, zum Beispiel Ost, Innenhof oder Garten. Ein vorhandener Name aktualisiert dasselbe Fassadenprofil.",
           "bulk_facade_rotation": "Vorzeichenbehaftete Drehung zur Haus-Referenzfassade. Wirksamer Azimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
           "facade_offset": "Korrektur der gewählten Fenster relativ zu dieser Fassade. Für parallele Fenster 0 belassen.",
           "room_temperature_entity": "Optionaler Sensor oder Climate-Entität für den Raum. Damit kann der Haus-Komfortschwellwert den Hitzeschutz aktivieren.",
           "has_additional_daylight_windows": "Aktivieren, wenn der Raum zusätzlich über Fenster mit anderer Ausrichtung Tageslicht erhält.",
-          "policy_preset": "Gemeinsames Verhalten dieser Raumfassade. Es überschreibt das Hausprofil nur auf dieser Ebene.",
+          "bulk_room_policy_preset": "Gilt für alle Fassaden und Fenster dieses Raums. Vererben nutzt die übergeordnete Hausregel.",
+          "bulk_room_facade_policy_preset": "Optionale Ausnahme nur für diese Wand. Vererben belässt das Raumprofil.",
+          "bulk_override_room_facade_geometry": "Nur aktivieren, wenn diese Raumfassade eigene Laibungen, Sichtfelder oder einen eigenen Horizont benötigt.",
           "horizon_mode": "Für Messungen aus einer Solar-App Kompass-Azimut wählen; Fenstersicht für vom Innenraum gemessene Winkel.",
           "horizon_profile": "Optionaler JSON-Horizont für alle gewählten Fenster. Leer lassen, um den Fassaden- oder Haushorizont zu erben.",
           "reveal_left_depth": "Linke Laibungstiefe in Metern für alle gewählten Fenster.",
@@ -674,8 +790,8 @@
           "fov_right": "Sichtbarer Winkel rechts von der Fensternormalen für alle gewählten Fenster.",
           "bulk_reset_local_overrides": "Empfohlen: entfernt lokale Geometrie-, Horizont- und Regelschalter sowie lokale Regelabweichungen, damit spätere Änderungen am Hausprofil alle ausgewählten Fenster erreichen. Cover-Entitäten und exakte Fenstermaße bleiben erhalten."
         },
-        "title": "Fenster & Bereiche: Raumfassade bearbeiten",
-        "description": "Speichern erstellt oder aktualisiert Stockwerk, Raum, Fassade und Raumfassade und ordnet sie allen gewählten Fenstern zu. Fensterspezifische Ausnahmen bleiben in den Detaileinstellungen möglich."
+        "title": "Fenster & Bereiche: Regeln und optionale Geometrie",
+        "description": "Vorhandene Werte sind vorbefüllt. Ohne Geometrie-Override bleiben spätere Änderungen am Haus- oder Fassadenprofil wirksam."
       },
       "house_facades": {
         "data": {
@@ -1221,6 +1337,16 @@
       "options": {
         "time": "Feste Uhrzeiten",
         "solar": "Sonnenuntergang und Sonnenaufgang"
+      }
+    },
+    "bulk_policy_preset": {
+      "options": {
+        "__inherit__": "Übergeordnetes Profil erben",
+        "custom": "Benutzerdefiniert",
+        "daylight_first_single_aspect": "Tageslicht zuerst (eine Fassade)",
+        "daylight_first_multi_aspect": "Tageslicht zuerst (mehrere Fassaden)",
+        "balanced": "Ausgewogen",
+        "cooling_first": "Kühlung zuerst"
       }
     },
     "night_evening_mode": {

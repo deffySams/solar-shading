@@ -28,7 +28,10 @@ from .const import (
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
     CONF_BULK_FACADE_ROTATION,
+    CONF_BULK_OVERRIDE_ROOM_FACADE_GEOMETRY,
     CONF_BULK_RESET_LOCAL_OVERRIDES,
+    CONF_BULK_ROOM_FACADE_POLICY_PRESET,
+    CONF_BULK_ROOM_POLICY_PRESET,
     CONF_BULK_WINDOW_ENTRIES,
     CONF_COVER_LOCATION,
     CONF_DEFAULT_HEIGHT,
@@ -192,6 +195,7 @@ CONFIG_SCHEMA = vol.Schema(
 )
 
 TEMPLATE_NONE = "__none__"
+PROFILE_INHERIT = "__inherit__"
 
 
 def _template_entry_options(hass) -> list[dict[str, str]]:
@@ -1031,6 +1035,40 @@ HOUSE_EXPERT_OPTIONS = vol.Schema(
     }
 )
 
+HOUSE_SETUP_KEYS = {
+    CONF_HOUSE_REFERENCE_AZIMUTH,
+    CONF_GLASS_TYPE,
+    CONF_COVER_LOCATION,
+    CONF_FOV_LEFT,
+    CONF_FOV_RIGHT,
+    CONF_REVEAL_LEFT,
+    CONF_REVEAL_RIGHT,
+    CONF_REVEAL_TOP,
+    CONF_HORIZON_MODE,
+    CONF_HORIZON_PROFILE,
+    CONF_DEFAULT_HEIGHT,
+}
+
+HOUSE_NIGHT_KEYS = {
+    CONF_NIGHT_EVENING_MODE,
+    CONF_NIGHT_START_TIME,
+    CONF_SUNSET_OFFSET,
+    CONF_NIGHT_EVENING_EARLIEST_TIME,
+    CONF_NIGHT_EVENING_LATEST_TIME,
+    CONF_NIGHT_MORNING_MODE,
+    CONF_NIGHT_END_TIME,
+    CONF_SUNRISE_OFFSET,
+    CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_LATEST_TIME,
+    CONF_SUNSET_POS,
+}
+
+HOUSE_HEAT_KEYS = (
+    {getattr(marker, "schema", marker) for marker in HOUSE_DEFAULT_OPTIONS.schema}
+    - HOUSE_SETUP_KEYS
+    - HOUSE_NIGHT_KEYS
+)
+
 
 def _schema_subset(schema: vol.Schema, keys: set[str]) -> vol.Schema:
     """Return a schema containing only selected config keys."""
@@ -1866,6 +1904,7 @@ class OptionsFlowHandler(OptionsFlow):
         self._selected_floor_id: str | None = None
         self._assignment_values: dict[str, Any] = {}
         self._bulk_window_entry_ids: list[str] = []
+        self._bulk_assignment_values: dict[str, Any] = {}
         self.sensor_type: SensorType = (
             self.current_config.get(CONF_SENSOR_TYPE) or SensorType.BLIND
         )
@@ -1879,7 +1918,9 @@ class OptionsFlowHandler(OptionsFlow):
                 step_id="init",
                 menu_options=[
                     "house_bulk_assignment",
-                    "house_defaults",
+                    "house_setup",
+                    "house_night",
+                    "house_heat",
                     "house_facades",
                     "house_expert",
                 ],
@@ -1906,38 +1947,73 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_house_defaults(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Edit rules and defaults shared by all linked windows."""
+        """Keep old deep links working by opening the basic house profile."""
+        return await self.async_step_house_setup(user_input)
+
+    async def _async_step_house_defaults_group(
+        self,
+        *,
+        step_id: str,
+        keys: set[str],
+        user_input: dict[str, Any] | None,
+    ) -> FlowResult:
+        """Edit one understandable group of inherited house defaults."""
+        schema = _schema_subset(HOUSE_DEFAULT_OPTIONS, keys)
         if user_input is not None:
-            try:
-                user_input[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
-                    user_input.get(CONF_HORIZON_PROFILE),
-                    compass=user_input.get(CONF_HORIZON_MODE) == "compass",
+            values = dict(user_input)
+            if CONF_HORIZON_PROFILE in keys:
+                try:
+                    values[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
+                        values.get(CONF_HORIZON_PROFILE),
+                        compass=values.get(CONF_HORIZON_MODE) == "compass",
+                    )
+                except vol.Invalid:
+                    return self.async_show_form(
+                        step_id=step_id,
+                        data_schema=self.add_suggested_values_to_schema(schema, values),
+                        errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
+                    )
+            if CONF_HOUSE_REFERENCE_AZIMUTH in values:
+                self.options[CONF_HOUSE_REFERENCE_AZIMUTH] = values.pop(
+                    CONF_HOUSE_REFERENCE_AZIMUTH
                 )
-            except vol.Invalid:
-                return self.async_show_form(
-                    step_id="house_defaults",
-                    data_schema=self.add_suggested_values_to_schema(
-                        HOUSE_DEFAULT_OPTIONS, user_input
-                    ),
-                    errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
-                )
-            self.options[CONF_HOUSE_REFERENCE_AZIMUTH] = user_input.pop(
-                CONF_HOUSE_REFERENCE_AZIMUTH
-            )
             defaults = self._house_defaults()
-            defaults.update(user_input)
+            defaults.update(values)
             self.options[CONF_HOUSE_DEFAULTS] = defaults
             return await self._update_options()
 
         values = self._house_defaults()
-        values[CONF_HOUSE_REFERENCE_AZIMUTH] = self.options.get(
-            CONF_HOUSE_REFERENCE_AZIMUTH, 0
-        )
+        if CONF_HOUSE_REFERENCE_AZIMUTH in keys:
+            values[CONF_HOUSE_REFERENCE_AZIMUTH] = self.options.get(
+                CONF_HOUSE_REFERENCE_AZIMUTH, 0
+            )
         return self.async_show_form(
-            step_id="house_defaults",
-            data_schema=self.add_suggested_values_to_schema(
-                HOUSE_DEFAULT_OPTIONS, values
-            ),
+            step_id=step_id,
+            data_schema=self.add_suggested_values_to_schema(schema, values),
+        )
+
+    async def async_step_house_setup(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit house axis, glazing, cover type, and default geometry."""
+        return await self._async_step_house_defaults_group(
+            step_id="house_setup", keys=HOUSE_SETUP_KEYS, user_input=user_input
+        )
+
+    async def async_step_house_night(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit independent evening and morning night boundaries."""
+        return await self._async_step_house_defaults_group(
+            step_id="house_night", keys=HOUSE_NIGHT_KEYS, user_input=user_input
+        )
+
+    async def async_step_house_heat(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit forecast, temperature, and heat-protection defaults."""
+        return await self._async_step_house_defaults_group(
+            step_id="house_heat", keys=HOUSE_HEAT_KEYS, user_input=user_input
         )
 
     async def async_step_house_expert(
@@ -1994,7 +2070,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_house_bulk_assignment_details(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Assign the selected window groups to one room and facade."""
+        """Select the room and facade for the chosen window groups."""
         facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
         room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
@@ -2005,6 +2081,82 @@ class OptionsFlowHandler(OptionsFlow):
                 vol.Required(CONF_FACADE_NAME): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=facades, custom_value=True)
                 ),
+            }
+        )
+        if user_input is not None:
+            self._bulk_assignment_values = dict(user_input)
+            return await self.async_step_house_bulk_assignment_settings()
+        return self.async_show_form(
+            step_id="house_bulk_assignment_details",
+            data_schema=schema,
+            errors={} if room_options else {"base": "no_rooms_for_floor"},
+        )
+
+    async def async_step_house_bulk_assignment_settings(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit inherited room rules and optional room-facade geometry."""
+        room_id = self._bulk_assignment_values[CONF_ROOM_NAME]
+        facade_name = self._bulk_assignment_values[CONF_FACADE_NAME]
+        facade_profiles = dict(self.options.get(CONF_FACADE_PROFILES) or {})
+        facade_profile = dict(facade_profiles.get(facade_name) or {})
+        facade_overrides = dict(facade_profile.get(CONF_PROFILE_OVERRIDES) or {})
+        room_profiles = dict(self.options.get(CONF_ROOM_PROFILES) or {})
+        room_profile = dict(room_profiles.get(room_id) or {})
+        room_overrides = dict(room_profile.get(CONF_PROFILE_OVERRIDES) or {})
+        room_facades = dict(self.options.get(CONF_ROOM_FACADE_PROFILES) or {})
+        wall_key = room_facade_key(room_id, facade_name)
+        wall_profile = dict(room_facades.get(wall_key) or {})
+        wall_overrides = dict(wall_profile.get(CONF_PROFILE_OVERRIDES) or {})
+        geometry_keys = {
+            CONF_HORIZON_MODE,
+            CONF_HORIZON_PROFILE,
+            CONF_REVEAL_LEFT,
+            CONF_REVEAL_RIGHT,
+            CONF_REVEAL_TOP,
+            CONF_FOV_LEFT,
+            CONF_FOV_RIGHT,
+        }
+
+        selected_offsets: list[float] = []
+        for entry_id in self._bulk_window_entry_ids:
+            entry = self.hass.config_entries.async_get_entry(entry_id)
+            if entry is not None:
+                selected_offsets.append(entry.options.get(CONF_FACADE_OFFSET, 0))
+        common_offset = (
+            selected_offsets[0]
+            if selected_offsets
+            and all(value == selected_offsets[0] for value in selected_offsets)
+            else 0
+        )
+        inherited_geometry = self._house_defaults()
+        inherited_geometry.update(facade_overrides)
+        suggested = {
+            CONF_BULK_FACADE_ROTATION: facade_profile.get(CONF_FACADE_OFFSET, 0),
+            CONF_FACADE_OFFSET: common_offset,
+            CONF_ROOM_TEMPERATURE_ENTITY: room_overrides.get(
+                CONF_ROOM_TEMPERATURE_ENTITY
+            ),
+            CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS: room_overrides.get(
+                CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, False
+            ),
+            CONF_BULK_ROOM_POLICY_PRESET: room_overrides.get(
+                CONF_POLICY_PRESET, PROFILE_INHERIT
+            ),
+            CONF_BULK_ROOM_FACADE_POLICY_PRESET: wall_overrides.get(
+                CONF_POLICY_PRESET, PROFILE_INHERIT
+            ),
+            CONF_BULK_OVERRIDE_ROOM_FACADE_GEOMETRY: any(
+                key in wall_overrides for key in geometry_keys
+            ),
+            CONF_BULK_RESET_LOCAL_OVERRIDES: True,
+        }
+        for key in geometry_keys:
+            suggested[key] = wall_overrides.get(key, inherited_geometry.get(key))
+
+        policy_options = [PROFILE_INHERIT, *POLICY_PRESET_OPTIONS]
+        schema = vol.Schema(
+            {
                 vol.Required(
                     CONF_BULK_FACADE_ROTATION, default=0
                 ): selector.NumberSelector(
@@ -2032,12 +2184,22 @@ class OptionsFlowHandler(OptionsFlow):
                     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False
                 ): selector.BooleanSelector(),
                 vol.Optional(
-                    CONF_POLICY_PRESET, default="balanced"
+                    CONF_BULK_ROOM_POLICY_PRESET, default=PROFILE_INHERIT
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
+                        options=policy_options, translation_key="bulk_policy_preset"
                     )
                 ),
+                vol.Optional(
+                    CONF_BULK_ROOM_FACADE_POLICY_PRESET, default=PROFILE_INHERIT
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=policy_options, translation_key="bulk_policy_preset"
+                    )
+                ),
+                vol.Optional(
+                    CONF_BULK_OVERRIDE_ROOM_FACADE_GEOMETRY, default=False
+                ): selector.BooleanSelector(),
                 vol.Optional(
                     CONF_HORIZON_MODE, default="compass"
                 ): selector.SelectSelector(
@@ -2069,19 +2231,20 @@ class OptionsFlowHandler(OptionsFlow):
             }
         )
         if user_input is not None:
-            try:
-                user_input[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
-                    user_input.get(CONF_HORIZON_PROFILE),
-                    compass=user_input.get(CONF_HORIZON_MODE) == "compass",
-                )
-            except vol.Invalid:
-                return self.async_show_form(
-                    step_id="house_bulk_assignment_details",
-                    data_schema=self.add_suggested_values_to_schema(schema, user_input),
-                    errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
-                )
-            room_id = user_input[CONF_ROOM_NAME]
-            facade_name = user_input[CONF_FACADE_NAME]
+            if user_input.get(CONF_BULK_OVERRIDE_ROOM_FACADE_GEOMETRY):
+                try:
+                    user_input[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
+                        user_input.get(CONF_HORIZON_PROFILE),
+                        compass=user_input.get(CONF_HORIZON_MODE) == "compass",
+                    )
+                except vol.Invalid:
+                    return self.async_show_form(
+                        step_id="house_bulk_assignment_settings",
+                        data_schema=self.add_suggested_values_to_schema(
+                            schema, user_input
+                        ),
+                        errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
+                    )
 
             floor_profiles = dict(self.options.get(CONF_FLOOR_PROFILES) or {})
             floor_profiles.setdefault(
@@ -2089,17 +2252,16 @@ class OptionsFlowHandler(OptionsFlow):
             )
             self.options[CONF_FLOOR_PROFILES] = floor_profiles
 
-            facade_profiles = dict(self.options.get(CONF_FACADE_PROFILES) or {})
-            facade_profile = dict(facade_profiles.get(facade_name) or {})
             facade_profile[CONF_FACADE_OFFSET] = user_input[CONF_BULK_FACADE_ROTATION]
             facade_profile.setdefault(CONF_PROFILE_OVERRIDES, {})
             facade_profiles[facade_name] = facade_profile
             self.options[CONF_FACADE_PROFILES] = facade_profiles
 
-            room_profiles = dict(self.options.get(CONF_ROOM_PROFILES) or {})
-            room_profile = dict(room_profiles.get(room_id) or {})
-            room_overrides = dict(room_profile.get(CONF_PROFILE_OVERRIDES) or {})
-            room_overrides[CONF_POLICY_PRESET] = user_input[CONF_POLICY_PRESET]
+            room_policy = user_input[CONF_BULK_ROOM_POLICY_PRESET]
+            if room_policy == PROFILE_INHERIT:
+                room_overrides.pop(CONF_POLICY_PRESET, None)
+            else:
+                room_overrides[CONF_POLICY_PRESET] = room_policy
             room_overrides[CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS] = user_input[
                 CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS
             ]
@@ -2118,23 +2280,25 @@ class OptionsFlowHandler(OptionsFlow):
             room_profiles[room_id] = room_profile
             self.options[CONF_ROOM_PROFILES] = room_profiles
 
-            wall_overrides = {
-                key: user_input.get(key)
-                for key in (
-                    CONF_POLICY_PRESET,
-                    CONF_HORIZON_MODE,
-                    CONF_HORIZON_PROFILE,
-                    CONF_REVEAL_LEFT,
-                    CONF_REVEAL_RIGHT,
-                    CONF_REVEAL_TOP,
-                    CONF_FOV_LEFT,
-                    CONF_FOV_RIGHT,
-                )
-            }
-            room_facades = dict(self.options.get(CONF_ROOM_FACADE_PROFILES) or {})
-            room_facades[room_facade_key(room_id, facade_name)] = {
-                CONF_PROFILE_OVERRIDES: wall_overrides
-            }
+            wall_policy = user_input[CONF_BULK_ROOM_FACADE_POLICY_PRESET]
+            if wall_policy == PROFILE_INHERIT:
+                wall_overrides.pop(CONF_POLICY_PRESET, None)
+            else:
+                wall_overrides[CONF_POLICY_PRESET] = wall_policy
+            if user_input.get(CONF_BULK_OVERRIDE_ROOM_FACADE_GEOMETRY):
+                for key in geometry_keys:
+                    value = user_input.get(key)
+                    if key == CONF_HORIZON_PROFILE and value is None:
+                        wall_overrides.pop(key, None)
+                    else:
+                        wall_overrides[key] = value
+            else:
+                for key in geometry_keys:
+                    wall_overrides.pop(key, None)
+            if wall_overrides:
+                room_facades[wall_key] = {CONF_PROFILE_OVERRIDES: wall_overrides}
+            else:
+                room_facades.pop(wall_key, None)
             self.options[CONF_ROOM_FACADE_PROFILES] = room_facades
 
             for entry_id in self._bulk_window_entry_ids:
@@ -2155,9 +2319,8 @@ class OptionsFlowHandler(OptionsFlow):
                 self.hass.config_entries.async_update_entry(entry, options=updated)
             return await self._update_options()
         return self.async_show_form(
-            step_id="house_bulk_assignment_details",
-            data_schema=schema,
-            errors={} if room_options else {"base": "no_rooms_for_floor"},
+            step_id="house_bulk_assignment_settings",
+            data_schema=self.add_suggested_values_to_schema(schema, suggested),
         )
 
     async def async_step_assignment(
