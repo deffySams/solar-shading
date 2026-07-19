@@ -14,11 +14,6 @@
         }
       }
     },
-    "sensor": {
-      "control": {
-        "default": "mdi:white-balance-sunny"
-      }
-    },
     "switch": {
       "control_toggle": {
         "default": "mdi:toggle-switch-outline",

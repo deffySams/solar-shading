@@ -424,7 +424,6 @@
           "automation": "Modify Automation Configuration",
           "assignment": "Window profile assignment",
           "blind": "Fine-tune Blind Settings",
-          "climate": "Edit Climate Configuration",
           "weather": "Edit Weather Configuration",
           "policy": "Edit Weights & Thresholds",
           "blind_spot": "Setup Blindspot",

@@ -51,7 +51,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
           "max_elevation": "Maximálna výška slnka",
@@ -69,44 +68,15 @@
           "group": "Vyberte entity na riadenie prostredníctvom integrácie",
           "sunset_position": "Pozícia na prepnutie po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
-          "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim"
+          "sunrise_offset": "Posun (±) od času východu slnka v minútach"
         },
         "description": "Pridajte do snímača konfiguračné premenné",
         "title": "Vertikálny kryt"
       },
-      "climate": {
-        "data": {
-          "temp_entity": "Entita vnútornej teploty",
-          "presence_entity": "Entita prítomnosti (voliteľné)",
-          "weather_entity": "Entita počasia (voliteľné)",
-          "outside_temp": "Senzor vonkajšej teploty (voliteľné)",
-          "temp_low": "Nízky teplotný prah",
-          "temp_high": "Vysoký teplotný prah",
-          "transparent_blind": "Priehľadná roleta",
-          "lux_entity": "Lux senzor (voliteľné)",
-          "lux_threshold": "Lux prah",
-          "irradiance_entity": "Senzor ožiarenia (voliteľné)",
-          "irradiance_threshold": "Prah ožiarenia",
-          "outside_threshold": "Minimálna vonkajšia teplota pre letný režim"
-        },
-        "data_description": {
-          "presence_entity": "Entita predstavujúca stav prítomnosti v miestnosti alebo domácnosti",
-          "weather_entity": "Monitoruje poveternostné podmienky a vonkajšiu teplotu",
-          "outside_temp": "Prepíše vonkajšiu teplotu z entity počasia, ak sú obe nastavené",
-          "temp_low": "Minimálna komfortná teplota",
-          "temp_high": "Maximálna komfortná teplota",
-          "transparent_blind": "Roleta je priehľadná a mala by sa vždy úplne zatiahnuť, keď je aktívny letný režim",
-          "lux_entity": "Pomocou senzora luxu zistite, či má kryt znížiť oslnenie v režime prítomnosti",
-          "lux_threshold": "Prahová hodnota pre lux senzor, nad touto hodnotou by sa malo oslnenie znížiť",
-          "irradiance_entity": "Pomocou snímača ožiarenia zistite, či by kryt mal znížiť oslnenie v režime prítomnosti",
-          "irradiance_threshold": "Prahová hodnota pre snímač ožiarenia, nad touto hodnotou by sa malo oslnenie znížiť"
-        },
-        "description": "Pridajte ďalšie premenné konfigurácie klímy.",
-        "title": "Nastavenia klímy"
-      },
       "weather": {
-        "data": { "weather_state": "Poveternostné podmienky" },
+        "data": {
+          "weather_state": "Poveternostné podmienky"
+        },
         "data_description": {
           "weather_state": "Vyberte poveternostné podmienky, ktoré umožňujú automatické ovládanie okien."
         },
@@ -131,7 +101,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
           "max_elevation": "Maximálna výška slnka",
@@ -151,8 +120,7 @@
           "group": "Vyberte entity na riadenie prostredníctvom integrácie",
           "sunset_position": "Pozícia na prepnutie po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
-          "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim"
+          "sunrise_offset": "Posun (±) od času východu slnka v minútach"
         },
         "description": "Pridajte do snímača konfiguračné premenné",
         "title": "Horizontálny kryt"
@@ -174,7 +142,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "tilt_mode": "Typ pohybu",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
@@ -194,7 +161,6 @@
           "sunset_position": "Pozícia na prechod po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
           "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim",
           "tilt_mode": "Vyberte si typ pohybu"
         },
         "description": "Pridajte do snímača konfiguračné premenné",
@@ -236,7 +202,6 @@
         "menu_options": {
           "automation": "Upravte konfiguráciu automatizácie",
           "blind": "Jemne dolaďte nastavenia žalúzie",
-          "climate": "Upraviť konfiguráciu klímy",
           "weather": "Upraviť konfiguráciu počasia",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "interp": "Úprava rozsahu"
@@ -284,7 +249,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
           "max_elevation": "Maximálna výška slnka",
@@ -302,44 +266,15 @@
           "group": "Vyberte entity na riadenie prostredníctvom integrácie",
           "sunset_position": "Pozícia na prepnutie po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
-          "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim"
+          "sunrise_offset": "Posun (±) od času východu slnka v minútach"
         },
         "description": "Pridajte do snímača konfiguračné premenné",
         "title": "Vertikálny kryt"
       },
-      "climate": {
-        "data": {
-          "temp_entity": "Entita vnútornej teploty",
-          "presence_entity": "Entita prítomnosti (voliteľné)",
-          "weather_entity": "Entita počasia (voliteľné)",
-          "outside_temp": "Senzor vonkajšej teploty (voliteľné)",
-          "temp_low": "Nízky teplotný prah",
-          "temp_high": "Vysoký teplotný prah",
-          "transparent_blind": "Priehľadná roleta",
-          "lux_entity": "Lux snímač (voliteľný)",
-          "lux_threshold": "Lux prah",
-          "irradiance_entity": "Senzor ožiarenia (voliteľné)",
-          "irradiance_threshold": "Prah ožiarenia",
-          "outside_threshold": "Minimálna vonkajšia teplota pre letný režim"
-        },
-        "data_description": {
-          "presence_entity": "Entita predstavujúca stav prítomnosti v miestnosti alebo domácnosti",
-          "weather_entity": "Monitoruje poveternostné podmienky a vonkajšiu teplotu",
-          "outside_temp": "Prepíše vonkajšiu teplotu z entity počasia, ak sú obe nastavené",
-          "temp_low": "Minimálna komfortná teplota",
-          "temp_high": "Maximálna komfortná teplota",
-          "transparent_blind": "Roleta je priehľadná a mala by sa vždy úplne zatiahnuť, keď je aktívny letný režim",
-          "lux_entity": "Pomocou senzora luxu zistite, či má kryt znížiť oslnenie v režime prítomnosti",
-          "lux_threshold": "Prahová hodnota pre lux senzor, nad touto hodnotou by sa malo oslnenie znížiť",
-          "irradiance_entity": "Pomocou snímača ožiarenia zistite, či by kryt mal znížiť oslnenie v režime prítomnosti",
-          "irradiance_threshold": "Prahová hodnota pre snímač ožiarenia, nad touto hodnotou by sa malo oslnenie znížiť"
-        },
-        "description": "Pridajte ďalšie premenné konfigurácie klímy.",
-        "title": "Nastavenia klímy"
-      },
       "weather": {
-        "data": { "weather_state": "Poveternostné podmienky" },
+        "data": {
+          "weather_state": "Poveternostné podmienky"
+        },
         "data_description": {
           "weather_state": "Vyberte poveternostné podmienky, ktoré umožňujú automatické ovládanie okien."
         },
@@ -364,7 +299,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
           "max_elevation": "Maximálna výška slnka",
@@ -384,8 +318,7 @@
           "group": "Vyberte entity na riadenie prostredníctvom integrácie",
           "sunset_position": "Pozícia na prepnutie po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
-          "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim"
+          "sunrise_offset": "Posun (±) od času východu slnka v minútach"
         },
         "description": "Pridajte do snímača konfiguračné premenné",
         "title": "Horizontálny kryt"
@@ -407,7 +340,6 @@
           "sunset_position": "Poloha pri západe slnka",
           "sunset_offset": "Posun západu slnka",
           "sunrise_offset": "Posun východu slnka",
-          "climate_mode": "Klimatický režim",
           "tilt_mode": "Typ pohybu",
           "blind_spot": "Nastavenie mŕtveho uhla",
           "min_elevation": "Minimálna výška slnka",
@@ -427,7 +359,6 @@
           "sunset_position": "Pozícia na prechod po západe slnka",
           "sunset_offset": "Posun (±) od času západu slnka v minútach",
           "sunrise_offset": "Posun (±) od času východu slnka v minútach",
-          "climate_mode": "Nakonfigurujte premenné pre klimatický režim",
           "tilt_mode": "Vyberte si typ pohybu"
         },
         "description": "Pridajte do snímača konfiguračné premenné",

@@ -51,7 +51,6 @@
           "sunset_position": "Posición al ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "blind_spot": "Configura punto ciego",
           "min_elevation": "Elevación mínima del sol",
           "max_elevation": "Elevación máxima del sol",
@@ -69,44 +68,15 @@
           "group": "Seleccionar entidades para controlar vía la integración",
           "sunset_position": "Posición a la que cambiar tras el Ocaso",
           "sunset_offset": "Desfase (±) desde el Ocaso en minutos",
-          "sunrise_offset": "Desfase (±) desde el Orto en minutos",
-          "climate_mode": "Configurar variables para el modo clima"
+          "sunrise_offset": "Desfase (±) desde el Orto en minutos"
         },
         "description": "Agregar variables de configuración al sensor",
         "title": "Persiana vertical"
       },
-      "climate": {
-        "data": {
-          "temp_entity": "Entidad de temperatura interior",
-          "presence_entity": "Entidad de presencia (opcional)",
-          "weather_entity": "Entidad meteorológica (opcional)",
-          "outside_temp": "Sensor de temperatura exterior (opcional)",
-          "temp_low": "Umbral de baja temperatura",
-          "temp_high": "Umbral de alta temperatura",
-          "transparent_blind": "Persiana ciega",
-          "lux_entity": "Sensor de lux (opcional)",
-          "lux_threshold": "Umbral de lux",
-          "irradiance_entity": "Sensor de irradiancia (opcional)",
-          "irradiance_threshold": "Umbral de irradiancia",
-          "outside_threshold": "Temperatura exterior mínima para el modo verano"
-        },
-        "data_description": {
-          "presence_entity": "Entidad que representa el estado de presencia en la habitación o en el hogar",
-          "weather_entity": "Monitorea las condiciones climáticas y la temperatura exterior.",
-          "outside_temp": "Anula la temperatura exterior de la entidad meteorológica si ambas están configuradas",
-          "temp_low": "Temperatura mínima confortable",
-          "temp_high": "Temperatura máxima confortable",
-          "transparent_blind": "La persiana es transparente y siempre debe cerrarse completamente cuando el modo verano esté activo.",
-          "lux_entity": "Utilice el sensor de lux para determinar si la persiana debe reducir el deslumbramiento en el modo de presencia",
-          "lux_threshold": "Umbral para el sensor de lux, por encima de este valor se debe reducir el deslumbramiento",
-          "irradiance_entity": "Utilice el sensor de irradiancia para determinar si la cubierta debe reducir el deslumbramiento en el modo de presencia",
-          "irradiance_threshold": "Umbral para el sensor de irradiancia, por encima de este valor se debe reducir el deslumbramiento"
-        },
-        "description": "Añadir variables de configuración climática adicionales.",
-        "title": "Configuraciones climáticas"
-      },
       "weather": {
-        "data": { "weather_state": "Condiciones climáticas" },
+        "data": {
+          "weather_state": "Condiciones climáticas"
+        },
         "data_description": {
           "weather_state": "Seleccione las condiciones climáticas que permitan el control automático de las ventanas."
         },
@@ -131,7 +101,6 @@
           "sunset_position": "Posición al Ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "blind_spot": "Configurar punto ciego",
           "min_elevation": "Elevación mínima del sol",
           "max_elevation": "Establezca posiciones de apertura y cierre personalizadas para My Cover, si no funciona completamente al 0-100 %evación máxima del sol",
@@ -151,8 +120,7 @@
           "group": "Seleccionar entidades para controlar vía integración",
           "sunset_position": "Posición a la que cambiar después del Ocaso",
           "sunset_offset": "Desfase (±) respecto del Ocaso en minutos",
-          "sunrise_offset": "Desfase (±) respecto del Orto en minutos",
-          "climate_mode": "Configurar variables para Modo Clima"
+          "sunrise_offset": "Desfase (±) respecto del Orto en minutos"
         },
         "description": "Agregar variables de configuración al sensor",
         "title": "Persiana horizontal"
@@ -174,7 +142,6 @@
           "sunset_position": "Posición al Ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "tilt_mode": "Tipo de movimiento",
           "blind_spot": "Configurar punto ciego",
           "min_elevation": "Elevación mínima del sol",
@@ -194,7 +161,6 @@
           "sunset_position": "Posición a la que hacer la transición después del Ocaso",
           "sunset_offset": "Desfase (±) respecto del Ocaso en minutos",
           "sunrise_offset": "Desfase (±) respecto del Orto en minutos",
-          "climate_mode": "Configurar variables para Modo Clima",
           "tilt_mode": "Elija Tipo de movimiento"
         },
         "description": "Agregar variables de configuración al sensor",
@@ -236,7 +202,6 @@
         "menu_options": {
           "automation": "Modificar la configuración de automatización",
           "blind": "Ajuste fino de la configuración de las persianas",
-          "climate": "Editar configuración climática",
           "weather": "Editar configuración climática",
           "blind_spot": "Configurar punto ciego",
           "interp": "Rango de ajuste"
@@ -284,7 +249,6 @@
           "sunset_position": "Posición al Ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "blind_spot": "Configurar punto ciego",
           "min_elevation": "Elevación mínima del sol",
           "max_elevation": "Elevación máxima del sol",
@@ -302,44 +266,15 @@
           "group": "Seleccionar entidades para controlar via integración",
           "sunset_position": "Posición a la que cambiar después del Ocaso",
           "sunset_offset": "Desfase (±) respecto del Ocaso en minutos",
-          "sunrise_offset": "Desfase (±) respecto del Orto en minutos",
-          "climate_mode": "Configurar variables para Modo Clima"
+          "sunrise_offset": "Desfase (±) respecto del Orto en minutos"
         },
         "description": "Agregar variables de configuración al sensor",
         "title": "Persiana vertical"
       },
-      "climate": {
-        "data": {
-          "temp_entity": "Entidad de temperatura interior",
-          "presence_entity": "Entidad de presencia (opcional)",
-          "weather_entity": "Entidad meteorológica (opcional)",
-          "outside_temp": "Sensor de temperatura exterior (opcional)",
-          "temp_low": "Umbral de baja temperatura",
-          "temp_high": "Umbral de alta temperatura",
-          "transparent_blind": "Persiana transparente",
-          "lux_entity": "Sensor de lux (opcional)",
-          "lux_threshold": "Umbral de lux",
-          "irradiance_entity": "Sensor de irradiancia (opcional)",
-          "irradiance_threshold": "Umbral de irradiancia",
-          "outside_threshold": "Temperatura exterior mínima para el modo verano"
-        },
-        "data_description": {
-          "presence_entity": "Entidad que representa el estado de presencia en la habitación o en el hogar",
-          "weather_entity": "Monitoriza las condiciones climáticas y la temperatura exterior.",
-          "outside_temp": "Anula la temperatura exterior de la entidad meteorológica si ambas están configuradas",
-          "temp_low": "Temperatura mínima confortable",
-          "temp_high": "Temperatura máxima confortable",
-          "transparent_blind": "La persiana es transparente y siempre debe cerrarse completamente cuando el modo verano esté activo.",
-          "lux_entity": "Utilice el sensor de lux para determinar si la persiana debe reducir el deslumbramiento en el modo de presencia",
-          "lux_threshold": "Umbral para el sensor de lux, por encima de este valor se debe reducir el deslumbramiento",
-          "irradiance_entity": "Utilice el sensor de irradiancia para determinar si la persiana debe reducir el deslumbramiento en el modo de presencia",
-          "irradiance_threshold": "Umbral para el sensor de irradiancia, por encima de este valor se debe reducir el deslumbramiento"
-        },
-        "description": "Añadir variables de configuración climática adicionales.",
-        "title": "Climate settings"
-      },
       "weather": {
-        "data": { "weather_state": "Condiciones climáticas" },
+        "data": {
+          "weather_state": "Condiciones climáticas"
+        },
         "data_description": {
           "weather_state": "Elija las Condiciones climáticas que permitan el control automático de ventanas."
         },
@@ -364,7 +299,6 @@
           "sunset_position": "Posición al Ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "blind_spot": "Configurar punto ciego",
           "min_elevation": "Elevación mínima del sol",
           "max_elevation": "Elevación máxima del sol",
@@ -384,8 +318,7 @@
           "group": "Seleccionar entidades para controlar via integración",
           "sunset_position": "Posición a la que cambiar después del Ocaso",
           "sunset_offset": "Desfase (±) respecto del Ocaso en minutos",
-          "sunrise_offset": "Desfase (±) respecto del Orto en minutos",
-          "climate_mode": "Configurar variables para Modo Clima"
+          "sunrise_offset": "Desfase (±) respecto del Orto en minutos"
         },
         "description": "Agregar variables de configuración al sensor",
         "title": "Persiana horizontal"
@@ -407,7 +340,6 @@
           "sunset_position": "Posición al Ocaso",
           "sunset_offset": "Desfase del Ocaso",
           "sunrise_offset": "Desfase del Orto",
-          "climate_mode": "Modo Clima",
           "tilt_mode": "tipo de movimiento",
           "blind_spot": "Configurar punto ciego",
           "min_elevation": "Elevación mínima del sol",
@@ -427,7 +359,6 @@
           "sunset_position": "Posición a la que hacer la transición después del Ocaso",
           "sunset_offset": "Desfase (±) respecto del Ocaso en minutos",
           "sunrise_offset": "Desfase (±) respecto del Orto en minutos",
-          "climate_mode": "Configurar variables para Modo Clima",
           "tilt_mode": "Elige el tipo de movimiento"
         },
         "description": "Agregar variables de configuración al sensor",
