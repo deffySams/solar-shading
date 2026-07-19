@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_ENTITIES, DOMAIN
+from .const import CONF_ENTITIES, CONF_SENSOR_TYPE, DOMAIN
 from .coordinator import AdaptiveDataUpdateCoordinator
 
 

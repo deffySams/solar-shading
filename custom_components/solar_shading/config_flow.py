@@ -145,7 +145,10 @@ from .profiles import (
     default_house_profile_options,
     room_facade_key,
 )
-from .migration import migrate_retired_options as _migrate_retired_options
+from .migration import (
+    LEGACY_MAX_TRANSMITTED_SOLAR_POWER,
+    migrate_retired_options as _migrate_retired_options,
+)
 
 # DEFAULT_NAME = "Adaptive Cover"
 
@@ -1152,8 +1155,6 @@ def _validate_policy_input(user_input: dict[str, Any]) -> dict[str, str]:
     errors: dict[str, str] = {}
     partial_threshold = float(user_input.get(CONF_PARTIAL_CLOSE_THRESHOLD, 0.35) or 0.0)
     full_threshold = float(user_input.get(CONF_FULL_CLOSE_THRESHOLD, 0.65) or 0.0)
-    partial_position = int(user_input.get(CONF_PARTIAL_CLOSE_POSITION, 70) or 0)
-    full_position = int(user_input.get(CONF_FULL_CLOSE_POSITION, 30) or 0)
 
     if full_threshold < partial_threshold:
         errors[CONF_FULL_CLOSE_THRESHOLD] = "full_threshold_must_exceed_partial"
