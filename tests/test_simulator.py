@@ -51,6 +51,8 @@ def _payload(**overrides):
         "solarRadiation": 800,
         "solarReference": 900,
         "outsideTemp": 28,
+        "roomTemperature": 22,
+        "roomHeatProtectionThreshold": 24,
         "forecastTodayMax": 30,
         "forecastTomorrowMax": 30,
         "forecastSolarMax": 900,
@@ -68,12 +70,7 @@ def _payload(**overrides):
         "policyPreset": "balanced",
         "additionalWindows": False,
         "awayActive": False,
-        "hotDayCloseEnabled": True,
-        "hotDayCloseThreshold": 24,
-        "hotDayClosePosition": 30,
-        "veryHotDayClosePosition": 15,
         "heatPowerLimitEnabled": False,
-        "heatPowerTempThreshold": 24,
         "heatProtectionMinOutsideTemp": 14,
         "maxTransmittedSolarPower": 250,
         "showExpertWeights": False,
@@ -99,10 +96,13 @@ class SimulatorBackendTest(unittest.TestCase):
         result = simulate_from_payload(_Hass(), _payload())
 
         self.assertEqual(result["source"], "ha_python")
-        self.assertEqual(result["open_position"], 15)
+        self.assertLess(result["open_position"], 100)
+        self.assertTrue(
+            result["attributes"]["heat_protection_activation_active"]
+        )
         self.assertEqual(
-            result["attributes"]["heat_gain_policy_action_level"],
-            "veryhotday",
+            result["attributes"]["heat_protection_activation_reason"],
+            "forecast_hot",
         )
 
     def test_simulator_opens_without_direct_sun(self):
@@ -121,7 +121,6 @@ class SimulatorBackendTest(unittest.TestCase):
                 heatProtectionControlMode="binary",
                 binaryCloseThreshold=100,
                 binaryClosePosition=22,
-                hotDayCloseEnabled=False,
             ),
         )
 
@@ -136,7 +135,6 @@ class SimulatorBackendTest(unittest.TestCase):
                 heatProtectionControlMode="binary",
                 binaryCloseThreshold=1000,
                 binaryClosePosition=22,
-                hotDayCloseEnabled=False,
             ),
         )
 
@@ -175,6 +173,25 @@ class SimulatorBackendTest(unittest.TestCase):
         self.assertFalse(result["attributes"]["sun_within_horizon_profile"])
         self.assertEqual(result["attributes"]["horizon_mode"], "compass")
         self.assertTrue(result["attributes"]["decision_trace"])
+
+    def test_room_temperature_can_activate_cool_forecast(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                forecastTodayMax=20,
+                roomTemperature=25,
+                roomHeatProtectionThreshold=24,
+                heatPowerLimitEnabled=True,
+                maxTransmittedSolarPower=200,
+            ),
+        )
+
+        self.assertTrue(result["attributes"]["room_temperature_heat_active"])
+        self.assertEqual(
+            result["attributes"]["heat_protection_activation_reason"],
+            "room_temperature",
+        )
+        self.assertLess(result["open_position"], 100)
 
 
 if __name__ == "__main__":

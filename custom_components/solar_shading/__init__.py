@@ -13,19 +13,20 @@ from homeassistant.helpers.event import (
 )
 
 from .const import (
+    CONF_AWAY_ENTITY,
     CONF_ENTRY_TYPE,
     CONF_END_ENTITY,
     CONF_ENTITIES,
     CONF_HOUSE_PROFILE_ENTRY_ID,
-    CONF_PRESENCE_ENTITY,
+    CONF_ROOM_TEMPERATURE_ENTITY,
     CONF_SOLAR_RADIATION_ENTITY,
-    CONF_TEMP_ENTITY,
     CONF_WEATHER_ENTITY,
     DOMAIN,
     ENTRY_TYPE_HOUSE,
     _LOGGER,
 )
 from .coordinator import AdaptiveDataUpdateCoordinator
+from .migration import migrate_retired_options
 from .profiles import resolve_effective_options
 from .simulator import SolarShadingSimulationView
 
@@ -40,6 +41,17 @@ async def async_initialize_integration(
 ) -> bool:
     """Initialize the integration."""
 
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate stored entries to the unified heat-protection settings."""
+    hass.config_entries.async_update_entry(
+        entry,
+        data=migrate_retired_options(dict(entry.data)),
+        options=migrate_retired_options(dict(entry.options)),
+        version=2,
+    )
     return True
 
 
@@ -58,16 +70,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = AdaptiveDataUpdateCoordinator(hass)
     options = resolve_effective_options(hass, entry).options
-    _temp_entity = options.get(CONF_TEMP_ENTITY)
-    _presence_entity = options.get(CONF_PRESENCE_ENTITY)
+    _room_temperature_entity = options.get(CONF_ROOM_TEMPERATURE_ENTITY)
+    _away_entity = options.get(CONF_AWAY_ENTITY)
     _weather_entity = options.get(CONF_WEATHER_ENTITY)
     _solar_radiation_entity = options.get(CONF_SOLAR_RADIATION_ENTITY)
     _cover_entities = options.get(CONF_ENTITIES, [])
     _end_time_entity = options.get(CONF_END_ENTITY)
     _entities = ["sun.sun"]
     for entity in [
-        _temp_entity,
-        _presence_entity,
+        _room_temperature_entity,
+        _away_entity,
         _weather_entity,
         _solar_radiation_entity,
         _end_time_entity,

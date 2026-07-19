@@ -36,8 +36,6 @@ from .calculation import (
     AdaptiveHorizontalCover,
     AdaptiveTiltCover,
     AdaptiveVerticalCover,
-    ClimateCoverData,
-    ClimateCoverState,
     NormalCoverState,
 )
 from .const import (
@@ -55,7 +53,6 @@ from .const import (
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
-    CONF_CLIMATE_MODE,
     CONF_DEFAULT_HEIGHT,
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
@@ -83,14 +80,9 @@ from .const import (
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
-    CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEAT_PROTECTION_CONTROL_MODE,
     CONF_HEIGHT_WIN,
-    CONF_HOT_DAY_CLOSE_ENABLED,
-    CONF_HOT_DAY_CLOSE_POSITION,
-    CONF_HOT_DAY_CLOSE_THRESHOLD,
-    CONF_VERY_HOT_DAY_CLOSE_POSITION,
     CONF_HORIZON_PROFILE,
     CONF_HORIZON_MODE,
     CONF_INTERP,
@@ -99,8 +91,6 @@ from .const import (
     CONF_INTERP_LIST_NEW,
     CONF_INTERP_START,
     CONF_INVERSE_STATE,
-    CONF_IRRADIANCE_ENTITY,
-    CONF_IRRADIANCE_THRESHOLD,
     CONF_LENGTH_AWNING,
     CONF_MANUAL_IGNORE_INTERMEDIATE,
     CONF_MANUAL_OVERRIDE_DURATION,
@@ -113,9 +103,6 @@ from .const import (
     CONF_NIGHT_END_TIME,
     CONF_NIGHT_MODE,
     CONF_NIGHT_START_TIME,
-    CONF_OUTSIDE_THRESHOLD,
-    CONF_OUTSIDETEMP_ENTITY,
-    CONF_PRESENCE_ENTITY,
     CONF_ENABLE_HEAT_GAIN_POLICY,
     CONF_POLICY_PRESET,
     CONF_RETURN_SUNSET,
@@ -123,6 +110,8 @@ from .const import (
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
     CONF_ROOM_NAME,
+    CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
+    CONF_ROOM_TEMPERATURE_ENTITY,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SHOW_EXPERT_WEIGHTS,
@@ -131,9 +120,6 @@ from .const import (
     CONF_SUNRISE_OFFSET,
     CONF_SUNSET_OFFSET,
     CONF_SUNSET_POS,
-    CONF_TEMP_ENTITY,
-    CONF_TEMP_HIGH,
-    CONF_TEMP_LOW,
     CONF_TILT_DEPTH,
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
@@ -171,7 +157,6 @@ class StateChangedData:
 class AdaptiveCoverData:
     """AdaptiveCoverData class."""
 
-    climate_mode_toggle: bool
     states: dict
     attributes: dict
 
@@ -189,15 +174,11 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self.profile_resolution = resolve_effective_options(hass, self.config_entry)
         self.options = self.profile_resolution.options
         self._cover_type = self.config_entry.data.get("sensor_type")
-        self._climate_mode = self.options.get(CONF_CLIMATE_MODE, False)
-        self._switch_mode = True if self._climate_mode else False
         self._inverse_state = self.options.get(CONF_INVERSE_STATE, False)
         self._use_interpolation = self.options.get(CONF_INTERP, False)
         self._track_end_time = self.options.get(CONF_RETURN_SUNSET)
-        self._temp_toggle = None
         self._control_toggle = None
         self._manual_toggle = None
-        self._irradiance_toggle = None
         self._start_time = None
         self._sun_end_time = None
         self._sun_start_time = None
@@ -212,7 +193,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self.cover_state_change = False
         self.first_refresh = False
         self.timed_refresh = False
-        self.climate_state = None
         self.control_method = "intermediate"
         self.state_change_data: StateChangedData | None = None
         self.manager = AdaptiveCoverManager(self.manual_duration, self.logger)
@@ -356,11 +336,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         # Update manager with covers
         self._update_manager_and_covers()
 
-        # Access climate data if climate mode is enabled
-        if self._climate_mode:
-            self.climate_mode_data(options, cover_data)
-        else:
-            self.logger.debug("Control method is %s", self.control_method)
+        self.logger.debug("Control method is %s", self.control_method)
 
         # calculate the state of the cover
         self.normal_cover_state = NormalCoverState(cover_data)
@@ -407,7 +383,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         else:
             start, end = self._sun_start_time, self._sun_end_time
         return AdaptiveCoverData(
-            climate_mode_toggle=self.switch_mode,
             states={
                 "state": state,
                 "start": start,
@@ -574,9 +549,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                     if normal_cover.heat_power_outside_temperature is not None
                     else None
                 ),
-                "heat_power_outside_temp_threshold": (
-                    normal_cover.heat_power_outside_temp_threshold
-                ),
                 "heat_protection_min_outside_temp": (
                     normal_cover.heat_protection_min_outside_temp
                 ),
@@ -667,29 +639,23 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "heat_gain_policy_away_position_offset": int(
                     normal_cover.away_position_offset or 0
                 ),
-                "heat_gain_policy_hot_day_close_enabled": (
-                    normal_cover.hot_day_close_enabled
+                "room_temperature_entity": normal_cover.room_temperature_entity,
+                "room_temperature": normal_cover.room_temperature,
+                "room_heat_protection_threshold": (
+                    normal_cover.room_heat_protection_threshold
                 ),
-                "heat_gain_policy_hot_day_close_threshold": (
-                    normal_cover.hot_day_close_threshold
+                "room_temperature_heat_active": (
+                    normal_cover.room_temperature_heat_active
                 ),
-                "heat_gain_policy_hot_day_close_position": (
-                    normal_cover.hot_day_close_position
+                "forecast_hot_day_active": normal_cover.forecast_hot_day_active,
+                "heat_protection_activation_active": (
+                    normal_cover.heat_protection_activation_active
                 ),
-                "heat_gain_policy_very_hot_day_close_position": (
-                    normal_cover.very_hot_day_close_position
-                ),
-                "heat_gain_policy_active_hot_day_close_position": (
-                    normal_cover.active_hot_day_close_position
+                "heat_protection_activation_reason": (
+                    normal_cover.heat_protection_activation_reason
                 ),
                 "heat_gain_policy_show_expert_weights": (
                     normal_cover.show_expert_weights
-                ),
-                "heat_gain_policy_hot_day_override_active": (
-                    normal_cover.hot_day_override_active
-                ),
-                "heat_gain_policy_very_hot_day_override_active": (
-                    normal_cover.very_hot_day_override_active
                 ),
                 "heat_gain_policy_hot_day_signal": normal_cover.hot_day_signal,
                 "heat_gain_policy_weighted_score": round(
@@ -1177,8 +1143,9 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_SOLAR_RADIATION_ENTITY),
             options.get(CONF_SOLAR_RADIATION_REFERENCE, 900),
             options.get(CONF_HEAT_POWER_LIMIT_ENABLED, False),
-            options.get(CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD, 24),
             options.get(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14),
+            options.get(CONF_ROOM_TEMPERATURE_ENTITY),
+            options.get(CONF_ROOM_HEAT_PROTECTION_THRESHOLD, 24),
             options.get(
                 CONF_MAX_TRANSMITTED_SOLAR_POWER,
                 options.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, 250),
@@ -1197,10 +1164,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_AWAY_SCORE_MULTIPLIER, 1.25),
             options.get(CONF_AWAY_THRESHOLD_REDUCTION, 0.1),
             options.get(CONF_AWAY_POSITION_OFFSET, 10),
-            options.get(CONF_HOT_DAY_CLOSE_ENABLED, False),
-            options.get(CONF_HOT_DAY_CLOSE_THRESHOLD, 28),
-            options.get(CONF_HOT_DAY_CLOSE_POSITION, 20),
-            options.get(CONF_VERY_HOT_DAY_CLOSE_POSITION, 10),
             options.get(CONF_SHOW_EXPERT_WEIGHTS, False),
             options.get(CONF_WEIGHT_DIRECT_EXPOSURE, 1.0),
             options.get(CONF_WEIGHT_INCIDENCE, 1.0),
@@ -1212,38 +1175,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
             options.get(CONF_PARTIAL_CLOSE_POSITION, 70),
             options.get(CONF_FULL_CLOSE_POSITION, 30),
         ]
-
-    def get_climate_data(self, options):
-        """Update climate data."""
-        return [
-            self.hass,
-            self.logger,
-            options.get(CONF_TEMP_ENTITY),
-            options.get(CONF_TEMP_LOW),
-            options.get(CONF_TEMP_HIGH),
-            options.get(CONF_PRESENCE_ENTITY),
-            options.get(CONF_WEATHER_ENTITY),
-            options.get(CONF_OUTSIDETEMP_ENTITY),
-            self._temp_toggle,
-            self._cover_type,
-            options.get(CONF_IRRADIANCE_ENTITY),
-            options.get(CONF_IRRADIANCE_THRESHOLD),
-            options.get(CONF_OUTSIDE_THRESHOLD),
-            self._irradiance_toggle,
-        ]
-
-    def climate_mode_data(self, options, cover_data):
-        """Update climate mode data and control method."""
-        climate = ClimateCoverData(*self.get_climate_data(options))
-        self.climate_state = round(ClimateCoverState(cover_data, climate).get_state())
-        climate_data = ClimateCoverState(cover_data, climate).climate_data
-        if climate_data.is_summer and self.switch_mode:
-            self.control_method = "summer"
-        if climate_data.is_winter and self.switch_mode:
-            self.control_method = "winter"
-        self.logger.debug(
-            "Climate mode control method was set to %s", self.control_method
-        )
 
     def vertical_data(self, options):
         """Update data for vertical blinds."""
@@ -1270,16 +1201,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
     @property
     def state(self) -> int:
         """Handle the output of the state based on mode."""
-        self.logger.debug(
-            "Basic position: %s; Climate position: %s; Using climate position? %s",
-            self.default_state,
-            self.climate_state,
-            self._switch_mode,
-        )
-        if self._switch_mode:
-            state = self.climate_state
-        else:
-            state = self.default_state
+        state = self.default_state
 
         if self._use_interpolation:
             self.logger.debug("Interpolating position: %s", state)
@@ -1315,24 +1237,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         return state
 
     @property
-    def switch_mode(self):
-        """Let switch toggle climate mode."""
-        return self._switch_mode
-
-    @switch_mode.setter
-    def switch_mode(self, value):
-        self._switch_mode = value
-
-    @property
-    def temp_toggle(self):
-        """Let switch toggle between inside or outside temperature."""
-        return self._temp_toggle
-
-    @temp_toggle.setter
-    def temp_toggle(self, value):
-        self._temp_toggle = value
-
-    @property
     def control_toggle(self):
         """Toggle automation."""
         return self._control_toggle
@@ -1349,15 +1253,6 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
     @manual_toggle.setter
     def manual_toggle(self, value):
         self._manual_toggle = value
-
-    @property
-    def irradiance_toggle(self):
-        """Toggle automation."""
-        return self._irradiance_toggle
-
-    @irradiance_toggle.setter
-    def irradiance_toggle(self, value):
-        self._irradiance_toggle = value
 
 
 class AdaptiveCoverManager:

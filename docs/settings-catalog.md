@@ -111,9 +111,11 @@ Retire       Remove or migrate away.
 | `use_open_data_solar_radiation` | Fetch Open-Meteo solar radiation. | House |
 | `solar_radiation_entity` | Local irradiance sensor override. | House / Window override |
 | `solar_radiation_reference_w_m2` | Incoming direct irradiance threshold where sun counts as strong, before geometry and glass. | House |
+| `room_temperature_entity` | Measured room temperature for immediate reactive heat protection. | Room / Window override |
+| `room_heat_protection_threshold` | Room temperature where reactive heat protection becomes active. | House |
 | `use_forecast_max_temp_today` | Use today's max temperature forecast. | House |
-| `use_forecast_max_temp_tomorrow` | Use tomorrow's max temperature forecast. | House |
-| `forecast_hot_day_threshold` | Temperature where heat protection starts to care. | House |
+| `use_forecast_max_temp_tomorrow` | Use tomorrow's maximum only to strengthen already active protection; it cannot activate today by itself. | House |
+| `forecast_hot_day_threshold` | Today's forecast maximum where pre-emptive heat protection becomes active. | House |
 | `forecast_very_hot_day_threshold` | Temperature where very-hot pressure saturates. | House |
 | `forecast_preemptive_start_time` | Earliest time forecast can act preemptively. | House |
 | `forecast_influence_strength` | Forecast pressure multiplier. | House preset, Expert numeric |
@@ -145,32 +147,12 @@ Retire       Remove or migrate away.
 | --- | --- | --- |
 | `heat_power_limit_enabled` | Enables hard cap by transmitted solar heat. | House |
 | `max_transmitted_solar_power_w_m2` | Maximum solar power transmitted through one square meter of glass. | House |
-| `heat_power_outside_temp_threshold` | Outside temperature gate for hard heat cap. | House |
-| `heat_protection_min_outside_temp` | Minimum outside temperature for heat protection. | House |
-| `hot_day_close_enabled` | Separate hot-day position cap. | Merge into heat preset |
-| `hot_day_close_threshold` | Temperature where hot-day cap starts. | Merge into heat preset |
-| `hot_day_close_position` | Open position on hot days. | Merge into heat preset |
-| `very_hot_day_close_position` | Open position on very hot days. | Merge into heat preset |
+| `heat_protection_min_outside_temp` | Cold lockout: below this measured outside temperature all heat protection remains inactive. | House |
 | `enable_away_mode` | Enables stricter behaviour when away. | House |
 | `away_entity` | Entity that indicates away/absence. | House |
 | `away_score_multiplier` | Makes policy score stronger when away. | Expert / House |
 | `away_threshold_reduction` | Lowers thresholds when away. | Expert / House |
 | `away_position_offset` | Closes further when away. | Expert / House |
-
-## Legacy Climate Mode
-
-| Setting | Meaning | Target |
-| --- | --- | --- |
-| `climate_mode` | Enables old comfort/climate layer. | Legacy / optional mode |
-| `temp_entity` | Indoor/climate temperature source. | Legacy |
-| `temp_low` | Winter/low temperature threshold. | Legacy |
-| `temp_high` | Summer/high temperature threshold. | Legacy |
-| `outside_temp` | Outside temperature sensor. | Legacy / House if kept |
-| `outside_threshold` | Outside temperature threshold for summer mode. | Legacy |
-| `presence_entity` | Presence source for old comfort logic. | Legacy |
-| `irradiance_entity` | Irradiance sensor for old logic. | Legacy |
-| `irradiance_threshold` | Irradiance threshold for old logic. | Legacy |
-| `transparent_blind` | Retired. Existing `true` values migrate to binary mode, the old field is discarded. | Migration only |
 
 ## Removed In 0.3.0b41
 
@@ -178,6 +160,15 @@ The active model and simulator no longer expose or calculate Lux, weather-state,
 cloud, precipitation, UV, or weather-weight inputs. Existing stored keys are
 discarded when options are next saved. The old `heat_power_max_watts` value is
 migrated to `max_transmitted_solar_power_w_m2`.
+
+## Removed In 0.3.0b46
+
+The separate climate mode, its winter/summer thresholds, presence and legacy
+irradiance inputs, the duplicate outside-temperature activation threshold and
+the separate hot-day position cap are retired. Existing indoor temperature and
+hot-day threshold values are migrated to the unified room-temperature and
+forecast activation settings. The old transparent-cover flag remains a
+migration-only input for binary heat protection.
 
 ## Other Constants
 

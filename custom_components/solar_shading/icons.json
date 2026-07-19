@@ -16,11 +16,7 @@
     },
     "sensor": {
       "control": {
-        "default": "mdi:white-balance-sunny",
-        "state": {
-          "winter": "mdi:snowflake",
-          "summer": "mdi:heat-wave"
-        }
+        "default": "mdi:white-balance-sunny"
       }
     },
     "switch": {
@@ -28,18 +24,6 @@
         "default": "mdi:toggle-switch-outline",
         "state": {
           "off": "mdi:toggle-switch-off-outline"
-        }
-      },
-      "temp_toggle": {
-        "default": "mdi:thermometer"
-      },
-      "switch_mode": {
-        "default": "mdi:home-thermometer-outline"
-      },
-      "irradiance_toggle": {
-        "default": "mdi:sun-wireless-outline",
-        "state": {
-          "off": "mdi:sun-wireless"
         }
       }
     }

@@ -139,6 +139,7 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         else None
     )
     away_entity = "input_boolean.solar_shading_simulator_away"
+    room_temperature_entity = "sensor.solar_shading_simulator_room_temperature"
     fake_states = {
         weather_entity: _SimulationState(
             "unknown",
@@ -149,6 +150,10 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         away_entity: _SimulationState(
             "off" if _bool(values, "awayActive") else "on",
             {},
+        ),
+        room_temperature_entity: _SimulationState(
+            str(_float(values, "roomTemperature", 22.0) or 22.0),
+            {"device_class": "temperature"},
         ),
     }
     if radiation_entity:
@@ -203,8 +208,11 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         solar_radiation_entity=radiation_entity,
         solar_radiation_reference=_float(values, "solarReference", 900.0),
         heat_power_limit_enabled=_bool(values, "heatPowerLimitEnabled"),
-        heat_power_outside_temp_threshold=_float(values, "heatPowerTempThreshold"),
         heat_protection_min_outside_temp=_float(values, "heatProtectionMinOutsideTemp"),
+        room_temperature_entity=room_temperature_entity,
+        room_heat_protection_threshold=_float(
+            values, "roomHeatProtectionThreshold", 24.0
+        ),
         max_transmitted_solar_power_w_m2=_float(
             values, "maxTransmittedSolarPower"
         ),
@@ -222,10 +230,6 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         away_score_multiplier=_float(values, "awayScoreMultiplier", 1.25),
         away_threshold_reduction=_float(values, "awayThresholdReduction", 0.1),
         away_position_offset=_int(values, "awayPositionOffset", 10),
-        hot_day_close_enabled=_bool(values, "hotDayCloseEnabled"),
-        hot_day_close_threshold=_float(values, "hotDayCloseThreshold"),
-        hot_day_close_position=_int(values, "hotDayClosePosition", 30),
-        very_hot_day_close_position=_int(values, "veryHotDayClosePosition", 15),
         show_expert_weights=_bool(values, "showExpertWeights"),
         weight_direct_exposure=_float(values, "weightDirect"),
         weight_incidence=_float(values, "weightIncidence"),
@@ -280,6 +284,12 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "heat_power_limit_active": cover.heat_power_limit_active,
         "heat_power_limit_trigger": cover.heat_power_limit_trigger,
         "heat_power_limited_open_position": cover.heat_power_limited_open_position,
+        "room_temperature": cover.room_temperature,
+        "room_heat_protection_threshold": cover.room_heat_protection_threshold,
+        "room_temperature_heat_active": cover.room_temperature_heat_active,
+        "forecast_hot_day_active": cover.forecast_hot_day_active,
+        "heat_protection_activation_active": cover.heat_protection_activation_active,
+        "heat_protection_activation_reason": cover.heat_protection_activation_reason,
         "forecast_temperature_risk": _round(cover.forecast_temperature_risk),
         "forecast_risk_factor": _round(cover.forecast_risk_factor),
         "forecast_temperature_gain_boost": _round(cover.forecast_temperature_gain_boost),
@@ -296,9 +306,6 @@ def simulate_from_payload(hass: HomeAssistant, payload: dict[str, Any]) -> dict[
         "binary_close_threshold_w_m2": cover.binary_close_threshold_w_m2,
         "binary_close_position": cover.binary_close_position,
         "binary_heat_protection_active": cover.binary_heat_protection_active,
-        "heat_gain_policy_hot_day_override_active": cover.hot_day_override_active,
-        "heat_gain_policy_very_hot_day_override_active": cover.very_hot_day_override_active,
-        "heat_gain_policy_active_hot_day_close_position": cover.active_hot_day_close_position,
         "forecast_preemptive_active": cover.forecast_preemptive_active,
         "sunset_valid": cover.sunset_valid,
         "direct_sun_valid": cover.direct_sun_valid,

@@ -90,10 +90,12 @@ flowchart TD
   Gain --> Power[transmitted solar power W/m2 = current irradiance * solar gain]
   Power --> WindowPower[window watts = W/m2 * width * height]
 
-  Forecast[Today/tomorrow maximum temperature and preemptive start time] --> TemperatureGate
+  Forecast[Today maximum temperature and preemptive start time] --> TemperatureGate
+  Tomorrow[Tomorrow maximum temperature: strengthening only] --> Response
+  RoomTemp[Measured room temperature] --> TemperatureGate
   CurrentTemp[Current outside temperature] --> TemperatureGate
   Config --> TemperatureGate
-  TemperatureGate[Cold lockout, hot-day gate, very-hot pressure] --> ControlMode
+  TemperatureGate[Cold lockout AND today hot forecast OR room threshold] --> ControlMode
   EffectiveGain --> ControlMode{3. Heat-protection mode}
   Power --> ControlMode
 
@@ -106,9 +108,7 @@ flowchart TD
 
   Binary --> Targets
   Thresholds --> Targets
-  TemperatureGate --> HotDay[optional hot-day and very-hot maximum open positions]
   Power --> WattCap[optional continuous power cap: max open = limit / transmitted power * 100]
-  HotDay --> Targets[minimum of active automatic targets]
   WattCap --> Targets
 
   Config --> Night{4. Night mode}
@@ -133,8 +133,9 @@ flowchart TD
 | `solar_radiation_reference_w_m2` | Incoming direct irradiance before window geometry and glazing that counts as strong sun. | It normalizes irradiance for the scaling model; it is not itself a close command. |
 | `binary_close_threshold_w_m2` | Estimated direct solar power transmitted through one square meter of glazing after orientation, horizon, reveals, reflection and transmission. | Binary mode commands `binary_close_position`. |
 | `max_transmitted_solar_power_w_m2` | Maximum desired transmitted solar power per square meter of glazing. | The continuous cap reduces the maximum open position approximately by `limit / current power`. |
-| `forecast_hot_day_threshold` | Forecast maximum outside temperature where heat protection may start. | Opens the hot-day/forecast gate after the preemptive start time. |
-| `forecast_very_hot_day_threshold` | Forecast temperature where additional pressure saturates. | Enables the stricter very-hot target and maximum forecast pressure. |
+| `room_heat_protection_threshold` | Measured room temperature where reactive heat protection may start immediately. | Opens the common activation gate independently of today's forecast. |
+| `forecast_hot_day_threshold` | Today's forecast maximum outside temperature where heat protection may start. | Opens the common activation gate after the preemptive start time. |
+| `forecast_very_hot_day_threshold` | Forecast temperature where additional pressure saturates. | Raises the scaling pressure; it no longer selects a separate fixed position. |
 | `heat_protection_min_outside_temp` | Measured outside-temperature cold lockout. | Below it, heat protection remains disabled even on a forecast hot day. |
 
 ## Diagnostic Output

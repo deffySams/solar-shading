@@ -7,6 +7,7 @@ from custom_components.solar_shading.config_flow import (
     _migrate_retired_options,
     _validate_policy_input,
 )
+from custom_components.solar_shading.migration import RETIRED_OPTION_KEYS
 from custom_components.solar_shading.const import (
     CONF_BINARY_CLOSE_POSITION,
     CONF_BINARY_CLOSE_THRESHOLD,
@@ -16,6 +17,9 @@ from custom_components.solar_shading.const import (
     CONF_FULL_CLOSE_POSITION,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
     CONF_HEAT_PROTECTION_CONTROL_MODE,
+    CONF_FORECAST_HOT_DAY_THRESHOLD,
+    CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
+    CONF_ROOM_TEMPERATURE_ENTITY,
 )
 
 class ConfigFlowPolicyValidationTests(unittest.TestCase):
@@ -47,6 +51,66 @@ class ConfigFlowPolicyValidationTests(unittest.TestCase):
         self.assertEqual(migrated[CONF_BINARY_CLOSE_THRESHOLD], 240)
         self.assertEqual(migrated[CONF_BINARY_CLOSE_POSITION], 0)
         self.assertNotIn("transparent_blind", migrated)
+
+    def test_climate_mode_values_migrate_to_common_temperature_gate(self):
+        migrated = _migrate_retired_options(
+            {
+                "climate_mode": True,
+                "temp_entity": "sensor.living_room_temperature",
+                "temp_low": 20,
+                "temp_high": 24.5,
+                "hot_day_close_enabled": True,
+                "hot_day_close_threshold": 27.0,
+                "hot_day_close_position": 30,
+                "very_hot_day_close_position": 15,
+                "heat_power_outside_temp_threshold": 23,
+            }
+        )
+
+        self.assertEqual(
+            migrated[CONF_ROOM_TEMPERATURE_ENTITY],
+            "sensor.living_room_temperature",
+        )
+        self.assertEqual(migrated[CONF_ROOM_HEAT_PROTECTION_THRESHOLD], 24.5)
+        self.assertEqual(migrated[CONF_FORECAST_HOT_DAY_THRESHOLD], 27.0)
+        for retired in (
+            "climate_mode",
+            "temp_entity",
+            "temp_low",
+            "temp_high",
+            "hot_day_close_enabled",
+            "hot_day_close_threshold",
+            "hot_day_close_position",
+            "very_hot_day_close_position",
+            "heat_power_outside_temp_threshold",
+        ):
+            self.assertNotIn(retired, migrated)
+
+    def test_nested_house_profile_overrides_are_migrated(self):
+        migrated = _migrate_retired_options(
+            {
+                "house_defaults": {"temp_high": 23.5},
+                "room_profiles": {
+                    "bedroom": {
+                        "profile_overrides": {
+                            "temp_entity": "sensor.bedroom_temperature",
+                            "hot_day_close_enabled": True,
+                        }
+                    }
+                },
+            }
+        )
+
+        self.assertEqual(
+            migrated["house_defaults"][CONF_ROOM_HEAT_PROTECTION_THRESHOLD],
+            23.5,
+        )
+        room_overrides = migrated["room_profiles"]["bedroom"]["profile_overrides"]
+        self.assertEqual(
+            room_overrides[CONF_ROOM_TEMPERATURE_ENTITY],
+            "sensor.bedroom_temperature",
+        )
+        self.assertTrue(RETIRED_OPTION_KEYS.isdisjoint(room_overrides))
 
     def test_legacy_closed_notation_is_accepted(self):
         errors = _validate_policy_input({

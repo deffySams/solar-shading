@@ -88,7 +88,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
           "max_elevation": "Maximale Sonnenh?he",
@@ -127,7 +126,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
@@ -138,31 +136,6 @@
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Vertikales Cover"
-      },
-      "climate": {
-        "data": {
-          "temp_entity": "Innensensor f?r Temperatur",
-          "presence_entity": "Pr?senzsensor (optional)",
-          "weather_entity": "Quelle fuer Temperaturprognose (optional)",
-          "outside_temp": "Au?entemperatur-Sensor (optional)",
-          "temp_low": "Untere Temperaturschwelle",
-          "temp_high": "Obere Temperaturschwelle",
-          "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
-          "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
-          "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
-        },
-        "data_description": {
-          "presence_entity": "Entit?t f?r den Anwesenheitsstatus im Raum oder Haus",
-          "weather_entity": "Liefert nur Aussentemperatur sowie Tagesmaximum heute und morgen",
-          "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
-          "temp_low": "Mindesttemperatur f?r Komfort",
-          "temp_high": "H?chsttemperatur f?r Komfort",
-          "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
-          "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
-          "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
-        },
-        "description": "Zus?tzliche Klima-Konfigurationsvariablen hinzuf?gen.",
-        "title": "Klimaeinstellungen"
       },
       "weather": {
         "data": {
@@ -207,18 +180,15 @@
           "partial_close_position": "Teilziel (% offen)",
           "full_close_position": "Max. normale Schliessung (min. % offen)",
           "enable_away_mode": "Abwesenheitsmodus aktivieren",
+          "room_temperature_entity": "Raumtemperatur-Sensor",
+          "room_heat_protection_threshold": "Hitzeschutz sofort ab Raumtemperatur",
           "away_entity": "Abwesenheits-Entit?t",
           "away_score_multiplier": "Abwesenheit: Score-Multiplikator",
           "away_threshold_reduction": "Abwesenheit: Schwellen-Absenkung",
           "away_position_offset": "Abwesenheit: Offenposition reduzieren um",
-          "hot_day_close_enabled": "Offen-Limit an heissen Tagen aktivieren",
-          "hot_day_close_threshold": "Heiss-Tag-Schwelle",
-          "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
-          "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
-          "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
           "max_transmitted_solar_power_w_m2": "Max. durchgelassene Solarleistung (W/m2 Glas)"
         },
@@ -238,18 +208,15 @@
           "partial_close_position": "Offen-Ziel ab der Teil-Schwelle. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
           "full_close_position": "Mindestoeffnung fuer die normale Policy. Presets, Abwesenheit und Very-Hot duerfen nicht weiter schliessen; nur explizite Overrides koennen darunter gehen.",
           "enable_away_mode": "Aktiviert einen strengeren W?rmeschutz, sobald die ausgew?hlte Entit?t auf Abwesenheit steht.",
+          "room_temperature_entity": "Gemessene Raumtemperatur. Bei Erreichen der Komfortschwelle darf Hitzeschutz auch auf einem laut Prognose kühlen Tag reagieren.",
+          "room_heat_protection_threshold": "Ab dieser gemessenen Raumtemperatur wird der Hitzeschutz sofort freigegeben. Ohne Sensor bleibt die Prognoseschwelle maßgeblich.",
           "away_entity": "Entit?t zur Erkennung von Abwesenheit. Bei person/device_tracker gilt alles au?er home als abwesend. Bei binary_sensor/input_boolean gilt off als abwesend.",
           "away_score_multiplier": "Erh?ht den finalen W?rmeeintrags-Score im Abwesenheitsmodus und macht die Reaktion damit strenger.",
           "away_threshold_reduction": "Senkt im Abwesenheitsmodus die Teil-/Voll-Schlie?en-Schwellen.",
           "away_position_offset": "Reduziert im Abwesenheitsmodus die erlaubte Offenposition und macht die Verschattung strenger.",
-          "hot_day_close_enabled": "Wenn aktiv, kann ein Forecast ueber der Schwelle auch ausserhalb der feineren Gewichtung die Offenposition begrenzen.",
-          "hot_day_close_threshold": "Forecast-Temperatur, ab der der Tag generell als heiss behandelt wird.",
-          "hot_day_close_position": "Maximal erlaubte Offenposition an einem generell heissen Tag. Niedrigere Werte bedeuten mehr Verschattung.",
-          "very_hot_day_close_position": "Maximal erlaubte Offenposition ab der Sehr-heiss-Schwelle. Niedriger als das Heiss-Tag-Maximum setzen, damit der Unterschied sichtbar wird.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
           "heat_power_limit_enabled": "Berechnet die durchgelassene Solarleistung aus einfallender Strahlung, Geometrie, Einfallswinkel und Glas. Bei Ueberschreitung des W/m2-Limits wird die Offenposition begrenzt.",
-          "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
           "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung, die durch einen Quadratmeter Fensterglas gelangt. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
@@ -278,7 +245,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
           "max_elevation": "Maximale Sonnenh?he",
@@ -319,7 +285,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
@@ -351,7 +316,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "tilt_mode": "Bewegungsart",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
@@ -392,7 +356,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "tilt_mode": "W?hle die Bewegungsart",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
@@ -530,6 +493,7 @@
           "forecast_hot_day_threshold": "Heißer Tag ab Prognosetemperatur",
           "forecast_very_hot_day_threshold": "Sehr heißer Tag ab Prognosetemperatur",
           "forecast_preemptive_start_time": "Frühester prognosebasierter Eingriff",
+          "room_heat_protection_threshold": "Hitzeschutz sofort ab Raumtemperatur",
           "policy_preset": "Hitzeschutz-Preset",
           "heat_protection_control_mode": "Hitzeschutz-Verhalten",
           "binary_close_threshold_w_m2": "Fest schließen ab (W/m² durch Glas)",
@@ -556,12 +520,13 @@
           "sunset_position": "Zielposition außerhalb des Tagesintervalls. 100 % lässt die Beschattung offen; kleinere Werte schließen weiter.",
           "weather_entity": "Wetterentität ausschließlich für Außentemperatur sowie Maximaltemperatur-Prognosen von heute und morgen.",
           "use_forecast_max_temp_today": "Nimmt die heutige prognostizierte Maximaltemperatur in das Hitzeschutz-Temperatursignal auf.",
-          "use_forecast_max_temp_tomorrow": "Nimmt zusätzlich die morgige Maximaltemperatur auf. Der höhere ausgewählte Wert steuert das Prognosesignal.",
+          "use_forecast_max_temp_tomorrow": "Morgen allein aktiviert heute keinen Hitzeschutz. Der Wert kann eine bereits durch heutigen Forecast oder Raumtemperatur aktive Regelung verstärken.",
           "use_open_data_solar_radiation": "Verwendet aktuelle und prognostizierte Solarstrahlung von Open-Meteo. Ein lokaler Strahlungssensor hat für den Istwert Vorrang.",
           "solar_radiation_entity": "Optionaler lokaler Strahlungssensor in W/m². Sein Istwert ersetzt Open-Meteo in der laufenden Berechnung.",
           "forecast_hot_day_threshold": "Prognosetemperatur in Grad Celsius, ab der die Hitzeschutzberechnung freigegeben wird.",
           "forecast_very_hot_day_threshold": "Prognosetemperatur in Grad Celsius, ab der der stärkste Prognoseeinfluss erreicht ist.",
           "forecast_preemptive_start_time": "Rein prognosebasierte Eingriffe sind vor dieser lokalen Uhrzeit gesperrt; gemessene Istwerte bleiben nutzbar.",
+          "room_heat_protection_threshold": "Hausweite Komfortschwelle. Ein im Raumprofil gewählter Temperatursensor gibt den Hitzeschutz ab diesem Messwert sofort frei.",
           "policy_preset": "Wählt verständliche, vordefinierte Gewichtungen und Schwellen. Expertenwerte werden nur für gezielte Abweichungen benötigt.",
           "heat_protection_control_mode": "Stufenlos berechnet eine variable Zielposition aus Physik und Preset. Binär fährt ein festes Ziel, sobald die W/m²-Schwelle überschritten ist.",
           "binary_close_threshold_w_m2": "Geschätzte direkte Solarleistung, die nach Ausrichtung, Laibung, Reflexion und Transmission durch einen Quadratmeter Glas in den Raum gelangt. Beim Überschreiten wird das feste Ziel angefahren.",
@@ -578,12 +543,7 @@
         "data": {
           "solar_radiation_reference_w_m2": "Einfallende Solarstrahlung für starke Sonne (W/m²)",
           "forecast_influence_strength": "Stärke des Prognoseeinflusses",
-          "heat_power_outside_temp_threshold": "Leistungslimit ab Außentemperatur",
           "heat_protection_min_outside_temp": "Hitzeschutz gesperrt unter Außentemperatur",
-          "hot_day_close_enabled": "Offenposition an heißen Tagen begrenzen",
-          "hot_day_close_threshold": "Heiß-Tag-Limit ab Prognosetemperatur",
-          "hot_day_close_position": "Maximum an heißen Tagen (% offen)",
-          "very_hot_day_close_position": "Maximum an sehr heißen Tagen (% offen)",
           "show_expert_weights": "Einzelne Expertengewichte verwenden",
           "weight_direct_exposure": "Gewicht: geometrische Exposition",
           "weight_incidence": "Gewicht: Einfallswinkel",
@@ -603,12 +563,7 @@
         "data_description": {
           "solar_radiation_reference_w_m2": "Einfallende direkte Strahlung vor Fenstergeometrie und Glas. Aktuelle W/m² geteilt durch diesen Wert ergeben den Einstrahlungsfaktor; ein kleinerer Wert reagiert stärker.",
           "forecast_influence_strength": "Bestimmt, wie stark Prognosetemperatur und prognostizierte Solarstrahlung den physikalischen Wärmeeintrag verstärken. 0 ignoriert die Verstärkung, 1 erlaubt den vollen Einfluss.",
-          "heat_power_outside_temp_threshold": "Das stufenlose Leistungslimit wird ab dieser gemessenen Außentemperatur aktiv oder wenn eine zulässige Heißwetterprognose den präventiven Schutz auslöst.",
           "heat_protection_min_outside_temp": "Kältesperre in Grad Celsius. Unter dieser gemessenen Außentemperatur bleibt Hitzeschutz trotz heißer Prognose aus.",
-          "hot_day_close_enabled": "Aktiviert bei direkter Sonne eine zusätzliche maximale Offenposition für prognostizierte heiße Tage.",
-          "hot_day_close_threshold": "Prognosetemperatur, ab der die maximale Offenposition für heiße Tage angewendet wird.",
-          "hot_day_close_position": "Maximale Offenposition an einem prognostizierten heißen Tag. Eine strengere andere Regel darf weiter schließen.",
-          "very_hot_day_close_position": "Maximale Offenposition ab der Sehr-heiß-Schwelle. Eine strengere andere Regel darf weiter schließen.",
           "show_expert_weights": "Ersetzt die Preset-Gewichte durch die fünf Einzelgewichte darunter. Für ein einheitliches Hausverhalten deaktiviert lassen.",
           "weight_direct_exposure": "Relative Bedeutung des sichtbaren, unverschatteten Glasanteils nach Sichtfeld-, Laibungs- und Horizontprüfung.",
           "weight_incidence": "Relative Bedeutung des Einfallswinkels auf das Fenster. Senkrechter Strahlungseinfall erhält den höchsten Wert.",
@@ -629,7 +584,9 @@
         "description": "Diese Werte legen die normierte Regelmathematik offen. Haus-Presets sind vorzuziehen, solange kein gemessenes Verhalten gezielt korrigiert werden muss."
       },
       "house_facades": {
-        "data": {"profile_action": "Fassadenprofil bearbeiten oder neu anlegen"},
+        "data": {
+          "profile_action": "Fassadenprofil bearbeiten oder neu anlegen"
+        },
         "data_description": {
           "profile_action": "Ein vorhandenes Fassadenprofil wählen oder ein neues anlegen. Zugeordnete Fenster erben Drehung, Geometrie, Horizont und Preset."
         },
@@ -700,14 +657,16 @@
           "delete_profile": "Dieses Raumprofil löschen",
           "facade_name": "Standard-Fassadenprofil dieses Raums",
           "policy_preset": "Hitzeschutz-Preset",
-          "has_additional_daylight_windows": "Raum hat Tageslichtfenster an weiteren Fassaden"
+          "has_additional_daylight_windows": "Raum hat Tageslichtfenster an weiteren Fassaden",
+          "room_temperature_entity": "Raumtemperatur-Sensor"
         },
         "data_description": {
           "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten. Gespeichert wird die stabile HA-Bereichs-ID.",
           "delete_profile": "Löscht nur das Solar-Shading-Raumprofil; der Home-Assistant-Raum bleibt unverändert.",
           "facade_name": "Standard-Fassadenprofil für Fenster dieses Raums, sofern am Fenster keine andere Fassade gewählt wird.",
           "policy_preset": "Hitzeschutz-Preset für alle Fenster des Raums, solange Raumfassaden- oder Fensterprofil nichts Spezifischeres vorgibt.",
-          "has_additional_daylight_windows": "Reduziert unnötiges Schließen, weil der Raum über Fenster einer weiteren Fassade weiterhin Tageslicht erhält."
+          "has_additional_daylight_windows": "Reduziert unnötiges Schließen, weil der Raum über Fenster einer weiteren Fassade weiterhin Tageslicht erhält.",
+          "room_temperature_entity": "Dieser Sensor gilt für alle Fenster des Raums. Er kann ein Temperatursensor oder die aktuelle Temperatur einer Klima-Entität sein."
         },
         "title": "Raumprofil bearbeiten",
         "description": "Der Raum erbt automatisch sein gewähltes Stockwerksprofil und kann Standardfassade sowie raumweites Verhalten ergänzen."
@@ -797,7 +756,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
           "max_elevation": "Maximale Sonnenh?he",
@@ -836,7 +794,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
@@ -847,31 +804,6 @@
         },
         "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
         "title": "Vertikales Cover"
-      },
-      "climate": {
-        "data": {
-          "temp_entity": "Innensensor f?r Temperatur",
-          "presence_entity": "Pr?senzsensor (optional)",
-          "weather_entity": "Quelle fuer Temperaturprognose (optional)",
-          "outside_temp": "Au?entemperatur-Sensor (optional)",
-          "temp_low": "Untere Temperaturschwelle",
-          "temp_high": "Obere Temperaturschwelle",
-          "irradiance_entity": "Bestrahlungsst?rke-Sensor (optional)",
-          "irradiance_threshold": "Bestrahlungsst?rke-Schwelle",
-          "outside_threshold": "Mindest-Au?entemperatur f?r Sommermodus"
-        },
-        "data_description": {
-          "presence_entity": "Entit?t f?r den Anwesenheitsstatus im Raum oder Haus",
-          "weather_entity": "Liefert nur Aussentemperatur sowie Tagesmaximum heute und morgen",
-          "outside_temp": "?berschreibt die Au?entemperatur der Wetter-Entit?t, falls beides gesetzt ist",
-          "temp_low": "Mindesttemperatur f?r Komfort",
-          "temp_high": "H?chsttemperatur f?r Komfort",
-          "irradiance_entity": "Bestrahlungsst?rke-Sensor verwenden, um im Pr?senzmodus Blendung zu reduzieren",
-          "irradiance_threshold": "Schwellenwert f?r den Bestrahlungsst?rke-Sensor; oberhalb sollte Blendung reduziert werden",
-          "outside_threshold": "Au?entemperatur, ab der der sommerliche Klimapfad ?berhaupt aktiv werden darf"
-        },
-        "description": "Zus?tzliche Klima-Konfigurationsvariablen hinzuf?gen.",
-        "title": "Klimaeinstellungen"
       },
       "weather": {
         "data": {
@@ -916,18 +848,15 @@
           "partial_close_position": "Teilziel (% offen)",
           "full_close_position": "Max. normale Schliessung (min. % offen)",
           "enable_away_mode": "Abwesenheitsmodus aktivieren",
+          "room_temperature_entity": "Raumtemperatur-Sensor",
+          "room_heat_protection_threshold": "Hitzeschutz sofort ab Raumtemperatur",
           "away_entity": "Abwesenheits-Entit?t",
           "away_score_multiplier": "Abwesenheit: Score-Multiplikator",
           "away_threshold_reduction": "Abwesenheit: Schwellen-Absenkung",
           "away_position_offset": "Abwesenheit: Offenposition reduzieren um",
-          "hot_day_close_enabled": "Offen-Limit an heissen Tagen aktivieren",
-          "hot_day_close_threshold": "Heiss-Tag-Schwelle",
-          "hot_day_close_position": "Heiss-Tag-Maximum (% offen)",
-          "very_hot_day_close_position": "Sehr-heiss-Maximum (% offen)",
           "show_expert_weights": "Expert-Gewichte anzeigen",
           "weight_solar_radiation": "Gewicht: Solarstrahlung",
           "heat_power_limit_enabled": "W/m2-Limit pro Glasflaeche aktivieren",
-          "heat_power_outside_temp_threshold": "Watt-Limit ab Aussentemperatur",
           "heat_protection_min_outside_temp": "Unter dieser Aussentemperatur ist Waermeschutz deaktiviert",
           "max_transmitted_solar_power_w_m2": "Max. durchgelassene Solarleistung (W/m2 Glas)"
         },
@@ -947,18 +876,15 @@
           "partial_close_position": "Offen-Ziel ab der Teil-Schwelle. 100% offen bedeutet ganz offen, 0% offen bedeutet geschlossen.",
           "full_close_position": "Mindestoeffnung fuer die normale Policy. Presets, Abwesenheit und Very-Hot duerfen nicht weiter schliessen; nur explizite Overrides koennen darunter gehen.",
           "enable_away_mode": "Aktiviert einen strengeren W?rmeschutz, sobald die ausgew?hlte Entit?t auf Abwesenheit steht.",
+          "room_temperature_entity": "Gemessene Raumtemperatur. Bei Erreichen der Komfortschwelle darf Hitzeschutz auch auf einem laut Prognose kühlen Tag reagieren.",
+          "room_heat_protection_threshold": "Ab dieser gemessenen Raumtemperatur wird der Hitzeschutz sofort freigegeben. Ohne Sensor bleibt die Prognoseschwelle maßgeblich.",
           "away_entity": "Entit?t zur Erkennung von Abwesenheit. Bei person/device_tracker gilt alles au?er home als abwesend. Bei binary_sensor/input_boolean gilt off als abwesend.",
           "away_score_multiplier": "Erh?ht den finalen W?rmeeintrags-Score im Abwesenheitsmodus und macht die Reaktion damit strenger.",
           "away_threshold_reduction": "Senkt im Abwesenheitsmodus die Teil-/Voll-Schlie?en-Schwellen.",
           "away_position_offset": "Reduziert im Abwesenheitsmodus die erlaubte Offenposition und macht die Verschattung strenger.",
-          "hot_day_close_enabled": "Wenn aktiv, kann ein Forecast ueber der Schwelle auch ausserhalb der feineren Gewichtung die Offenposition begrenzen.",
-          "hot_day_close_threshold": "Forecast-Temperatur, ab der der Tag generell als heiss behandelt wird.",
-          "hot_day_close_position": "Maximal erlaubte Offenposition an einem generell heissen Tag. Niedrigere Werte bedeuten mehr Verschattung.",
-          "very_hot_day_close_position": "Maximal erlaubte Offenposition ab der Sehr-heiss-Schwelle. Niedriger als das Heiss-Tag-Maximum setzen, damit der Unterschied sichtbar wird.",
           "show_expert_weights": "Zeigt und nutzt einzelne Policy-Gewichte. Wenn deaktiviert, liefert das gewaehlte Preset die Gewichte.",
           "weight_solar_radiation": "Expert-Gewicht fuer gemessene oder offene Solarstrahlung in W/m2. 0 ignoriert diesen Faktor im Policy-Score.",
           "heat_power_limit_enabled": "Berechnet die durchgelassene Solarleistung aus einfallender Strahlung, Geometrie, Einfallswinkel und Glas. Bei Ueberschreitung des W/m2-Limits wird die Offenposition begrenzt.",
-          "heat_power_outside_temp_threshold": "Aussentemperatur, ab der das Watt-Limit eingreifen darf. An forecast-heissen oder sehr heissen Tagen darf der harte Watt-Deckel auch schon vorher aktiv werden.",
           "heat_protection_min_outside_temp": "Unter dieser gemessenen Aussentemperatur bleibt Waermeschutz aus, auch wenn die Vorhersage heiss oder sehr heiss ist.",
           "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung, die durch einen Quadratmeter Fensterglas gelangt. Die Offenposition wird naeherungsweise linear reduziert, damit dieser Wert nicht ueberschritten wird."
         },
@@ -987,7 +913,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
           "max_elevation": "Maximale Sonnenh?he",
@@ -1028,7 +953,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
           "reveal_right_depth": "Tiefe der rechten Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von rechts kommt.",
@@ -1060,7 +984,6 @@
           "sunset_position": "Ruhe-/Nachtposition nach Zeit (% offen)",
           "sunset_offset": "Sonnenuntergangs-Offset",
           "sunrise_offset": "Sonnenaufgangs-Offset",
-          "climate_mode": "Klima-Modus",
           "tilt_mode": "Bewegungsart",
           "blind_spot": "Blindspot einrichten",
           "min_elevation": "Minimale Sonnenh?he",
@@ -1101,7 +1024,6 @@
           "sunset_position": "Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergangs- und Sonnenaufgangs-Offset bestimmen den Nachtmodus; 100% offen bedeutet nachts offen bleiben.",
           "sunset_offset": "Versatz (?) zur Sonnenuntergangszeit in Minuten",
           "sunrise_offset": "Versatz (?) zur Sonnenaufgangszeit in Minuten",
-          "climate_mode": "Variablen fuer den Klima-Modus konfigurieren",
           "tilt_mode": "W?hle die Bewegungsart",
           "window_width": "Sichtbare Glasbreite in Metern. Erforderlich, sobald Laibungstiefen verwendet werden.",
           "reveal_left_depth": "Tiefe der linken Laibung in Metern. Erhoeht die Verschattung, wenn die Sonne von links kommt.",
@@ -1194,8 +1116,3 @@
     }
   }
 }
-
-
-
-
-

@@ -7,7 +7,6 @@ from typing import Any
 
 import numpy as np
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 DNI_REFERENCE_W_M2 = 900.0
@@ -55,6 +54,8 @@ async def async_fetch_open_meteo_solar_summary(
     longitude: float,
 ) -> dict[str, Any]:
     """Fetch a compact Open-Meteo solar radiation summary."""
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
     session = async_get_clientsession(hass)
     params = {
         "latitude": latitude,

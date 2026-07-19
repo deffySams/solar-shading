@@ -110,8 +110,9 @@ class AdaptiveGeneralCover(ABC):
     solar_radiation_entity: str | None
     solar_radiation_reference: float | None
     heat_power_limit_enabled: bool
-    heat_power_outside_temp_threshold: float | None
     heat_protection_min_outside_temp: float | None
+    room_temperature_entity: str | None
+    room_heat_protection_threshold: float | None
     max_transmitted_solar_power_w_m2: float | None
     use_forecast_max_temp_today: bool
     use_forecast_max_temp_tomorrow: bool
@@ -127,10 +128,6 @@ class AdaptiveGeneralCover(ABC):
     away_score_multiplier: float | None
     away_threshold_reduction: float | None
     away_position_offset: int | None
-    hot_day_close_enabled: bool
-    hot_day_close_threshold: float | None
-    hot_day_close_position: int | None
-    very_hot_day_close_position: int | None
     show_expert_weights: bool
     weight_direct_exposure: float | None
     weight_incidence: float | None
@@ -577,6 +574,31 @@ class AdaptiveGeneralCover(ABC):
         return self.forecast_today_max_temp
 
     @property
+    def room_temperature(self) -> float | None:
+        """Return the measured room temperature used for reactive protection."""
+        if not self.room_temperature_entity:
+            return None
+        state = self.hass.states.get(self.room_temperature_entity)
+        if state is None:
+            return None
+        value = state.attributes.get("current_temperature")
+        if value is None:
+            value = state.state
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    @property
+    def room_temperature_heat_active(self) -> bool:
+        """Return whether the measured room temperature requests protection."""
+        if self.room_temperature is None or self.room_heat_protection_threshold is None:
+            return False
+        return float(self.room_temperature) >= float(
+            self.room_heat_protection_threshold
+        )
+
+    @property
     def heat_power_limit_active(self) -> bool:
         """Return whether the heat-power cap may constrain the open position."""
         if not self.heat_power_limit_enabled:
@@ -588,34 +610,40 @@ class AdaptiveGeneralCover(ABC):
             or self.max_transmitted_solar_power_w_m2 <= 0
         ):
             return False
-        return self.heat_power_temperature_gate_active
+        return self.heat_protection_activation_active
 
     @property
-    def heat_power_temperature_gate_active(self) -> bool:
-        """Return whether temperature or forecast allows the watt cap.
-
-        The watt cap is a binary safety rail: when measured heat power is above
-        the configured W limit, it may close on either a currently hot outside
-        temperature or a forecast hot/very-hot day. This keeps cool mornings on
-        hot days from missing preemptive shading, while a measured cold outside
-        temperature still blocks heat protection.
-        """
-        threshold = self.heat_power_outside_temp_threshold
-        if threshold is None:
-            return True
-
-        outside_temp = self.heat_power_outside_temperature
-        if outside_temp is not None and float(outside_temp) >= float(threshold):
-            return True
-
-        hot_threshold = self.forecast_hot_day_threshold
-        if self.hot_day_signal is None or hot_threshold is None:
+    def forecast_hot_day_active(self) -> bool:
+        """Return whether today's forecast enables pre-emptive heat protection."""
+        if not self.use_forecast_max_temp_today:
             return False
         if not self.forecast_preemptive_active:
             return False
+        if self.forecast_today_max_temp is None or self.forecast_hot_day_threshold is None:
+            return False
+        return float(self.forecast_today_max_temp) >= float(
+            self.forecast_hot_day_threshold
+        )
+
+    @property
+    def heat_protection_activation_active(self) -> bool:
+        """Return whether forecast or room temperature enables heat protection."""
         if not self.heat_protection_current_temperature_allowed:
             return False
-        return float(self.hot_day_signal) >= float(hot_threshold)
+        return self.forecast_hot_day_active or self.room_temperature_heat_active
+
+    @property
+    def heat_protection_activation_reason(self) -> str:
+        """Return the temperature gate reason for diagnostics."""
+        if not self.heat_protection_current_temperature_allowed:
+            return "cold_lockout"
+        if self.room_temperature_heat_active and self.forecast_hot_day_active:
+            return "forecast_hot_and_room_temperature"
+        if self.room_temperature_heat_active:
+            return "room_temperature"
+        if self.forecast_hot_day_active:
+            return "forecast_hot"
+        return "inactive"
 
     @property
     def heat_power_limit_trigger(self) -> str:
@@ -629,35 +657,24 @@ class AdaptiveGeneralCover(ABC):
             or self.max_transmitted_solar_power_w_m2 <= 0
         ):
             return "no_watt_limit"
-        threshold = self.heat_power_outside_temp_threshold
-        if threshold is None:
-            return "always"
-        outside_temp = self.heat_power_outside_temperature
-        if outside_temp is not None and float(outside_temp) >= float(threshold):
-            return "outside_temperature"
         if not self.heat_protection_current_temperature_allowed:
             return "cold_lockout"
-        hot_threshold = self.forecast_hot_day_threshold
-        if (
-            self.hot_day_signal is not None
-            and hot_threshold is not None
-            and self.forecast_preemptive_active
-            and self.heat_protection_current_temperature_allowed
-            and float(self.hot_day_signal) >= float(hot_threshold)
-        ):
+        if self.room_temperature_heat_active:
+            return "room_temperature"
+        if self.forecast_hot_day_active:
             if (
                 self.forecast_very_hot_day_threshold is not None
-                and float(self.hot_day_signal)
+                and self.forecast_today_max_temp is not None
+                and float(self.forecast_today_max_temp)
                 >= float(self.forecast_very_hot_day_threshold)
             ):
                 return "very_hot_forecast"
             return "hot_forecast"
-        return "below_temperature_gate"
+        return "inactive"
 
     @property
     def heat_protection_current_temperature_allowed(self) -> bool:
         """Return whether current outside temperature is not too cold for heat protection."""
-        threshold = self.heat_power_outside_temp_threshold
         outside_temp = self.heat_power_outside_temperature
         if self.heat_protection_min_outside_temp is None or outside_temp is None:
             return True
@@ -751,17 +768,7 @@ class AdaptiveGeneralCover(ABC):
     @property
     def heat_protection_temperature_allowed(self) -> bool:
         """Return whether forecast temperature allows heat-protection shading."""
-        if not self.heat_protection_current_temperature_allowed:
-            return False
-        if (
-            self.heat_protection_temperature_signal is None
-            or self.forecast_hot_day_threshold is None
-        ):
-            return True
-        return (
-            float(self.heat_protection_temperature_signal)
-            >= float(self.forecast_hot_day_threshold)
-        )
+        return self.heat_protection_activation_active
 
     @property
     def forecast_adjusted_gain_factor(self) -> float:
@@ -880,45 +887,6 @@ class AdaptiveGeneralCover(ABC):
         return max(values)
 
     @property
-    def hot_day_override_active(self) -> bool:
-        """Return whether the strict hot-day override is active."""
-        if not self.hot_day_close_enabled:
-            return False
-        if self.sunset_valid or not self.forecast_preemptive_active:
-            return False
-        if (
-            not self.direct_sun_valid
-            or self.direct_solar_exposure_factor <= 0.001
-            or self.incoming_solar_radiation_factor <= 0.001
-        ):
-            return False
-        if not self.heat_protection_current_temperature_allowed:
-            return False
-        if self.hot_day_signal is None or self.hot_day_close_threshold is None:
-            return False
-        return float(self.hot_day_signal) >= float(self.hot_day_close_threshold)
-
-    @property
-    def very_hot_day_override_active(self) -> bool:
-        """Return whether the stricter very-hot open limit is active."""
-        if not self.hot_day_override_active:
-            return False
-        if self.hot_day_signal is None or self.forecast_very_hot_day_threshold is None:
-            return False
-        return float(self.hot_day_signal) >= float(self.forecast_very_hot_day_threshold)
-
-    @property
-    def active_hot_day_close_position(self) -> int | None:
-        """Return the active hot/very-hot open-position cap."""
-        if not self.hot_day_override_active:
-            return None
-        if self.very_hot_day_override_active and self.very_hot_day_close_position is not None:
-            return int(np.clip(self.very_hot_day_close_position, 0, 100))
-        if self.hot_day_close_position is None:
-            return None
-        return int(np.clip(self.hot_day_close_position, 0, 100))
-
-    @property
     def policy_component_values(self) -> dict[str, float | None]:
         """Return the active heat-gain policy components."""
         return {
@@ -966,7 +934,7 @@ class AdaptiveGeneralCover(ABC):
         weight_policy_active = self.enable_heat_gain_policy and any(
             weight > 0.0 for weight in self.policy_component_weights.values()
         )
-        return weight_policy_active or self.hot_day_override_active
+        return weight_policy_active
 
     @property
     def policy_weighted_score(self) -> float:
@@ -1150,20 +1118,6 @@ class AdaptiveGeneralCover(ABC):
             self.effective_partial_close_position,
             self.effective_full_close_position,
         )
-        if self.very_hot_day_override_active:
-            return "veryhotday"
-        active_hot_day_position = self.active_hot_day_close_position
-        if (
-            self.hot_day_override_active
-            and (
-                base_level in {"none", "partial"}
-                or (
-                    active_hot_day_position is not None
-                    and active_hot_day_position < int(base_target or 100)
-                )
-            )
-        ):
-            return "hotday"
         return base_level
 
     @property
@@ -1180,9 +1134,6 @@ class AdaptiveGeneralCover(ABC):
             self.effective_partial_close_position,
             self.effective_full_close_position,
         )[1]
-        active_hot_day_position = self.active_hot_day_close_position
-        if active_hot_day_position is not None:
-            return min(active_hot_day_position, int(policy_target or 100))
         return policy_target
 
     @property
@@ -1270,10 +1221,6 @@ class AdaptiveGeneralCover(ABC):
             return "transmitted_solar_power_limit"
         if self.binary_heat_protection_active:
             return "binary_solar_threshold"
-        if self.very_hot_day_override_active:
-            return "very_hot_day_override"
-        if self.hot_day_override_active:
-            return "hot_day_override"
         if self.heat_gain_target_position is not None:
             return f"scaling_{self.policy_action_level}"
         return "default_position"
@@ -1294,6 +1241,15 @@ class AdaptiveGeneralCover(ABC):
                 "gate": "outside_temperature",
                 "passed": bool(self.heat_protection_current_temperature_allowed),
                 "value": self.heat_power_outside_temperature,
+            },
+            {
+                "gate": "heat_protection_activation",
+                "passed": bool(self.heat_protection_activation_active),
+                "reason": self.heat_protection_activation_reason,
+                "room_temperature": self.room_temperature,
+                "room_threshold": self.room_heat_protection_threshold,
+                "forecast_today_max": self.forecast_today_max_temp,
+                "forecast_hot_threshold": self.forecast_hot_day_threshold,
             },
             {
                 "gate": "transmitted_solar_power",
@@ -1406,232 +1362,6 @@ class NormalCoverState:
         return result
 
 
-@dataclass
-class ClimateCoverData:
-    """Fetch additional data."""
-
-    hass: HomeAssistant
-    logger: ConfigContextAdapter
-    temp_entity: str
-    temp_low: float
-    temp_high: float
-    presence_entity: str
-    weather_entity: str
-    outside_entity: str
-    temp_switch: bool
-    blind_type: str
-    irradiance_entity: str
-    irradiance_threshold: int
-    temp_summer_outside: float
-    _use_irradiance: bool
-
-    @property
-    def outside_temperature(self):
-        """Get outside temperature."""
-        temp = None
-        if self.outside_entity:
-            temp = get_safe_state(
-                self.hass,
-                self.outside_entity,
-            )
-        elif self.weather_entity:
-            temp = state_attr(self.hass, self.weather_entity, "temperature")
-        return temp
-
-    @property
-    def inside_temperature(self):
-        """Get inside temp from entity."""
-        if self.temp_entity is not None:
-            if get_domain(self.temp_entity) != "climate":
-                temp = get_safe_state(
-                    self.hass,
-                    self.temp_entity,
-                )
-            else:
-                temp = state_attr(self.hass, self.temp_entity, "current_temperature")
-            return temp
-
-    @property
-    def get_current_temperature(self) -> float:
-        """Get temperature."""
-        if self.temp_switch:
-            if self.outside_temperature:
-                return float(self.outside_temperature)
-        if self.inside_temperature:
-            return float(self.inside_temperature)
-
-    @property
-    def is_presence(self):
-        """Checks if people are present."""
-        presence = None
-        if self.presence_entity is not None:
-            presence = get_safe_state(self.hass, self.presence_entity)
-        # set to true if no sensor is defined
-        if presence is not None:
-            domain = get_domain(self.presence_entity)
-            if domain == "device_tracker":
-                return presence == "home"
-            if domain == "zone":
-                return int(presence) > 0
-            if domain in ["binary_sensor", "input_boolean"]:
-                return presence == "on"
-        return True
-
-    @property
-    def is_winter(self) -> bool:
-        """Check if temperature is below threshold."""
-        if self.temp_low is not None and self.get_current_temperature is not None:
-            is_it = self.get_current_temperature < self.temp_low
-        else:
-            is_it = False
-
-        self.logger.debug(
-            "is_winter(): current_temperature < temp_low: %s < %s = %s",
-            self.get_current_temperature,
-            self.temp_low,
-            is_it,
-        )
-        return is_it
-
-    @property
-    def outside_high(self) -> bool:
-        """Check if outdoor temperature is above threshold."""
-        if (
-            self.temp_summer_outside is not None
-            and self.outside_temperature is not None
-        ):
-            return float(self.outside_temperature) > self.temp_summer_outside
-        return True
-
-    @property
-    def is_summer(self) -> bool:
-        """Check if temperature is over threshold."""
-        if self.temp_high is not None and self.get_current_temperature is not None:
-            is_it = self.get_current_temperature > self.temp_high and self.outside_high
-        else:
-            is_it = False
-
-        self.logger.debug(
-            "is_summer(): current_temp > temp_high and outside_high?: %s > %s and %s = %s",
-            self.get_current_temperature,
-            self.temp_high,
-            self.outside_high,
-            is_it,
-        )
-        return is_it
-
-    @property
-    def irradiance(self) -> bool:
-        """Get irradiance value and compare to threshold."""
-        if not self._use_irradiance:
-            return False
-        if self.irradiance_entity is not None and self.irradiance_threshold is not None:
-            value = get_safe_state(self.hass, self.irradiance_entity)
-            return float(value) <= self.irradiance_threshold
-        return False
-
-
-@dataclass
-class ClimateCoverState(NormalCoverState):
-    """Compute state for climate control operation."""
-
-    climate_data: ClimateCoverData
-
-    def normal_type_cover(self) -> int:
-        """Determine state for horizontal and vertical covers."""
-
-        self.cover.logger.debug("Is presence? %s", self.climate_data.is_presence)
-
-        if self.climate_data.is_presence:
-            return self.normal_with_presence()
-
-        return self.normal_without_presence()
-
-    def normal_with_presence(self) -> int:
-        """Determine state for horizontal and vertical covers with occupants."""
-
-        is_summer = self.climate_data.is_summer
-
-        # A local irradiance sensor may still open the cover on low-radiation days.
-        if not is_summer and self.climate_data.irradiance:
-            # If it's winter and the cover is valid, return 100
-            if self.climate_data.is_winter and self.cover.valid:
-                self.cover.logger.debug(
-                    "n_w_p(): Winter and sun is in front of window = use 100"
-                )
-                return 100
-            # Otherwise, return the default cover state
-            self.cover.logger.debug(
-                "n_w_p(): low irradiance outside summer = use default"
-            )
-            return self.cover.default
-
-        # If none of the above conditions are met, get the state from the parent class
-        self.cover.logger.debug("n_w_p(): None of the climate conditions are met")
-        return super().get_state()
-
-    def normal_without_presence(self) -> int:
-        """Determine state for horizontal and vertical covers without occupants."""
-        if self.cover.valid:
-            if self.climate_data.is_summer:
-                return 0
-            if self.climate_data.is_winter:
-                return 100
-        return self.cover.default
-
-    def tilt_with_presence(self, degrees: int) -> int:
-        """Determine state for tilted blinds with occupants."""
-        if self.cover.valid and (
-            self.climate_data.irradiance
-        ):
-            if self.climate_data.is_summer:
-                # If it's summer, return 45 degrees
-                return 45 / degrees * 100
-            return super().get_state()
-        return 80 / degrees * 100
-
-    def tilt_without_presence(self, degrees: int) -> int:
-        """Determine state for tilted blinds without occupants."""
-        beta = np.rad2deg(self.cover.beta)
-        if self.cover.valid:
-            if self.climate_data.is_summer:
-                # block out all light in summer
-                return 0
-            if self.climate_data.is_winter and self.cover.mode == "mode2":
-                # parallel to sun beams, not possible with single direction
-                return (beta + 90) / degrees * 100
-            return 80 / degrees * 100
-        return super().get_state()
-
-    def tilt_state(self):
-        """Add tilt specific controls."""
-        degrees = 90
-        if self.cover.mode == "mode2":
-            degrees = 180
-        if self.climate_data.is_presence:
-            return self.tilt_with_presence(degrees)
-        return self.tilt_without_presence(degrees)
-
-    def get_state(self) -> int:
-        """Return state."""
-        result = self.normal_type_cover()
-        if self.climate_data.blind_type == "cover_tilt":
-            result = self.tilt_state()
-        if self.cover.apply_max_position and result > self.cover.max_pos:
-            self.cover.logger.debug(
-                "Climate state: Max position applied (%s > %s)",
-                result,
-                self.cover.max_pos,
-            )
-            return self.cover.max_pos
-        if self.cover.apply_min_position and result < self.cover.min_pos:
-            self.cover.logger.debug(
-                "Climate state: Min position applied (%s < %s)",
-                result,
-                self.cover.min_pos,
-            )
-            return self.cover.min_pos
-        return result
 
 
 @dataclass

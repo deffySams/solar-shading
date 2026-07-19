@@ -120,8 +120,9 @@ def make_cover(**overrides):
         "solar_radiation_entity": None,
         "solar_radiation_reference": 900.0,
         "heat_power_limit_enabled": False,
-        "heat_power_outside_temp_threshold": 24.0,
         "heat_protection_min_outside_temp": 14.0,
+        "room_temperature_entity": None,
+        "room_heat_protection_threshold": 24.0,
         "max_transmitted_solar_power_w_m2": 250.0,
         "use_forecast_max_temp_today": True,
         "use_forecast_max_temp_tomorrow": False,
@@ -137,10 +138,6 @@ def make_cover(**overrides):
         "away_score_multiplier": 1.25,
         "away_threshold_reduction": 0.1,
         "away_position_offset": 10,
-        "hot_day_close_enabled": False,
-        "hot_day_close_threshold": 30.0,
-        "hot_day_close_position": 20,
-        "very_hot_day_close_position": 10,
         "show_expert_weights": False,
         "weight_direct_exposure": 1.0,
         "weight_incidence": 1.0,
@@ -217,7 +214,7 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertEqual(cover.forecast_risk_factor, 0.0)
         self.assertEqual(cover.forecast_temperature_gain_boost, 0.0)
         self.assertEqual(cover.forecast_temperature_policy_pressure, 0.0)
-        self.assertEqual(cover.forecast_gain_uplift_factor, 1.0)
+        self.assertEqual(cover.forecast_gain_uplift_factor, 0.0)
 
     def test_missing_solar_radiation_does_not_invent_heat_from_weather(self):
         """Missing irradiance must not fall back to cloud or rain proxies."""
@@ -226,13 +223,11 @@ class CalculationMatrixTests(unittest.TestCase):
             solar_radiation_summary=None,
             weather_entity="weather.test",
             hass=FakeHass({"weather.test": FakeState("sunny")}),
-            hot_day_close_enabled=True,
         )
 
         self.assertEqual(cover.incoming_solar_radiation_factor, 0.0)
         self.assertEqual(cover.effective_solar_gain_factor, 0.0)
         self.assertIsNone(cover.transmitted_solar_power_w_m2)
-        self.assertFalse(cover.hot_day_override_active)
         self.assertEqual(NormalCoverState(cover).get_state(), 100)
 
     def test_open_data_solar_radiation_scales_physical_gain(self):
@@ -289,12 +284,11 @@ class CalculationMatrixTests(unittest.TestCase):
             use_open_data_solar_radiation=True,
             solar_radiation_summary={"current_direct_normal_irradiance": 900.0},
             heat_power_limit_enabled=True,
-            heat_power_outside_temp_threshold=24.0,
-            max_transmitted_solar_power_w_m2=200.0,
+            max_transmitted_solar_power_w_m2=50.0,
         )
 
         self.assertIsNotNone(cover.transmitted_solar_power_w)
-        self.assertGreater(cover.transmitted_solar_power_w, 200.0)
+        self.assertGreater(cover.transmitted_solar_power_w_m2, 50.0)
         self.assertTrue(cover.heat_power_limit_active)
         self.assertIsNotNone(cover.heat_power_limited_open_position)
         self.assertEqual(
@@ -312,8 +306,7 @@ class CalculationMatrixTests(unittest.TestCase):
                 "today_max_temp": 30.0,
             },
             heat_power_limit_enabled=True,
-            heat_power_outside_temp_threshold=35.0,
-            max_transmitted_solar_power_w_m2=200.0,
+            max_transmitted_solar_power_w_m2=50.0,
         )
 
         self.assertTrue(cover.heat_power_limit_active)
@@ -334,12 +327,11 @@ class CalculationMatrixTests(unittest.TestCase):
                 "today_max_temp": 15.0,
             },
             heat_power_limit_enabled=True,
-            heat_power_outside_temp_threshold=24.0,
-            max_transmitted_solar_power_w_m2=200.0,
+            max_transmitted_solar_power_w_m2=50.0,
         )
 
         self.assertFalse(cover.heat_power_limit_active)
-        self.assertEqual(cover.heat_power_limit_trigger, "below_temperature_gate")
+        self.assertEqual(cover.heat_power_limit_trigger, "inactive")
         self.assertIsNone(cover.heat_power_limited_open_position)
         self.assertEqual(NormalCoverState(cover).get_state(), 100)
 
@@ -355,20 +347,14 @@ class CalculationMatrixTests(unittest.TestCase):
                 "today_max_temp": 35.0,
             },
             heat_power_limit_enabled=True,
-            heat_power_outside_temp_threshold=24.0,
             heat_protection_min_outside_temp=10.0,
-            max_transmitted_solar_power_w_m2=200.0,
-            hot_day_close_enabled=True,
-            hot_day_close_threshold=29.0,
-            hot_day_close_position=30,
-            very_hot_day_close_position=10,
+            max_transmitted_solar_power_w_m2=50.0,
         )
 
         self.assertFalse(cover.heat_protection_current_temperature_allowed)
         self.assertFalse(cover.heat_protection_temperature_allowed)
         self.assertFalse(cover.heat_power_limit_active)
         self.assertEqual(cover.heat_power_limit_trigger, "cold_lockout")
-        self.assertFalse(cover.hot_day_override_active)
         self.assertEqual(cover.policy_score, 0.0)
         self.assertEqual(NormalCoverState(cover).get_state(), 100)
 
@@ -399,32 +385,72 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertEqual(full_reveal.direct_solar_exposure_factor, 0.0)
         self.assertEqual(full_reveal.policy_score, 0.0)
 
-    def test_hot_day_override_opens_when_sun_is_not_on_window(self):
-        """Hot-day override should not shade once the sun is out of the window."""
+    def test_temperature_activation_does_not_shade_without_direct_sun(self):
+        """An active heat gate must not shade once sun leaves the window."""
         no_direct_sun = make_cover(
             sol_azi=270,
-            hot_day_close_enabled=True,
-            hot_day_close_threshold=29.0,
-            hot_day_close_position=40,
             forecast_very_hot_day_threshold=35.0,
         )
 
         self.assertFalse(no_direct_sun.direct_sun_valid)
-        self.assertFalse(no_direct_sun.hot_day_override_active)
+        self.assertTrue(no_direct_sun.forecast_hot_day_active)
         self.assertEqual(NormalCoverState(no_direct_sun).get_state(), 100)
 
         night = make_cover(
             sol_azi=270,
             sunset_pos=75,
-            hot_day_close_enabled=True,
-            hot_day_close_threshold=29.0,
-            hot_day_close_position=40,
             forecast_very_hot_day_threshold=35.0,
         )
         night.sun_data = FakeNightSunData()
         self.assertTrue(night.sunset_valid)
-        self.assertFalse(night.hot_day_override_active)
         self.assertEqual(NormalCoverState(night).get_state(), 75)
+
+    def test_hot_room_activates_heat_protection_on_cool_forecast(self):
+        """A hot room should react even when the daily forecast misses the heat."""
+        hass = FakeHass({"sensor.room": FakeState("25.0")})
+        cover = make_cover(
+            hass=hass,
+            room_temperature_entity="sensor.room",
+            room_heat_protection_threshold=24.0,
+            forecast_summary={"today_max_temp": 20.0},
+            heat_power_limit_enabled=True,
+            max_transmitted_solar_power_w_m2=50.0,
+        )
+
+        self.assertTrue(cover.room_temperature_heat_active)
+        self.assertTrue(cover.heat_protection_activation_active)
+        self.assertEqual(cover.heat_protection_activation_reason, "room_temperature")
+        self.assertEqual(cover.heat_power_limit_trigger, "room_temperature")
+        self.assertLess(NormalCoverState(cover).get_state(), 100)
+
+    def test_room_below_threshold_keeps_cool_day_inactive(self):
+        """Below both activation thresholds, direct sun alone does not close."""
+        hass = FakeHass({"sensor.room": FakeState("23.5")})
+        cover = make_cover(
+            hass=hass,
+            room_temperature_entity="sensor.room",
+            room_heat_protection_threshold=24.0,
+            forecast_summary={"today_max_temp": 20.0},
+        )
+
+        self.assertFalse(cover.room_temperature_heat_active)
+        self.assertFalse(cover.heat_protection_activation_active)
+        self.assertEqual(cover.heat_protection_activation_reason, "inactive")
+        self.assertEqual(NormalCoverState(cover).get_state(), 100)
+
+    def test_tomorrow_hot_does_not_activate_today_by_itself(self):
+        """Tomorrow's maximum must not be treated as today's activation gate."""
+        cover = make_cover(
+            use_forecast_max_temp_tomorrow=True,
+            forecast_summary={
+                "today_max_temp": 20.0,
+                "tomorrow_max_temp": 35.0,
+            },
+        )
+
+        self.assertFalse(cover.forecast_hot_day_active)
+        self.assertFalse(cover.heat_protection_activation_active)
+        self.assertEqual(NormalCoverState(cover).get_state(), 100)
 
     def test_away_mode_is_stricter_than_home_for_same_conditions(self):
         """Away mode should close more for the same solar and forecast inputs."""

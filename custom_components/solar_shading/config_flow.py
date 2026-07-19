@@ -25,7 +25,6 @@ from .const import (
     CONF_BLIND_SPOT_ELEVATION,
     CONF_BLIND_SPOT_LEFT,
     CONF_BLIND_SPOT_RIGHT,
-    CONF_CLIMATE_MODE,
     CONF_DEFAULT_HEIGHT,
     CONF_DELTA_POSITION,
     CONF_DELTA_TIME,
@@ -51,13 +50,8 @@ from .const import (
     CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
     CONF_HEAT_POWER_LIMIT_ENABLED,
     CONF_MAX_TRANSMITTED_SOLAR_POWER,
-    CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
     CONF_HEIGHT_WIN,
-    CONF_HOT_DAY_CLOSE_ENABLED,
-    CONF_HOT_DAY_CLOSE_POSITION,
-    CONF_HOT_DAY_CLOSE_THRESHOLD,
-    CONF_VERY_HOT_DAY_CLOSE_POSITION,
     CONF_HORIZON_PROFILE,
     CONF_INTERP,
     CONF_INTERP_END,
@@ -65,8 +59,6 @@ from .const import (
     CONF_INTERP_LIST_NEW,
     CONF_INTERP_START,
     CONF_INVERSE_STATE,
-    CONF_IRRADIANCE_ENTITY,
-    CONF_IRRADIANCE_THRESHOLD,
     CONF_LENGTH_AWNING,
     CONF_MANUAL_IGNORE_INTERMEDIATE,
     CONF_MANUAL_OVERRIDE_DURATION,
@@ -77,14 +69,14 @@ from .const import (
     CONF_MIN_ELEVATION,
     CONF_MODE,
     CONF_ENABLE_HEAT_GAIN_POLICY,
-    CONF_OUTSIDETEMP_ENTITY,
-    CONF_PRESENCE_ENTITY,
     CONF_POLICY_PRESET,
     CONF_RETURN_SUNSET,
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
     CONF_ROOM_NAME,
+    CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
+    CONF_ROOM_TEMPERATURE_ENTITY,
     CONF_PARTIAL_CLOSE_POSITION,
     CONF_PARTIAL_CLOSE_THRESHOLD,
     CONF_SENSOR_TYPE,
@@ -94,13 +86,9 @@ from .const import (
     CONF_SUNRISE_OFFSET,
     CONF_SUNSET_OFFSET,
     CONF_SUNSET_POS,
-    CONF_TEMP_ENTITY,
-    CONF_TEMP_HIGH,
-    CONF_TEMP_LOW,
     CONF_TILT_DEPTH,
     CONF_TILT_DISTANCE,
     CONF_TILT_MODE,
-    CONF_TRANSPARENT_BLIND,
     CONF_TEMPLATE_ENTRY,
     CONF_USE_FACADE_AZIMUTH,
     CONF_USE_FORECAST_MAX_TEMP_TODAY,
@@ -112,7 +100,6 @@ from .const import (
     CONF_WEIGHT_INCIDENCE,
     CONF_WEIGHT_SOLAR_RADIATION,
     CONF_WEATHER_ENTITY,
-    CONF_OUTSIDE_THRESHOLD,
     CONF_SOLAR_RADIATION_ENTITY,
     CONF_SOLAR_RADIATION_REFERENCE,
     CONF_WINDOW_WIDTH,
@@ -158,45 +145,7 @@ from .profiles import (
     default_house_profile_options,
     room_facade_key,
 )
-
-LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
-RETIRED_OPTION_KEYS = {
-    "enable_legacy_basic_shading",
-    "lux_entity",
-    "lux_threshold",
-    "use_forecast_cloud_coverage",
-    "use_forecast_precipitation_probability",
-    "use_forecast_precipitation_amount",
-    "use_forecast_uv_index",
-    "weather_state",
-    "weight_weather",
-    "weight_forecast_uv",
-    "weight_forecast_clouds",
-    "weight_forecast_precipitation_probability",
-    "weight_forecast_precipitation_amount",
-    CONF_TRANSPARENT_BLIND,
-}
-
-
-def _migrate_retired_options(options: dict[str, Any]) -> dict[str, Any]:
-    """Move the one renamed value and discard options no longer used."""
-    migrated = dict(options)
-    if migrated.get(CONF_TRANSPARENT_BLIND):
-        migrated.setdefault(CONF_HEAT_PROTECTION_CONTROL_MODE, "binary")
-        migrated.setdefault(CONF_BINARY_CLOSE_POSITION, 0)
-        migrated.setdefault(
-            CONF_BINARY_CLOSE_THRESHOLD,
-            migrated.get(CONF_IRRADIANCE_THRESHOLD, 180),
-        )
-        migrated.setdefault(CONF_ENABLE_HEAT_GAIN_POLICY, True)
-    if CONF_MAX_TRANSMITTED_SOLAR_POWER not in migrated:
-        legacy_limit = migrated.get(LEGACY_MAX_TRANSMITTED_SOLAR_POWER)
-        if legacy_limit is not None:
-            migrated[CONF_MAX_TRANSMITTED_SOLAR_POWER] = legacy_limit
-    migrated.pop(LEGACY_MAX_TRANSMITTED_SOLAR_POWER, None)
-    for key in RETIRED_OPTION_KEYS:
-        migrated.pop(key, None)
-    return migrated
+from .migration import migrate_retired_options as _migrate_retired_options
 
 # DEFAULT_NAME = "Adaptive Cover"
 
@@ -332,12 +281,6 @@ def _area_options_for_floor(hass, floor_id: str | None) -> list[dict[str, str]]:
         if area.floor_id == floor_id
     ]
 
-
-CLIMATE_MODE = vol.Schema(
-    {
-        vol.Optional(CONF_CLIMATE_MODE, default=False): selector.BooleanSelector(),
-    }
-)
 
 OPTIONS = vol.Schema(
     {
@@ -612,49 +555,6 @@ LINKED_TILT_OPTIONS = vol.Schema(
     }
 ).extend(LINKED_WINDOW_OPTIONS.schema)
 
-CLIMATE_OPTIONS = vol.Schema(
-    {
-        vol.Required(CONF_TEMP_ENTITY): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(domain=["climate", "sensor"])
-        ),
-        vol.Required(CONF_TEMP_LOW, default=21): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=86, step=1, mode="slider", unit_of_measurement="°"
-            )
-        ),
-        vol.Required(CONF_TEMP_HIGH, default=25): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=90, step=1, mode="slider", unit_of_measurement="°"
-            )
-        ),
-        vol.Optional(
-            CONF_OUTSIDETEMP_ENTITY, default=vol.UNDEFINED
-        ): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(domain=["sensor"])
-        ),
-        vol.Optional(CONF_OUTSIDE_THRESHOLD, default=0): vol.All(
-            vol.Coerce(int), vol.Range(min=0, max=100)
-        ),
-        vol.Optional(
-            CONF_PRESENCE_ENTITY, default=vol.UNDEFINED
-        ): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(
-                domain=["device_tracker", "zone", "binary_sensor", "input_boolean"]
-            )
-        ),
-        vol.Optional(
-            CONF_IRRADIANCE_ENTITY, default=vol.UNDEFINED
-        ): selector.EntitySelector(
-            selector.EntityFilterSelectorConfig(
-                domain=["sensor"], device_class="irradiance"
-            )
-        ),
-        vol.Optional(CONF_IRRADIANCE_THRESHOLD, default=300): selector.NumberSelector(
-            selector.NumberSelectorConfig(mode="box", unit_of_measurement="W/m²")
-        ),
-    }
-)
-
 WEATHER_OPTIONS = vol.Schema(
     {
         vol.Optional(CONF_USE_FORECAST_MAX_TEMP_TODAY, default=False): selector.BooleanSelector(),
@@ -726,6 +626,16 @@ POLICY_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False): selector.BooleanSelector(),
         vol.Optional(CONF_ENABLE_AWAY_MODE, default=False): selector.BooleanSelector(),
+        vol.Optional(CONF_ROOM_TEMPERATURE_ENTITY): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["sensor", "climate"])
+        ),
+        vol.Optional(
+            CONF_ROOM_HEAT_PROTECTION_THRESHOLD, default=24
+        ): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=15, max=35, step=0.5, mode="box", unit_of_measurement="degC"
+            )
+        ),
         vol.Optional(CONF_AWAY_ENTITY, default=vol.UNDEFINED): selector.EntitySelector(
             selector.EntitySelectorConfig(
                 domain=["person", "device_tracker", "zone", "binary_sensor", "input_boolean"]
@@ -742,28 +652,7 @@ POLICY_OPTIONS = vol.Schema(
                 min=0, max=30, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
-        vol.Optional(CONF_HOT_DAY_CLOSE_ENABLED, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_HOT_DAY_CLOSE_THRESHOLD, default=28): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=20, max=40, step=0.5, mode="slider", unit_of_measurement="°C"
-            )
-        ),
-        vol.Optional(CONF_HOT_DAY_CLOSE_POSITION, default=20): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
-            )
-        ),
-        vol.Optional(CONF_VERY_HOT_DAY_CLOSE_POSITION, default=10): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
-            )
-        ),
         vol.Optional(CONF_HEAT_POWER_LIMIT_ENABLED, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD, default=24): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=-10, max=45, step=0.5, mode="slider", unit_of_measurement="degC"
-            )
-        ),
         vol.Optional(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=-20, max=30, step=0.5, mode="slider", unit_of_measurement="degC"
@@ -894,6 +783,13 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
             )
         ),
         vol.Optional(CONF_FORECAST_PREEMPTIVE_START_TIME, default="09:00:00"): selector.TimeSelector(),
+        vol.Optional(
+            CONF_ROOM_HEAT_PROTECTION_THRESHOLD, default=24
+        ): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=15, max=35, step=0.5, mode="box", unit_of_measurement="degC"
+            )
+        ),
         vol.Optional(CONF_POLICY_PRESET, default="balanced"): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=POLICY_PRESET_OPTIONS, translation_key="policy_preset"
@@ -941,30 +837,9 @@ HOUSE_EXPERT_OPTIONS = vol.Schema(
         vol.Optional(CONF_FORECAST_INFLUENCE_STRENGTH, default=0.5): selector.NumberSelector(
             selector.NumberSelectorConfig(min=0, max=1, step=0.05, mode="slider")
         ),
-        vol.Optional(CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD, default=24): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=-10, max=45, step=0.5, mode="slider", unit_of_measurement="°C"
-            )
-        ),
         vol.Optional(CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, default=14): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=-20, max=30, step=0.5, mode="slider", unit_of_measurement="°C"
-            )
-        ),
-        vol.Optional(CONF_HOT_DAY_CLOSE_ENABLED, default=True): selector.BooleanSelector(),
-        vol.Optional(CONF_HOT_DAY_CLOSE_THRESHOLD, default=28): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=20, max=40, step=0.5, mode="slider", unit_of_measurement="°C"
-            )
-        ),
-        vol.Optional(CONF_HOT_DAY_CLOSE_POSITION, default=30): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
-            )
-        ),
-        vol.Optional(CONF_VERY_HOT_DAY_CLOSE_POSITION, default=15): selector.NumberSelector(
-            selector.NumberSelectorConfig(
-                min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
         vol.Optional(CONF_SHOW_EXPERT_WEIGHTS, default=False): selector.BooleanSelector(),
@@ -1089,9 +964,10 @@ def _conditional_policy_schema(values: dict[str, Any]) -> vol.Schema:
         CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS,
         CONF_HEAT_PROTECTION_CONTROL_MODE,
         CONF_ENABLE_AWAY_MODE,
-        CONF_HOT_DAY_CLOSE_ENABLED,
         CONF_HEAT_POWER_LIMIT_ENABLED,
         CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP,
+        CONF_ROOM_TEMPERATURE_ENTITY,
+        CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
         CONF_SHOW_EXPERT_WEIGHTS,
     }
     if values.get(CONF_HEAT_PROTECTION_CONTROL_MODE, "scaling") == "binary":
@@ -1107,21 +983,8 @@ def _conditional_policy_schema(values: dict[str, Any]) -> vol.Schema:
                 CONF_AWAY_POSITION_OFFSET,
             }
         )
-    if values.get(CONF_HOT_DAY_CLOSE_ENABLED):
-        keys.update(
-            {
-                CONF_HOT_DAY_CLOSE_THRESHOLD,
-                CONF_HOT_DAY_CLOSE_POSITION,
-                CONF_VERY_HOT_DAY_CLOSE_POSITION,
-            }
-        )
     if values.get(CONF_HEAT_POWER_LIMIT_ENABLED):
-        keys.update(
-            {
-                CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD,
-                CONF_MAX_TRANSMITTED_SOLAR_POWER,
-            }
-        )
+        keys.add(CONF_MAX_TRANSMITTED_SOLAR_POWER)
     if values.get(CONF_SHOW_EXPERT_WEIGHTS):
         keys.update(
             {
@@ -1303,6 +1166,8 @@ def _validate_policy_input(user_input: dict[str, Any]) -> dict[str, str]:
 class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle ConfigFlow."""
 
+    VERSION = 2
+
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
         self.type_blind: str | None = None
@@ -1438,7 +1303,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         schema = (
             _linked_initial_schema(LINKED_WINDOW_OPTIONS)
             if linked
-            else CLIMATE_MODE.extend(VERTICAL_OPTIONS.schema)
+            else VERTICAL_OPTIONS
         )
         if user_input is not None:
             geometry_errors = _validate_geometry_input(user_input)
@@ -1482,7 +1347,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         schema = (
             _linked_initial_schema(LINKED_HORIZONTAL_OPTIONS)
             if linked
-            else CLIMATE_MODE.extend(HORIZONTAL_OPTIONS.schema)
+            else HORIZONTAL_OPTIONS
         )
         if user_input is not None:
             geometry_errors = _validate_geometry_input(user_input)
@@ -1526,7 +1391,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         schema = (
             _linked_initial_schema(LINKED_TILT_OPTIONS)
             if linked
-            else CLIMATE_MODE.extend(TILT_OPTIONS.schema)
+            else TILT_OPTIONS
         )
         if user_input is not None:
             geometry_errors = _validate_geometry_input(user_input)
@@ -1625,24 +1490,12 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         """Manage automation options."""
         if user_input is not None:
             self.config.update(user_input)
-            if self.config.get(CONF_CLIMATE_MODE, False) is True:
-                return await self.async_step_climate()
             return await self.async_step_weather()
         return self.async_show_form(
             step_id="automation",
             data_schema=self.add_suggested_values_to_schema(
                 AUTOMATION_CONFIG, self.config
             ),
-        )
-
-    async def async_step_climate(self, user_input: dict[str, Any] | None = None):
-        """Manage climate options."""
-        if user_input is not None:
-            self.config.update(user_input)
-            return await self.async_step_weather()
-        return self.async_show_form(
-            step_id="climate",
-            data_schema=self.add_suggested_values_to_schema(CLIMATE_OPTIONS, self.config),
         )
 
     async def async_step_weather(self, user_input: dict[str, Any] | None = None):
@@ -1659,6 +1512,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_policy(self, user_input: dict[str, Any] | None = None):
         """Manage heat-gain policy options."""
         if user_input is not None:
+            self.optional_entities([CONF_ROOM_TEMPERATURE_ENTITY], user_input)
             if CONF_AWAY_ENTITY not in user_input:
                 user_input[CONF_AWAY_ENTITY] = None
             errors = _validate_policy_input(user_input)
@@ -1725,13 +1579,13 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_TILT_DISTANCE: self.config.get(CONF_TILT_DISTANCE),
                 CONF_TILT_DEPTH: self.config.get(CONF_TILT_DEPTH),
                 CONF_TILT_MODE: self.config.get(CONF_TILT_MODE),
-                CONF_TEMP_ENTITY: self.config.get(CONF_TEMP_ENTITY),
-                CONF_PRESENCE_ENTITY: self.config.get(CONF_PRESENCE_ENTITY),
                 CONF_WEATHER_ENTITY: self.config.get(CONF_WEATHER_ENTITY),
-                CONF_TEMP_LOW: self.config.get(CONF_TEMP_LOW),
-                CONF_TEMP_HIGH: self.config.get(CONF_TEMP_HIGH),
-                CONF_OUTSIDETEMP_ENTITY: self.config.get(CONF_OUTSIDETEMP_ENTITY),
-                CONF_CLIMATE_MODE: self.config.get(CONF_CLIMATE_MODE),
+                CONF_ROOM_TEMPERATURE_ENTITY: self.config.get(
+                    CONF_ROOM_TEMPERATURE_ENTITY
+                ),
+                CONF_ROOM_HEAT_PROTECTION_THRESHOLD: self.config.get(
+                    CONF_ROOM_HEAT_PROTECTION_THRESHOLD, 24
+                ),
                 CONF_DELTA_POSITION: self.config.get(CONF_DELTA_POSITION),
                 CONF_DELTA_TIME: self.config.get(CONF_DELTA_TIME),
                 CONF_START_TIME: self.config.get(CONF_START_TIME),
@@ -1762,9 +1616,6 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_REVEAL_LEFT: self.config.get(CONF_REVEAL_LEFT),
                 CONF_REVEAL_RIGHT: self.config.get(CONF_REVEAL_RIGHT),
                 CONF_REVEAL_TOP: self.config.get(CONF_REVEAL_TOP),
-                CONF_IRRADIANCE_ENTITY: self.config.get(CONF_IRRADIANCE_ENTITY),
-                CONF_IRRADIANCE_THRESHOLD: self.config.get(CONF_IRRADIANCE_THRESHOLD),
-                CONF_OUTSIDE_THRESHOLD: self.config.get(CONF_OUTSIDE_THRESHOLD),
                 CONF_USE_FORECAST_MAX_TEMP_TODAY: self.config.get(
                     CONF_USE_FORECAST_MAX_TEMP_TODAY, False
                 ),
@@ -1812,23 +1663,8 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 CONF_AWAY_POSITION_OFFSET: self.config.get(
                     CONF_AWAY_POSITION_OFFSET, 10
                 ),
-                CONF_HOT_DAY_CLOSE_ENABLED: self.config.get(
-                    CONF_HOT_DAY_CLOSE_ENABLED, False
-                ),
-                CONF_HOT_DAY_CLOSE_THRESHOLD: self.config.get(
-                    CONF_HOT_DAY_CLOSE_THRESHOLD, 28
-                ),
-                CONF_HOT_DAY_CLOSE_POSITION: self.config.get(
-                    CONF_HOT_DAY_CLOSE_POSITION, 20
-                ),
-                CONF_VERY_HOT_DAY_CLOSE_POSITION: self.config.get(
-                    CONF_VERY_HOT_DAY_CLOSE_POSITION, 10
-                ),
                 CONF_HEAT_POWER_LIMIT_ENABLED: self.config.get(
                     CONF_HEAT_POWER_LIMIT_ENABLED, False
-                ),
-                CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD: self.config.get(
-                    CONF_HEAT_POWER_OUTSIDE_TEMP_THRESHOLD, 24
                 ),
                 CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP: self.config.get(
                     CONF_HEAT_PROTECTION_MIN_OUTSIDE_TEMP, 14
@@ -1928,8 +1764,6 @@ class OptionsFlowHandler(OptionsFlow):
         options = ["assignment", "blind"]
         if not linked or self.options.get(CONF_USE_LOCAL_POLICY, False):
             options.append("automation")
-            if self.options.get(CONF_CLIMATE_MODE, False):
-                options.append("climate")
             options.append("weather")
             options.append("policy")
         if self.options.get(CONF_ENABLE_BLIND_SPOT, False):
@@ -2272,11 +2106,15 @@ class OptionsFlowHandler(OptionsFlow):
                     )
                 ),
                 vol.Optional(CONF_HAS_ADDITIONAL_DAYLIGHT_WINDOWS, default=False): selector.BooleanSelector(),
+                vol.Optional(CONF_ROOM_TEMPERATURE_ENTITY): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["sensor", "climate"])
+                ),
             }
         )
         if user_input is not None:
             room_id = user_input.pop(CONF_ROOM_NAME)
             delete = user_input.pop(CONF_PROFILE_DELETE, False)
+            self.optional_entities([CONF_ROOM_TEMPERATURE_ENTITY], user_input)
             profiles = dict(self.options.get(CONF_ROOM_PROFILES) or {})
             if delete:
                 profiles.pop(room_id, None)
@@ -2411,10 +2249,8 @@ class OptionsFlowHandler(OptionsFlow):
         schema = (
             _linked_detail_schema(LINKED_WINDOW_OPTIONS, self.options)
             if linked
-            else CLIMATE_MODE.extend(VERTICAL_OPTIONS.schema)
+            else VERTICAL_OPTIONS
         )
-        if not linked and self.options.get(CONF_CLIMATE_MODE, False):
-            schema = VERTICAL_OPTIONS
         if user_input is not None:
             keys = [
                 CONF_MIN_ELEVATION,
@@ -2448,8 +2284,6 @@ class OptionsFlowHandler(OptionsFlow):
                 return await self.async_step_interp()
             if self.options.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
-            if self.options.get(CONF_CLIMATE_MODE, False):
-                return await self.async_step_climate()
             return await self.async_step_weather()
         return self.async_show_form(
             step_id="vertical",
@@ -2465,10 +2299,8 @@ class OptionsFlowHandler(OptionsFlow):
         schema = (
             _linked_detail_schema(LINKED_HORIZONTAL_OPTIONS, self.options)
             if linked
-            else CLIMATE_MODE.extend(HORIZONTAL_OPTIONS.schema)
+            else HORIZONTAL_OPTIONS
         )
-        if not linked and self.options.get(CONF_CLIMATE_MODE, False):
-            schema = HORIZONTAL_OPTIONS
         if user_input is not None:
             keys = [
                 CONF_MIN_ELEVATION,
@@ -2498,8 +2330,6 @@ class OptionsFlowHandler(OptionsFlow):
             self.options.update(user_input)
             if linked:
                 return await self._update_options()
-            if self.options.get(CONF_CLIMATE_MODE, False):
-                return await self.async_step_climate()
             return await self.async_step_weather()
         return self.async_show_form(
             step_id="horizontal",
@@ -2515,10 +2345,8 @@ class OptionsFlowHandler(OptionsFlow):
         schema = (
             _linked_detail_schema(LINKED_TILT_OPTIONS, self.options)
             if linked
-            else CLIMATE_MODE.extend(TILT_OPTIONS.schema)
+            else TILT_OPTIONS
         )
-        if not linked and self.options.get(CONF_CLIMATE_MODE, False):
-            schema = TILT_OPTIONS
         if user_input is not None:
             keys = [
                 CONF_MIN_ELEVATION,
@@ -2548,8 +2376,6 @@ class OptionsFlowHandler(OptionsFlow):
             self.options.update(user_input)
             if linked:
                 return await self._update_options()
-            if self.options.get(CONF_CLIMATE_MODE, False):
-                return await self.async_step_climate()
             return await self.async_step_weather()
         return self.async_show_form(
             step_id="tilt",
@@ -2618,24 +2444,6 @@ class OptionsFlowHandler(OptionsFlow):
             ),
         )
 
-    async def async_step_climate(self, user_input: dict[str, Any] | None = None):
-        """Manage climate options."""
-        if user_input is not None:
-            entities = [
-                CONF_OUTSIDETEMP_ENTITY,
-                CONF_PRESENCE_ENTITY,
-                CONF_IRRADIANCE_ENTITY,
-            ]
-            self.optional_entities(entities, user_input)
-            self.options.update(user_input)
-            return await self.async_step_weather()
-        return self.async_show_form(
-            step_id="climate",
-            data_schema=self.add_suggested_values_to_schema(
-                CLIMATE_OPTIONS, user_input or self.options
-            ),
-        )
-
     async def async_step_weather(self, user_input: dict[str, Any] | None = None):
         """Manage weather conditions."""
         if user_input is not None:
@@ -2665,6 +2473,7 @@ class OptionsFlowHandler(OptionsFlow):
                 {**self.options, **(user_input or {})}
             )
         if user_input is not None:
+            self.optional_entities([CONF_ROOM_TEMPERATURE_ENTITY], user_input)
             if CONF_AWAY_ENTITY not in user_input:
                 if self.options.get(CONF_ENABLE_AWAY_MODE):
                     user_input[CONF_AWAY_ENTITY] = self.options.get(CONF_AWAY_ENTITY)

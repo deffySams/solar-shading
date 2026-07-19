@@ -18,8 +18,10 @@ from custom_components.solar_shading.const import (
     CONF_PROFILE_OVERRIDES,
     CONF_REVEAL_LEFT,
     CONF_ROOM_FACADE_PROFILES,
+    CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
     CONF_ROOM_NAME,
     CONF_ROOM_PROFILES,
+    CONF_ROOM_TEMPERATURE_ENTITY,
     CONF_USE_LOCAL_HORIZON,
     CONF_WINDOW_OVERRIDES,
 )
@@ -98,6 +100,43 @@ class ProfileResolutionTests(unittest.TestCase):
 
         self.assertEqual(result.options, window)
         self.assertEqual(result.layers, ("window",))
+
+    def test_room_temperature_sensor_is_inherited_by_every_room_window(self):
+        house = {
+            CONF_HOUSE_DEFAULTS: {CONF_ROOM_HEAT_PROTECTION_THRESHOLD: 24.0},
+            CONF_ROOM_PROFILES: {
+                "living": {
+                    CONF_PROFILE_OVERRIDES: {
+                        CONF_ROOM_TEMPERATURE_ENTITY: "sensor.living_temperature"
+                    }
+                }
+            },
+        }
+
+        result = resolve_profile_options(
+            {CONF_ROOM_NAME: "living"},
+            house,
+        )
+
+        self.assertEqual(
+            result.options[CONF_ROOM_TEMPERATURE_ENTITY],
+            "sensor.living_temperature",
+        )
+        self.assertEqual(result.options[CONF_ROOM_HEAT_PROTECTION_THRESHOLD], 24.0)
+
+    def test_legacy_climate_threshold_is_available_before_options_are_saved(self):
+        result = resolve_profile_options(
+            {
+                "temp_entity": "sensor.legacy_room",
+                "temp_high": 25,
+            },
+            None,
+        )
+
+        self.assertEqual(
+            result.options[CONF_ROOM_TEMPERATURE_ENTITY], "sensor.legacy_room"
+        )
+        self.assertEqual(result.options[CONF_ROOM_HEAT_PROTECTION_THRESHOLD], 25)
 
 
 if __name__ == "__main__":

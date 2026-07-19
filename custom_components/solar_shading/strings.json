@@ -88,7 +88,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
           "max_elevation": "Maximum Elevation of the sun",
@@ -127,7 +126,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
@@ -138,31 +136,6 @@
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Vertical cover"
-      },
-      "climate": {
-        "data": {
-          "temp_entity": "Inside temperature entity",
-          "presence_entity": "Presence entity (optional)",
-          "weather_entity": "Temperature forecast source (optional)",
-          "outside_temp": "Outside temperature sensor (optional)",
-          "temp_low": "Low temperature threshold",
-          "temp_high": "High temperature threshold",
-          "irradiance_entity": "Irradiance sensor (optional)",
-          "irradiance_threshold": "Irradiance threshold",
-          "outside_threshold": "Minimum outside temperature for summer mode"
-        },
-        "data_description": {
-          "presence_entity": "Entity representing room or home presence status",
-          "weather_entity": "Provides outside temperature and today's/tomorrow's maximum temperature forecast only",
-          "outside_temp": "Overrides outside temperature from weather entity if both are set",
-          "temp_low": "Minimum comfortable temperature",
-          "temp_high": "Maximum comfortable temperature",
-          "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
-          "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
-          "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
-        },
-        "description": "Add additional climate configuration variables.",
-        "title": "Climate settings"
       },
       "weather": {
         "data": {
@@ -207,18 +180,15 @@
           "partial_close_position": "Partial target (% open)",
           "full_close_position": "Maximum normal closing (minimum % open)",
           "enable_away_mode": "Enable away-from-home mode",
+          "room_temperature_entity": "Room temperature sensor",
+          "room_heat_protection_threshold": "Enable heat protection at room temperature",
           "away_entity": "Away entity",
           "away_score_multiplier": "Away: score multiplier",
           "away_threshold_reduction": "Away: threshold reduction",
           "away_position_offset": "Away: reduce open position by",
-          "hot_day_close_enabled": "Enable general hot-day open limit",
-          "hot_day_close_threshold": "Hot-day threshold",
-          "hot_day_close_position": "Hot-day max position (% open)",
-          "very_hot_day_close_position": "Very-hot-day max position (% open)",
           "show_expert_weights": "Show expert weights",
           "weight_solar_radiation": "Weight: solar radiation",
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
-          "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
           "max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)"
         },
@@ -238,18 +208,15 @@
           "partial_close_position": "Open-position target at the partial threshold. 100% open is fully open, 0% open is closed.",
           "full_close_position": "Minimum open position for normal policy control. Presets, away mode, and very-hot pressure will not close below this value; only explicit overrides can.",
           "enable_away_mode": "Enables stricter heat protection whenever the selected entity indicates nobody is home.",
+          "room_temperature_entity": "Measured room temperature. Reaching the comfort threshold can enable heat protection even on a day with a cool forecast.",
+          "room_heat_protection_threshold": "Heat protection is enabled immediately at this measured room temperature. Without a sensor, the forecast threshold remains decisive.",
           "away_entity": "Entity used to detect away status. For person/device_tracker every state except home counts as away. For binary_sensor/input_boolean, off counts as away.",
           "away_score_multiplier": "Raises the final heat-gain score while away and therefore makes the reaction stricter.",
           "away_threshold_reduction": "Lowers the partial/full close thresholds while away.",
           "away_position_offset": "Reduces the allowed open position while away, making shading stricter.",
-          "hot_day_close_enabled": "If enabled, a forecast above the threshold can cap the open position even outside the finer weighted policy.",
-          "hot_day_close_threshold": "Forecast temperature above which the day is treated as generally hot.",
-          "hot_day_close_position": "Maximum open position allowed on a generally hot day. Lower values mean more shading.",
-          "very_hot_day_close_position": "Maximum open position allowed once the forecast reaches the very-hot threshold. Use a lower value than the hot-day maximum for visibly stricter behavior.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
           "heat_power_limit_enabled": "When enabled, Solar Shading calculates transmitted solar power from incoming irradiance, geometry, incidence angle and glazing. It caps the open position when the W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
-          "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
           "max_transmitted_solar_power_w_m2": "Maximum allowed solar power transmitted through one square meter of window glass. The open position is reduced approximately linearly to stay below this value."
         },
@@ -278,7 +245,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
           "max_elevation": "Maximum Elevation of the sun",
@@ -319,7 +285,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
@@ -351,7 +316,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "tilt_mode": "Type of movement",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
@@ -392,7 +356,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "tilt_mode": "Choose the type of movement",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
@@ -530,6 +493,7 @@
           "forecast_hot_day_threshold": "Hot day from forecast temperature",
           "forecast_very_hot_day_threshold": "Very hot day from forecast temperature",
           "forecast_preemptive_start_time": "Earliest forecast intervention",
+          "room_heat_protection_threshold": "Enable heat protection at room temperature",
           "policy_preset": "Heat-protection preset",
           "heat_protection_control_mode": "Heat-protection behavior",
           "binary_close_threshold_w_m2": "Binary close threshold (W/m2 glass)",
@@ -556,12 +520,13 @@
           "sunset_position": "Target outside the daylight interval. 100% keeps the cover open; lower values close it further.",
           "weather_entity": "Weather entity used only for outside temperature and maximum-temperature forecasts for today and tomorrow.",
           "use_forecast_max_temp_today": "Includes today's forecast maximum in the heat-protection temperature signal.",
-          "use_forecast_max_temp_tomorrow": "Also includes tomorrow's forecast maximum. The higher selected value controls the forecast signal.",
+          "use_forecast_max_temp_tomorrow": "Tomorrow alone does not enable heat protection today. It can strengthen protection already enabled by today's forecast or the measured room temperature.",
           "use_open_data_solar_radiation": "Uses Open-Meteo current and forecast irradiance. A configured local irradiance sensor has priority for the current value.",
           "solar_radiation_entity": "Optional local irradiance sensor in W/m2. Its current value overrides Open-Meteo for the live calculation.",
           "forecast_hot_day_threshold": "Forecast temperature in degrees Celsius from which heat-protection calculation is allowed.",
           "forecast_very_hot_day_threshold": "Forecast temperature in degrees Celsius from which the strongest forecast pressure is reached.",
           "forecast_preemptive_start_time": "Forecast-only interventions are blocked before this local time; measured current conditions remain available.",
+          "room_heat_protection_threshold": "House-wide comfort threshold. A temperature sensor selected in the room profile enables heat protection immediately at this measured value.",
           "policy_preset": "Selects understandable predefined weighting and threshold values. Expert values are needed only for deliberate deviations.",
           "heat_protection_control_mode": "Scaling calculates a variable target from physical input and the preset. Binary commands one fixed target when its W/m2 threshold is crossed.",
           "binary_close_threshold_w_m2": "Estimated direct solar power transmitted through one square meter of glazing after orientation, reveals, reflection and transmission. Crossing it commands the fixed binary target.",
@@ -578,12 +543,7 @@
         "data": {
           "solar_radiation_reference_w_m2": "Incoming irradiance that counts as strong sun (W/m2)",
           "forecast_influence_strength": "Forecast influence",
-          "heat_power_outside_temp_threshold": "Continuous power cap from outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
-          "hot_day_close_enabled": "Enable hot-day open limit",
-          "hot_day_close_threshold": "Hot-day limit from forecast temperature",
-          "hot_day_close_position": "Hot-day maximum (% open)",
-          "very_hot_day_close_position": "Very-hot-day maximum (% open)",
           "show_expert_weights": "Use individual expert weights",
           "weight_direct_exposure": "Weight: geometric exposure",
           "weight_incidence": "Weight: incidence angle",
@@ -603,12 +563,7 @@
         "data_description": {
           "solar_radiation_reference_w_m2": "Incoming direct irradiance before window geometry and glazing. Current W/m2 divided by this value becomes the irradiance factor; a lower value reacts more strongly.",
           "forecast_influence_strength": "Controls how strongly forecast temperature and forecast irradiance increase the physical solar-gain response. 0 ignores the forecast uplift; 1 allows the full uplift.",
-          "heat_power_outside_temp_threshold": "The continuous transmitted-power cap becomes active when measured outside temperature reaches this value, or when an allowed hot forecast triggers pre-emptive protection.",
           "heat_protection_min_outside_temp": "Cold lockout in degrees Celsius. Below this measured outside temperature, heat protection is suppressed even when the forecast is hot.",
-          "hot_day_close_enabled": "Enables an additional maximum-open limit on forecast hot days while direct sun reaches the window.",
-          "hot_day_close_threshold": "Forecast temperature from which the hot-day maximum-open limit is applied.",
-          "hot_day_close_position": "Maximum open position on a hot forecast day. The result may close further if another rule is stricter.",
-          "very_hot_day_close_position": "Maximum open position when the forecast reaches the very-hot threshold. The result may close further if another rule is stricter.",
           "show_expert_weights": "Replaces preset component weights with the five individual weights below. Leave disabled for consistent house-wide behavior.",
           "weight_direct_exposure": "Relative importance of the visible, unshaded glass fraction after field of view, reveals and horizon gating.",
           "weight_incidence": "Relative importance of the sun's incidence angle on the window. A perpendicular beam receives the strongest incidence value.",
@@ -629,7 +584,9 @@
         "description": "These values expose the normalized policy mathematics. House presets are preferable unless a measured behavior needs deliberate correction."
       },
       "house_facades": {
-        "data": {"profile_action": "Facade profile to edit or create"},
+        "data": {
+          "profile_action": "Facade profile to edit or create"
+        },
         "data_description": {
           "profile_action": "Select an existing facade profile or create a new one. All assigned windows inherit its rotation, geometry, horizon and preset."
         },
@@ -700,14 +657,16 @@
           "delete_profile": "Delete this room profile",
           "facade_name": "Default facade profile for this room",
           "policy_preset": "Heat-protection preset",
-          "has_additional_daylight_windows": "Room has daylight windows on other facades"
+          "has_additional_daylight_windows": "Room has daylight windows on other facades",
+          "room_temperature_entity": "Room temperature sensor"
         },
         "data_description": {
           "room_name": "Only Home Assistant rooms assigned to the previously selected floor are available. The profile uses the stable HA area ID.",
           "delete_profile": "Deletes only the Solar Shading room profile; the Home Assistant room itself is not changed.",
           "facade_name": "Default facade profile inherited by windows in this room when no different facade is selected at the window.",
           "policy_preset": "Heat-protection preset for every window in this room unless a room-facade or window profile overrides it.",
-          "has_additional_daylight_windows": "Reduces unnecessary closing because the room can still receive daylight through windows on another facade."
+          "has_additional_daylight_windows": "Reduces unnecessary closing because the room can still receive daylight through windows on another facade.",
+          "room_temperature_entity": "This sensor applies to every window in the room. It may be a temperature sensor or the current temperature of a climate entity."
         },
         "title": "Edit room profile",
         "description": "The room automatically inherits its selected floor profile and can add a default facade and room-wide behavior."
@@ -797,7 +756,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
           "max_elevation": "Maximum Elevation of the sun",
@@ -836,7 +794,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
@@ -847,31 +804,6 @@
         },
         "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
         "title": "Vertical cover"
-      },
-      "climate": {
-        "data": {
-          "temp_entity": "Inside temperature entity",
-          "presence_entity": "Presence entity (optional)",
-          "weather_entity": "Temperature forecast source (optional)",
-          "outside_temp": "Outside temperature sensor (optional)",
-          "temp_low": "Low temperature threshold",
-          "temp_high": "High temperature threshold",
-          "irradiance_entity": "Irradiance sensor (optional)",
-          "irradiance_threshold": "Irradiance threshold",
-          "outside_threshold": "Minimum outside temperature for summer mode"
-        },
-        "data_description": {
-          "presence_entity": "Entity representing room or home presence status",
-          "weather_entity": "Provides outside temperature and today's/tomorrow's maximum temperature forecast only",
-          "outside_temp": "Overrides outside temperature from weather entity if both are set",
-          "temp_low": "Minimum comfortable temperature",
-          "temp_high": "Maximum comfortable temperature",
-          "irradiance_entity": "Use irradiance sensor to determine if cover should reduce glare in presence mode",
-          "irradiance_threshold": "Threshold for irradiance sensor, above this value glare should be reduced",
-          "outside_threshold": "Outside temperature above which summer-mode behavior may activate"
-        },
-        "description": "Add additional climate configuration variables.",
-        "title": "Climate settings"
       },
       "weather": {
         "data": {
@@ -916,18 +848,15 @@
           "partial_close_position": "Partial target (% open)",
           "full_close_position": "Maximum normal closing (minimum % open)",
           "enable_away_mode": "Enable away-from-home mode",
+          "room_temperature_entity": "Room temperature sensor",
+          "room_heat_protection_threshold": "Enable heat protection at room temperature",
           "away_entity": "Away entity",
           "away_score_multiplier": "Away: score multiplier",
           "away_threshold_reduction": "Away: threshold reduction",
           "away_position_offset": "Away: reduce open position by",
-          "hot_day_close_enabled": "Enable general hot-day open limit",
-          "hot_day_close_threshold": "Hot-day threshold",
-          "hot_day_close_position": "Hot-day max position (% open)",
-          "very_hot_day_close_position": "Very-hot-day max position (% open)",
           "show_expert_weights": "Show expert weights",
           "weight_solar_radiation": "Weight: solar radiation",
           "heat_power_limit_enabled": "Enable per-window heat-power limit",
-          "heat_power_outside_temp_threshold": "Heat-power limit outside temperature",
           "heat_protection_min_outside_temp": "Disable heat protection below outside temperature",
           "max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)"
         },
@@ -947,18 +876,15 @@
           "partial_close_position": "Open-position target at the partial threshold. 100% open is fully open, 0% open is closed.",
           "full_close_position": "Minimum open position for normal policy control. Presets, away mode, and very-hot pressure will not close below this value; only explicit overrides can.",
           "enable_away_mode": "Enables stricter heat protection whenever the selected entity indicates nobody is home.",
+          "room_temperature_entity": "Measured room temperature. Reaching the comfort threshold can enable heat protection even on a day with a cool forecast.",
+          "room_heat_protection_threshold": "Heat protection is enabled immediately at this measured room temperature. Without a sensor, the forecast threshold remains decisive.",
           "away_entity": "Entity used to detect away status. For person/device_tracker every state except home counts as away. For binary_sensor/input_boolean, off counts as away.",
           "away_score_multiplier": "Raises the final heat-gain score while away and therefore makes the reaction stricter.",
           "away_threshold_reduction": "Lowers the partial/full close thresholds while away.",
           "away_position_offset": "Reduces the allowed open position while away, making shading stricter.",
-          "hot_day_close_enabled": "If enabled, a forecast above the threshold can cap the open position even outside the finer weighted policy.",
-          "hot_day_close_threshold": "Forecast temperature above which the day is treated as generally hot.",
-          "hot_day_close_position": "Maximum open position allowed on a generally hot day. Lower values mean more shading.",
-          "very_hot_day_close_position": "Maximum open position allowed once the forecast reaches the very-hot threshold. Use a lower value than the hot-day maximum for visibly stricter behavior.",
           "show_expert_weights": "Show and use individual policy weights. When disabled, the selected preset provides the weights.",
           "weight_solar_radiation": "Expert weight for measured or open-data solar radiation in W/m2. Set to 0 to ignore this factor in the policy score.",
           "heat_power_limit_enabled": "When enabled, Solar Shading calculates transmitted solar power from incoming irradiance, geometry, incidence angle and glazing. It caps the open position when the W/m2 limit is exceeded on a hot forecast day or above the outside-temperature threshold.",
-          "heat_power_outside_temp_threshold": "Outside temperature from which the heat-power cap may intervene. On forecast hot or very-hot days, the hard watt cap may intervene before this temperature is reached.",
           "heat_protection_min_outside_temp": "Below this measured outside temperature, heat protection is disabled even when the forecast is hot or very hot.",
           "max_transmitted_solar_power_w_m2": "Maximum allowed solar power transmitted through one square meter of window glass. The open position is reduced approximately linearly to stay below this value."
         },
@@ -987,7 +913,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
           "max_elevation": "Maximum Elevation of the sun",
@@ -1028,7 +953,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
           "reveal_right_depth": "Right reveal depth in meters. Increases shading when the sun comes from the right.",
@@ -1060,7 +984,6 @@
           "sunset_position": "Night position by time (% open)",
           "sunset_offset": "Sunset Offset",
           "sunrise_offset": "Sunrise Offset",
-          "climate_mode": "Climate Mode",
           "tilt_mode": "Type of movement",
           "blind_spot": "Setup Blindspot",
           "min_elevation": "Minimum Elevation of the sun",
@@ -1101,7 +1024,6 @@
           "sunset_position": "Position used outside the active time/sun window. Sunset and sunrise offsets decide when night mode begins and ends; set 100% open to stay open at night.",
           "sunset_offset": "Offset (?) from sunset time in minutes",
           "sunrise_offset": "Offset (?) from sunrise time in minutes",
-          "climate_mode": "Configure variables for climate mode",
           "tilt_mode": "Choose the type of movement",
           "window_width": "Visible glass width in meters. Required when reveal depths are used.",
           "reveal_left_depth": "Left reveal depth in meters. Increases shading when the sun comes from the left.",
@@ -1194,8 +1116,3 @@
     }
   }
 }
-
-
-
-
-
