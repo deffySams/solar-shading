@@ -9,6 +9,7 @@ from custom_components.solar_shading.config_flow import (
     HOUSE_SETUP_KEYS,
     OptionsFlowHandler,
     _area_options_for_floor,
+    _floor_options,
     _migrate_retired_options,
     _validate_policy_input,
 )
@@ -168,6 +169,24 @@ class ConfigFlowPolicyValidationTests(unittest.TestCase):
 
 
 class FloorRoomSelectionTests(unittest.TestCase):
+    @patch("custom_components.solar_shading.config_flow.floor_registry.async_get")
+    def test_home_assistant_floors_are_explicit_dropdown_options(self, async_get):
+        registry = async_get.return_value
+        registry.async_list_floors.return_value = [
+            SimpleNamespace(floor_id="og", name="Obergeschoss"),
+            SimpleNamespace(floor_id="eg", name="Erdgeschoss"),
+        ]
+
+        options = _floor_options(SimpleNamespace())
+
+        self.assertEqual(
+            options,
+            [
+                {"value": "eg", "label": "Erdgeschoss"},
+                {"value": "og", "label": "Obergeschoss"},
+            ],
+        )
+
     @patch("custom_components.solar_shading.config_flow.area_registry.async_get")
     def test_only_rooms_from_selected_floor_are_offered(self, async_get):
         registry = async_get.return_value

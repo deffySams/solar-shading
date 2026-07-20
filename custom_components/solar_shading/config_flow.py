@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import area_registry, selector
+from homeassistant.helpers import area_registry, floor_registry, selector
 
 from .const import (
     CONF_AWAY_ENTITY,
@@ -304,6 +304,24 @@ def _area_options_for_floor(hass, floor_id: str | None) -> list[dict[str, str]]:
         )
         if area.floor_id == floor_id
     ]
+
+
+def _floor_options(hass) -> list[dict[str, str]]:
+    """Return Home Assistant floors as explicit dropdown options."""
+    registry = floor_registry.async_get(hass)
+    return [
+        {"value": floor.floor_id, "label": floor.name}
+        for floor in sorted(
+            registry.async_list_floors(), key=lambda item: item.name.casefold()
+        )
+    ]
+
+
+def _floor_selector(hass):
+    """Return a consistently populated floor dropdown."""
+    return selector.SelectSelector(
+        selector.SelectSelectorConfig(options=_floor_options(hass))
+    )
 
 
 OPTIONS = vol.Schema(
@@ -1441,9 +1459,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Select the Home Assistant floor for a linked window."""
-        schema = vol.Schema(
-            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
-        )
+        schema = vol.Schema({vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass)})
         if user_input is not None:
             self._selected_floor_id = user_input[CONF_FLOOR_NAME]
             self.config.update(user_input)
@@ -2069,7 +2085,7 @@ class OptionsFlowHandler(OptionsFlow):
                         multiple=True,
                     )
                 ),
-                vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+                vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass),
             }
         )
         if user_input is not None:
@@ -2356,7 +2372,7 @@ class OptionsFlowHandler(OptionsFlow):
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=profile_choices)
                 ),
-                vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+                vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass),
             }
         )
         if user_input is not None:
@@ -2542,7 +2558,7 @@ class OptionsFlowHandler(OptionsFlow):
         """Add, update, or delete a Home Assistant floor profile."""
         schema = vol.Schema(
             {
-                vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector"),
+                vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass),
                 vol.Optional(
                     CONF_PROFILE_DELETE, default=False
                 ): selector.BooleanSelector(),
@@ -2594,9 +2610,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Select a floor before editing a Home Assistant room profile."""
-        schema = vol.Schema(
-            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
-        )
+        schema = vol.Schema({vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass)})
         if user_input is not None:
             self._selected_floor_id = user_input[CONF_FLOOR_NAME]
             return await self.async_step_house_room_edit()
@@ -2660,9 +2674,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Select a floor before editing one room-facade profile."""
-        schema = vol.Schema(
-            {vol.Required(CONF_FLOOR_NAME): _ha_selector_or_text("FloorSelector")}
-        )
+        schema = vol.Schema({vol.Required(CONF_FLOOR_NAME): _floor_selector(self.hass)})
         if user_input is not None:
             self._selected_floor_id = user_input[CONF_FLOOR_NAME]
             return await self.async_step_house_room_facade_edit()
