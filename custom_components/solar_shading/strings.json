@@ -143,7 +143,7 @@
           "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Vertical cover"
       },
       "weather": {
@@ -311,7 +311,7 @@
           "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Horizontal cover"
       },
       "tilt": {
@@ -393,7 +393,7 @@
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Tilted cover"
       },
       "blind_spot": {
@@ -587,17 +587,17 @@
       },
       "house_setup": {
         "data": {
-          "house_reference_azimuth": "Reference facade azimuth", "glass_type": "Default glazing", "cover_location": "Default cover mounting location", "fov_left": "Default field of view left", "fov_right": "Default field of view right", "reveal_left_depth": "Default left reveal depth", "reveal_right_depth": "Default right reveal depth", "reveal_top_depth": "Default top reveal depth", "horizon_mode": "Horizon angle reference", "horizon_profile": "Default horizon profile", "default_percentage": "Day fallback position (% open)"
+          "house_reference_azimuth": "Outward compass direction of reference facade (degrees)", "glass_type": "Default glazing", "cover_location": "Default cover mounting location", "window_height": "Default window height", "window_width": "Default window width", "fov_left": "Default field of view left", "fov_right": "Default field of view right", "reveal_left_depth": "Default left reveal depth", "reveal_right_depth": "Default right reveal depth", "reveal_top_depth": "Default top reveal depth", "horizon_mode": "Horizon angle reference", "horizon_profile": "Default horizon profile", "default_percentage": "Day fallback position (% open)"
         },
         "data_description": {
-          "house_reference_azimuth": "Effective window azimuth = reference facade + facade rotation + window correction.", "glass_type": "Default reflection and transmission model.", "cover_location": "Exterior covers reject absorbed heat more effectively than interior covers.", "fov_left": "Visible angle left of the window normal.", "fov_right": "Visible angle right of the window normal.", "reveal_left_depth": "Default left reveal depth in meters.", "reveal_right_depth": "Default right reveal depth in meters.", "reveal_top_depth": "Default top reveal depth in meters.", "horizon_mode": "Compass uses 0..359 degrees; window view uses 0 left, 90 ahead and 180 right.", "horizon_profile": "Optional JSON horizon inherited by all windows without a finer override.", "default_percentage": "Normal daytime position; 100% is fully open."
+          "house_reference_azimuth": "Direction perpendicular and outward from the reference wall: 0 north, 90 east, 180 south, 270 west. Prefer the facade facing closest to north.", "glass_type": "Default reflection and transmission model.", "cover_location": "Exterior covers reject absorbed heat more effectively than interior covers.", "window_height": "Inherited by linked windows unless local geometry is enabled.", "window_width": "Inherited by linked windows unless local geometry is enabled.", "fov_left": "Visible angle left of the window normal.", "fov_right": "Visible angle right of the window normal.", "reveal_left_depth": "Default left reveal depth in meters.", "reveal_right_depth": "Default right reveal depth in meters.", "reveal_top_depth": "Default top reveal depth in meters.", "horizon_mode": "Compass uses 0..359 degrees; window view uses 0 left, 90 ahead and 180 right.", "horizon_profile": "Optional JSON horizon inherited by all windows without a finer override.", "default_percentage": "Normal daytime position; 100% is fully open."
         },
         "title": "House profile: axis, windows and geometry",
         "description": "These building defaults are inherited by every linked window."
       },
       "house_night": {
         "data": {
-          "night_evening_mode": "Regulation ends in the evening", "night_start_time": "Fixed evening time", "sunset_offset": "Minutes after sunset", "night_evening_earliest_time": "Evening: not earlier than", "night_evening_latest_time": "Evening: not later than", "night_evening_action_enabled": "Move to evening/night position when regulation ends", "night_morning_mode": "Regulation begins in the morning", "night_end_time": "Fixed morning time", "sunrise_offset": "Minutes after sunrise", "night_morning_earliest_time": "Morning: not earlier than", "night_morning_latest_time": "Morning: not later than", "night_morning_action_enabled": "Move to day position when regulation begins", "sunset_position": "Evening/night position (% open)", "default_percentage": "Day position / morning action (% open)"
+          "night_evening_mode": "Regulation active until: time basis", "night_start_time": "Regulation active until: fixed time", "sunset_offset": "Minutes after sunset", "night_evening_earliest_time": "Evening: not earlier than", "night_evening_latest_time": "Evening: not later than", "night_evening_action_enabled": "Move to night position at end of active time", "night_morning_mode": "Regulation active from: time basis", "night_end_time": "Regulation active from: fixed time", "sunrise_offset": "Minutes after sunrise", "night_morning_earliest_time": "Morning: not earlier than", "night_morning_latest_time": "Morning: not later than", "night_morning_action_enabled": "Move to day position at start of active time", "sunset_position": "Evening/night position (% open)", "default_percentage": "Day position / morning action (% open)"
         },
         "data_description": {
           "night_evening_mode": "Determines when active solar regulation ends.", "night_start_time": "Used only for a fixed evening boundary.", "sunset_offset": "Example: 60 ends regulation one hour after sunset.", "night_evening_earliest_time": "Optional earliest solar boundary.", "night_evening_latest_time": "Optional latest solar boundary.", "night_evening_action_enabled": "Enabled moves to the night position; disabled keeps the current cover position.", "night_morning_mode": "Determines when active solar regulation begins.", "night_end_time": "Used only for a fixed morning boundary.", "sunrise_offset": "Positive values delay the start after sunrise.", "night_morning_earliest_time": "Optional earliest opening boundary.", "night_morning_latest_time": "Optional latest opening boundary.", "night_morning_action_enabled": "Enabled moves once to the day position; disabled skips the boundary movement.", "sunset_position": "Target for the enabled evening action.", "default_percentage": "Normal daytime fallback and enabled morning-action target."
@@ -947,7 +947,7 @@
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Vertical cover"
       },
       "weather": {
@@ -1113,7 +1113,7 @@
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Horizontal cover"
       },
       "tilt": {
@@ -1193,7 +1193,7 @@
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
-        "description": "Configuration variables for the cover. Edit visually in the simulator: /local/solar_shading_simulator.html. Standalone horizon drawer: /local/solar_shading_horizon_preview.html.",
+        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
         "title": "Tilted cover"
       },
       "blind_spot": {

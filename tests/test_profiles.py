@@ -4,6 +4,7 @@ import unittest
 
 from custom_components.solar_shading.const import (
     CONF_AZIMUTH,
+    CONF_COVER_LOCATION,
     CONF_ENTITIES,
     CONF_DEFAULT_HEIGHT,
     CONF_FACADE_NAME,
@@ -12,6 +13,7 @@ from custom_components.solar_shading.const import (
     CONF_FLOOR_NAME,
     CONF_FLOOR_PROFILES,
     CONF_GLASS_TYPE,
+    CONF_HEIGHT_WIN,
     CONF_HORIZON_PROFILE,
     CONF_HOUSE_DEFAULTS,
     CONF_HOUSE_PROFILE_ENTRY_ID,
@@ -42,6 +44,40 @@ from custom_components.solar_shading.profiles import (
 
 
 class ProfileResolutionTests(unittest.TestCase):
+    def test_house_geometry_and_glass_require_explicit_local_override(self):
+        house = {
+            CONF_HOUSE_DEFAULTS: {
+                CONF_GLASS_TYPE: "double_low_e",
+                CONF_COVER_LOCATION: "interior",
+                CONF_HEIGHT_WIN: 2.3,
+                CONF_WINDOW_WIDTH: 1.4,
+                CONF_REVEAL_LEFT: 0.15,
+            }
+        }
+        window = {
+            CONF_GLASS_TYPE: "single_clear",
+            CONF_COVER_LOCATION: "exterior",
+            CONF_HEIGHT_WIN: 1.0,
+            CONF_WINDOW_WIDTH: 0.8,
+            CONF_REVEAL_LEFT: 0.0,
+            CONF_USE_LOCAL_POLICY: True,
+        }
+
+        inherited = resolve_profile_options(window, house).options
+        local = resolve_profile_options(
+            {**window, CONF_USE_LOCAL_GEOMETRY: True}, house
+        ).options
+
+        self.assertEqual(inherited[CONF_GLASS_TYPE], "double_low_e")
+        self.assertEqual(inherited[CONF_COVER_LOCATION], "interior")
+        self.assertEqual(inherited[CONF_HEIGHT_WIN], 2.3)
+        self.assertEqual(inherited[CONF_WINDOW_WIDTH], 1.4)
+        self.assertEqual(inherited[CONF_REVEAL_LEFT], 0.15)
+        self.assertEqual(local[CONF_GLASS_TYPE], "single_clear")
+        self.assertEqual(local[CONF_COVER_LOCATION], "exterior")
+        self.assertEqual(local[CONF_HEIGHT_WIN], 1.0)
+        self.assertEqual(local[CONF_WINDOW_WIDTH], 0.8)
+
     def test_boundary_actions_are_independently_optional(self):
         options = {
             CONF_DEFAULT_HEIGHT: 85,

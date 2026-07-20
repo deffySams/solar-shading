@@ -9,6 +9,7 @@ from custom_components.solar_shading.config_flow import (
     HOUSE_SETUP_KEYS,
     OptionsFlowHandler,
     _area_options_for_floor,
+    _facade_options,
     _floor_options,
     _migrate_retired_options,
     _validate_policy_input,
@@ -31,6 +32,7 @@ from custom_components.solar_shading.const import (
     CONF_HORIZON_MODE,
     CONF_HORIZON_PROFILE,
     CONF_HOUSE_DEFAULTS,
+    CONF_HOUSE_REFERENCE_AZIMUTH,
     CONF_POLICY_PRESET,
     CONF_PROFILE_OVERRIDES,
     CONF_REVEAL_LEFT,
@@ -169,6 +171,25 @@ class ConfigFlowPolicyValidationTests(unittest.TestCase):
 
 
 class FloorRoomSelectionTests(unittest.TestCase):
+    def test_facade_dropdown_shows_effective_compass_azimuth(self):
+        options = _facade_options(
+            {
+                CONF_HOUSE_REFERENCE_AZIMUTH: 234,
+                CONF_FACADE_PROFILES: {
+                    "South": {CONF_FACADE_OFFSET: 0},
+                    "West": {CONF_FACADE_OFFSET: 90},
+                },
+            }
+        )
+
+        self.assertEqual(
+            options,
+            [
+                {"value": "South", "label": "South (234 deg)"},
+                {"value": "West", "label": "West (324 deg)"},
+            ],
+        )
+
     @patch("custom_components.solar_shading.config_flow.floor_registry.async_get")
     def test_home_assistant_floors_are_explicit_dropdown_options(self, async_get):
         registry = async_get.return_value
@@ -229,6 +250,16 @@ class HouseJourneySchemaTests(unittest.IsolatedAsyncioTestCase):
         self.assertLess(len(HOUSE_SETUP_KEYS), len(all_keys))
         self.assertLess(len(HOUSE_NIGHT_KEYS), len(all_keys))
         self.assertLess(len(HOUSE_HEAT_KEYS), len(all_keys))
+
+        ordered_keys = [
+            getattr(marker, "schema", marker)
+            for marker in HOUSE_DEFAULT_OPTIONS.schema
+            if getattr(marker, "schema", marker) in HOUSE_SETUP_KEYS
+        ]
+        self.assertLess(
+            ordered_keys.index(CONF_HORIZON_MODE),
+            ordered_keys.index(CONF_HORIZON_PROFILE),
+        )
 
     async def test_empty_bulk_assignment_does_not_block_house_menu(self):
         flow = OptionsFlowHandler.__new__(OptionsFlowHandler)

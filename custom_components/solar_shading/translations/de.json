@@ -33,12 +33,12 @@
         "data": {
           "room_name": "Home-Assistant-Raum",
           "facade_name": "Fassadenprofil",
-          "facade_offset": "Azimutkorrektur dieses Fensters"
+          "facade_offset": "Abweichung des Fensters von der gewählten Fassade (Grad)"
         },
         "data_description": {
           "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten.",
           "facade_name": "Das Fassadenprofil liefert Ausrichtung, gemeinsame Geometrie, Horizont und Hitzeschutz-Defaults.",
-          "facade_offset": "Vorzeichenbehaftete Korrektur in Grad, falls das Fenster nicht exakt parallel zur gewählten Fassade liegt. Bei parallelen Fenstern 0 lassen."
+          "facade_offset": "Normalfall 0 Grad. Nur ändern, wenn das Fenster nicht parallel zur gewählten Fassadenwand liegt. Positiv dreht im Uhrzeigersinn, negativ gegen den Uhrzeigersinn."
         },
         "title": "Fensterprofil: Raum und Fassade auswählen",
         "description": "Diese Zuordnung bestimmt, welche Stockwerks-, Raum-, Fassaden- und Raumfassadenprofile das Fenster erbt."
@@ -98,7 +98,7 @@
           "reveal_top_depth": "Laibung oben",
           "horizon_profile": "Horizontprofil",
           "horizon_mode": "Winkelbezug des Horizonts",
-          "facade_offset": "Azimutkorrektur dieses Fensters",
+          "facade_offset": "Abweichung des Fensters von der gewählten Fassade (Grad)",
           "use_local_geometry": "Geometrie und Glas lokal abweichend einstellen",
           "use_local_horizon": "Nur Horizont lokal abweichend einstellen",
           "use_local_policy": "Regeln und Hitzeschutz lokal abweichend einstellen",
@@ -143,7 +143,7 @@
           "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Vertikales Cover"
       },
       "weather": {
@@ -311,7 +311,7 @@
           "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Horizontales Cover"
       },
       "tilt": {
@@ -393,7 +393,7 @@
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Lamellen-Cover"
       },
       "blind_spot": {
@@ -491,7 +491,7 @@
         "data_description": {
           "room_name": "Es werden nur Home-Assistant-Räume des zuvor gewählten Stockwerks angeboten. Das zugehörige Raumprofil wird automatisch geerbt.",
           "facade_name": "Wähle das Fassadenprofil dieser Wand. Seine Drehung zur Referenzfassade bestimmt den Basis-Azimut des Fensters.",
-          "facade_offset": "Korrektur relativ zur gewählten Fassade. Für ein paralleles Fenster auf 0 lassen.",
+          "facade_offset": "Normalfall 0 Grad. Nur ändern, wenn das Fenster nicht parallel zur gewählten Fassadenwand liegt. Positiv dreht im Uhrzeigersinn, negativ gegen den Uhrzeigersinn.",
           "use_local_geometry": "Nur aktivieren, wenn dieses Fenster ein anderes Sichtfeld, andere Laibungen oder anderes Glas benötigt.",
           "use_local_horizon": "Für einen eigenen Fensterhorizont, während die restliche Geometrie vererbt bleibt.",
           "use_local_policy": "Nur für echte Ausnahmen. Lokal überschriebene Regeln folgen danach nicht mehr den entsprechenden Änderungen am Hausprofil."
@@ -501,9 +501,11 @@
       },
       "house_defaults": {
         "data": {
-          "house_reference_azimuth": "Azimut der Referenzfassade",
+          "house_reference_azimuth": "Kompassrichtung der Referenzfassade nach außen (Grad)",
           "glass_type": "Standardverglasung",
           "cover_location": "Standard-Montageort des Sonnenschutzes",
+          "window_height": "Standard-Fensterhöhe",
+          "window_width": "Standard-Fensterbreite",
           "fov_left": "Standard-Sichtfeld links",
           "fov_right": "Standard-Sichtfeld rechts",
           "reveal_left_depth": "Standard-Laibung links",
@@ -602,9 +604,11 @@
           "default_percentage": "Standardposition am Tag (% offen)"
         },
         "data_description": {
-          "house_reference_azimuth": "Kompass-Azimut der Referenzfassade. Wirksamer Fensterazimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
+          "house_reference_azimuth": "Richtung senkrecht von der Referenzfassade nach draußen: 0 Grad = Nord, 90 = Ost, 180 = Süd, 270 = West. Wähle vorzugsweise die am weitesten nach Norden gerichtete Hausfassade.",
           "glass_type": "Standard für Reflexion und Transmission aller Fenster ohne lokale Abweichung.",
           "cover_location": "Außenliegender Sonnenschutz hält Wärme wirksamer außerhalb des Raums als innenliegender.",
+          "window_height": "Wird von verknüpften Fenstern geerbt. Nur bei abweichender lokaler Geometrie überschreiben.",
+          "window_width": "Wird von verknüpften Fenstern geerbt. Nur bei abweichender lokaler Geometrie überschreiben.",
           "fov_left": "Maximal sichtbarer Winkel links von der Fensternormalen.",
           "fov_right": "Maximal sichtbarer Winkel rechts von der Fensternormalen.",
           "reveal_left_depth": "Standardtiefe der linken Laibung in Metern.",
@@ -619,29 +623,31 @@
       },
       "house_night": {
         "data": {
-          "night_evening_mode": "Abendgrenze",
-          "night_start_time": "Feste Schließzeit am Abend",
+          "night_evening_mode": "Regelung aktiv bis: Zeitbezug",
+          "night_start_time": "Regelung aktiv bis: feste Uhrzeit",
           "sunset_offset": "Minuten nach Sonnenuntergang",
           "night_evening_earliest_time": "Abends nicht früher als",
           "night_evening_latest_time": "Abends nicht später als",
-          "night_morning_mode": "Morgengrenze",
-          "night_end_time": "Feste Öffnungszeit am Morgen",
+          "night_evening_action_enabled": "Am Ende der Regelzeit Nachtposition anfahren",
+          "night_morning_mode": "Regelung aktiv ab: Zeitbezug",
+          "night_end_time": "Regelung aktiv ab: feste Uhrzeit",
           "sunrise_offset": "Minuten nach Sonnenaufgang",
           "night_morning_earliest_time": "Morgens nicht früher als",
           "night_morning_latest_time": "Morgens nicht später als",
+          "night_morning_action_enabled": "Am Beginn der Regelzeit Tagesposition anfahren",
           "sunset_position": "Abend-/Nachtposition (% offen)",
           "default_percentage": "Tagesposition / Morgenaktion (% offen)"
         },
         "data_description": {
-          "night_evening_mode": "Bestimmt, wann die aktive Solarregelung am Abend endet.",
+          "night_evening_mode": "Bestimmt das Ende des aktiven Zeitfensters. Bei Sonnenuntergang wird die reale Uhrzeit täglich berechnet.",
           "night_evening_action_enabled": "Aktiv: Abend-/Nachtposition anfahren. Inaktiv: keine Fahrt auslösen und die aktuelle Coverposition beibehalten.",
-          "night_start_time": "Wird nur bei fester Abendgrenze verwendet.",
+          "night_start_time": "Direkte Bis-Uhrzeit; wird bei fester Abendgrenze verwendet.",
           "sunset_offset": "Beispiel: 60 aktiviert die Nachtposition eine Stunde nach Sonnenuntergang.",
           "night_evening_earliest_time": "Optionale früheste Grenze bei Sonnenführung.",
           "night_evening_latest_time": "Optionale späteste Grenze bei Sonnenführung.",
-          "night_morning_mode": "Bestimmt, wann die aktive Solarregelung am Morgen beginnt.",
+          "night_morning_mode": "Bestimmt den Beginn des aktiven Zeitfensters. Bei Sonnenaufgang wird die reale Uhrzeit täglich berechnet.",
           "night_morning_action_enabled": "Aktiv: Beim Morgen-Trigger einmal die Tagesposition anfahren. Inaktiv: keine Grenzfahrt; spätere Solaränderungen dürfen weiterhin regeln.",
-          "night_end_time": "Wird nur bei fester Morgengrenze verwendet.",
+          "night_end_time": "Direkte Ab-Uhrzeit; wird bei fester Morgengrenze verwendet.",
           "sunrise_offset": "Positive Werte halten die Nachtposition nach Sonnenaufgang länger aktiv.",
           "night_morning_earliest_time": "Optionale früheste Öffnungsgrenze.",
           "night_morning_latest_time": "Optionale späteste Öffnungsgrenze.",
@@ -813,7 +819,7 @@
         "data": {
           "profile_name": "Fassadenname",
           "delete_profile": "Dieses Fassadenprofil löschen",
-          "facade_offset": "Drehung relativ zur Referenzfassade",
+          "facade_offset": "Drehung dieser Fassade zur Referenzfassade (Grad)",
           "horizon_mode": "Winkelbezug des Horizonts",
           "horizon_profile": "Fassadenhorizont",
           "fov_left": "Sichtfeld links",
@@ -826,7 +832,7 @@
         "data_description": {
           "profile_name": "Stabiler, verständlicher Name wie Nord, Ost-Hof oder Garten. Räume und Fenster referenzieren dieses Profil über den Namen.",
           "delete_profile": "Löscht dieses Fassadenprofil aus dem Hausprofil. Vorhandene Raum- und Fensterzuordnungen sollten vorher geändert werden.",
-          "facade_offset": "Vorzeichenbehaftete Drehung in Grad zur Referenzfassade. Fensterazimut = Referenzfassade + Fassadendrehung + Fensterkorrektur.",
+          "facade_offset": "0 Grad = gleiche Richtung wie die Referenzfassade, +90 = im Uhrzeigersinn gedreht, -90 = gegen den Uhrzeigersinn, 180 = gegenüberliegend. Die resultierende Kompassrichtung wird im Fassaden-Dropdown angezeigt.",
           "horizon_mode": "Kompassmodus speichert echte Azimute von 0 bis 359 Grad. Fenstersicht speichert 0 links, 90 geradeaus und 180 rechts.",
           "horizon_profile": "Gemeinsamer JSON-Horizont dieser Fassade. Stockwerks-, Raumfassaden- oder Fensterhorizonte können ihn überschreiben.",
           "fov_left": "Gemeinsamer sichtbarer Winkel links der Normalen für Fenster dieser Fassade.",
@@ -1025,7 +1031,7 @@
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Vertikales Cover"
       },
       "weather": {
@@ -1191,7 +1197,7 @@
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Horizontales Cover"
       },
       "tilt": {
@@ -1271,7 +1277,7 @@
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
-        "description": "Konfigurationsvariablen fuer das Cover. Visuell bearbeiten im Simulator: /local/solar_shading_simulator.html. Separater Horizont-Zeichner: /local/solar_shading_horizon_preview.html.",
+        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
         "title": "Lamellen-Cover"
       },
       "blind_spot": {

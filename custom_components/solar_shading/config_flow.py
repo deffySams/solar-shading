@@ -167,6 +167,7 @@ from .profiles import (
     apply_bulk_profile_assignment,
     built_in_house_defaults,
     default_house_profile_options,
+    resolve_profile_options,
     room_facade_key,
 )
 
@@ -324,6 +325,40 @@ def _floor_selector(hass):
     )
 
 
+def _facade_options(house_options: dict[str, Any]) -> list[dict[str, str]]:
+    """Return facade names with their effective compass azimuth."""
+    reference = float(house_options.get(CONF_HOUSE_REFERENCE_AZIMUTH, 0) or 0)
+    profiles = dict(house_options.get(CONF_FACADE_PROFILES) or {})
+    result = []
+    for name, profile in sorted(profiles.items()):
+        offset = float((profile or {}).get(CONF_FACADE_OFFSET, 0) or 0)
+        azimuth = int(round((reference + offset) % 360))
+        result.append({"value": name, "label": f"{name} ({azimuth} deg)"})
+    return result
+
+
+def _linked_window_summary(
+    window_options: dict[str, Any], house_options: dict[str, Any]
+) -> dict[str, str]:
+    """Return visible effective values for a linked-window setup form."""
+    effective = resolve_profile_options(window_options, house_options).options
+    return {
+        "effective_azimuth": str(effective.get(CONF_AZIMUTH, "-")),
+        "effective_glass": str(effective.get(CONF_GLASS_TYPE, "-")),
+        "effective_size": (
+            f"{effective.get(CONF_WINDOW_WIDTH, '-')} x "
+            f"{effective.get(CONF_HEIGHT_WIN, '-')} m"
+        ),
+        "effective_reveals": (
+            f"{effective.get(CONF_REVEAL_LEFT, '-')} / "
+            f"{effective.get(CONF_REVEAL_RIGHT, '-')} / "
+            f"{effective.get(CONF_REVEAL_TOP, '-')} m"
+        ),
+        "effective_horizon_mode": str(effective.get(CONF_HORIZON_MODE, "-")),
+        "effective_cover_location": str(effective.get(CONF_COVER_LOCATION, "-")),
+    }
+
+
 OPTIONS = vol.Schema(
     {
         vol.Optional(CONF_FACADE_NAME): selector.TextSelector(),
@@ -432,14 +467,14 @@ OPTIONS = vol.Schema(
                 min=0, max=5, step=0.01, mode="box", unit_of_measurement="m"
             )
         ),
-        vol.Optional(
-            CONF_HORIZON_PROFILE, default=HORIZON_PROFILE_EXAMPLE
-        ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
         vol.Optional(CONF_HORIZON_MODE, default="window"): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=HORIZON_MODE_OPTIONS, translation_key="horizon_mode"
             )
         ),
+        vol.Optional(
+            CONF_HORIZON_PROFILE, default=HORIZON_PROFILE_EXAMPLE
+        ): selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
         vol.Optional(CONF_GLASS_TYPE, default="double_clear"): selector.SelectSelector(
             selector.SelectSelectorConfig(options=GLASS_TYPE_OPTIONS)
         ),
@@ -819,6 +854,16 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
                 options=COVER_LOCATION_OPTIONS, translation_key="cover_location"
             )
         ),
+        vol.Optional(CONF_HEIGHT_WIN, default=2.1): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0.1, max=6, step=0.01, mode="box", unit_of_measurement="m"
+            )
+        ),
+        vol.Optional(CONF_WINDOW_WIDTH, default=1.2): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0.1, max=20, step=0.01, mode="box", unit_of_measurement="m"
+            )
+        ),
         vol.Required(CONF_FOV_LEFT, default=90): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=1, max=90, step=1, mode="slider", unit_of_measurement="°"
@@ -857,6 +902,21 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
             )
         ),
+        vol.Optional(CONF_NIGHT_MORNING_MODE, default="fixed"): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=NIGHT_MORNING_MODE_OPTIONS,
+                translation_key="night_morning_mode",
+            )
+        ),
+        vol.Optional(CONF_NIGHT_END_TIME, default="08:00:00"): selector.TimeSelector(),
+        vol.Optional(CONF_SUNRISE_OFFSET, default=0): selector.NumberSelector(
+            selector.NumberSelectorConfig(mode="box", unit_of_measurement="minutes")
+        ),
+        vol.Optional(CONF_NIGHT_MORNING_EARLIEST_TIME): selector.TimeSelector(),
+        vol.Optional(CONF_NIGHT_MORNING_LATEST_TIME): selector.TimeSelector(),
+        vol.Optional(
+            CONF_NIGHT_MORNING_ACTION_ENABLED, default=True
+        ): selector.BooleanSelector(),
         vol.Optional(
             CONF_NIGHT_EVENING_MODE, default="sunset"
         ): selector.SelectSelector(
@@ -875,21 +935,6 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         vol.Optional(CONF_NIGHT_EVENING_LATEST_TIME): selector.TimeSelector(),
         vol.Optional(
             CONF_NIGHT_EVENING_ACTION_ENABLED, default=True
-        ): selector.BooleanSelector(),
-        vol.Optional(CONF_NIGHT_MORNING_MODE, default="fixed"): selector.SelectSelector(
-            selector.SelectSelectorConfig(
-                options=NIGHT_MORNING_MODE_OPTIONS,
-                translation_key="night_morning_mode",
-            )
-        ),
-        vol.Optional(CONF_NIGHT_END_TIME, default="08:00:00"): selector.TimeSelector(),
-        vol.Optional(CONF_SUNRISE_OFFSET, default=0): selector.NumberSelector(
-            selector.NumberSelectorConfig(mode="box", unit_of_measurement="minutes")
-        ),
-        vol.Optional(CONF_NIGHT_MORNING_EARLIEST_TIME): selector.TimeSelector(),
-        vol.Optional(CONF_NIGHT_MORNING_LATEST_TIME): selector.TimeSelector(),
-        vol.Optional(
-            CONF_NIGHT_MORNING_ACTION_ENABLED, default=True
         ): selector.BooleanSelector(),
         vol.Optional(CONF_SUNSET_POS, default=100): selector.NumberSelector(
             selector.NumberSelectorConfig(
@@ -1065,6 +1110,8 @@ HOUSE_SETUP_KEYS = {
     CONF_HOUSE_REFERENCE_AZIMUTH,
     CONF_GLASS_TYPE,
     CONF_COVER_LOCATION,
+    CONF_HEIGHT_WIN,
+    CONF_WINDOW_WIDTH,
     CONF_FOV_LEFT,
     CONF_FOV_RIGHT,
     CONF_REVEAL_LEFT,
@@ -1401,6 +1448,16 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             if key not in user_input:
                 user_input[key] = None
 
+    def _linked_description_placeholders(self) -> dict[str, str]:
+        """Expose effective values while creating a window."""
+        profile_id = self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID)
+        house_options = (
+            _house_options(self.hass, profile_id)
+            if profile_id
+            else default_house_profile_options()
+        )
+        return _linked_window_summary(self.config, house_options)
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Handle the initial step."""
         if user_input:
@@ -1476,7 +1533,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         floor_id = self._selected_floor_id or self.config.get(CONF_FLOOR_NAME)
         room_options = _area_options_for_floor(self.hass, floor_id)
         house = _house_options(self.hass, self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID))
-        facades = sorted((house.get(CONF_FACADE_PROFILES) or {}).keys())
+        facades = _facade_options(house)
         schema = vol.Schema(
             {
                 vol.Required(CONF_ROOM_NAME): selector.SelectSelector(
@@ -1546,6 +1603,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="vertical",
             data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            description_placeholders=self._linked_description_placeholders(),
         )
 
     async def async_step_horizontal(self, user_input: dict[str, Any] | None = None):
@@ -1588,6 +1646,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="horizontal",
             data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            description_placeholders=self._linked_description_placeholders(),
         )
 
     async def async_step_tilt(self, user_input: dict[str, Any] | None = None):
@@ -1626,6 +1685,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="tilt",
             data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            description_placeholders=self._linked_description_placeholders(),
         )
 
     async def async_step_interp(self, user_input: dict[str, Any] | None = None):
@@ -1975,6 +2035,25 @@ class OptionsFlowHandler(OptionsFlow):
         defaults.update(dict(self.options.get(CONF_HOUSE_DEFAULTS) or {}))
         return defaults
 
+    def _window_form_values(self) -> dict[str, Any]:
+        """Return current effective values for a linked-window editor."""
+        profile_id = self.options.get(CONF_HOUSE_PROFILE_ENTRY_ID)
+        if not profile_id:
+            return dict(self.options)
+        return resolve_profile_options(
+            self.options, _house_options(self.hass, profile_id)
+        ).options
+
+    def _window_description_placeholders(self) -> dict[str, str]:
+        """Return a compact effective-value summary for the window editor."""
+        profile_id = self.options.get(CONF_HOUSE_PROFILE_ENTRY_ID)
+        house = (
+            _house_options(self.hass, profile_id)
+            if profile_id
+            else default_house_profile_options()
+        )
+        return _linked_window_summary(self.options, house)
+
     async def async_step_house_defaults(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -2102,7 +2181,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Select the room and facade for the chosen window groups."""
-        facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        facades = _facade_options(self.options)
         room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
@@ -2395,7 +2474,7 @@ class OptionsFlowHandler(OptionsFlow):
             self.hass,
             None if selected_profile == TEMPLATE_NONE else selected_profile,
         )
-        facades = sorted((house.get(CONF_FACADE_PROFILES) or {}).keys())
+        facades = _facade_options(house)
         room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
@@ -2620,7 +2699,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Add, update, or delete a room profile from the selected floor."""
-        facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        facades = _facade_options(self.options)
         room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
@@ -2684,7 +2763,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Add, update, or delete one facade/wall profile inside a room."""
-        facades = sorted((self.options.get(CONF_FACADE_PROFILES) or {}).keys())
+        facades = _facade_options(self.options)
         room_options = _area_options_for_floor(self.hass, self._selected_floor_id)
         schema = vol.Schema(
             {
@@ -2831,8 +2910,9 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="vertical",
             data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self.options
+                schema, user_input or self._window_form_values()
             ),
+            description_placeholders=self._window_description_placeholders(),
         )
 
     async def async_step_horizontal(self, user_input: dict[str, Any] | None = None):
@@ -2877,8 +2957,9 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="horizontal",
             data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self.options
+                schema, user_input or self._window_form_values()
             ),
+            description_placeholders=self._window_description_placeholders(),
         )
 
     async def async_step_tilt(self, user_input: dict[str, Any] | None = None):
@@ -2923,8 +3004,9 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="tilt",
             data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self.options
+                schema, user_input or self._window_form_values()
             ),
+            description_placeholders=self._window_description_placeholders(),
         )
 
     async def async_step_interp(self, user_input: dict[str, Any] | None = None):
