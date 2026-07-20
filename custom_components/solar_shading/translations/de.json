@@ -654,6 +654,20 @@
           "sunset_position": "Ziel der aktivierten Abendaktion und Position während der Nacht.",
           "default_percentage": "Normale Tagesposition und Ziel der aktivierten Morgenaktion."
         },
+        "sections": {
+          "morning_action_settings": {
+            "name": "Einstellungen der Morgenaktion",
+            "description": "Diese Position wird nur angefahren, wenn die Checkbox darüber aktiv ist.",
+            "data": {"default_percentage": "Tagesposition (% offen)"},
+            "data_description": {"default_percentage": "Ziel der Morgenaktion und normale Tagesposition. 100 % bedeutet vollständig offen."}
+          },
+          "evening_action_settings": {
+            "name": "Einstellungen der Abendaktion",
+            "description": "Diese Position wird nur angefahren, wenn die Checkbox darüber aktiv ist.",
+            "data": {"sunset_position": "Abend-/Nachtposition (% offen)"},
+            "data_description": {"sunset_position": "Ziel der Abendaktion und Position während der Nacht."}
+          }
+        },
         "title": "Hausprofil: Regelzeit und Randaktionen",
         "description": "Die Grenzen bestimmen, wann Solar Shading regelt. Die beiden Tickboxen bestimmen getrennt, ob am Morgen oder Abend tatsächlich gefahren wird."
       },
@@ -695,6 +709,20 @@
           "max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung durch einen Quadratmeter Glas.",
           "enable_away_mode": "Verwendet bei gemeldeter Abwesenheit strengere Ziele.",
           "away_entity": "Quelle zur Erkennung der Abwesenheit."
+        },
+        "sections": {
+          "power_limit_settings": {
+            "name": "Einstellungen der Leistungsbegrenzung",
+            "description": "Dieser Grenzwert wird nur angewendet, wenn die Checkbox darüber aktiv ist.",
+            "data": {"max_transmitted_solar_power_w_m2": "Maximal durchgelassene Solarleistung (W/m² Glas)"},
+            "data_description": {"max_transmitted_solar_power_w_m2": "Maximal erlaubte Solarleistung durch einen Quadratmeter Glas."}
+          },
+          "away_mode_settings": {
+            "name": "Einstellungen bei Abwesenheit",
+            "description": "Diese Quelle wird nur ausgewertet, wenn die Checkbox darüber aktiv ist.",
+            "data": {"away_entity": "Abwesenheitsentität"},
+            "data_description": {"away_entity": "Quelle zur Erkennung der Abwesenheit."}
+          }
         },
         "title": "Hausprofil: Hitzeschutz-Regeln",
         "description": "Diese Regeln gelten im Haus, solange Raum oder Fenster sie nicht gezielt überschreiben."
@@ -739,6 +767,26 @@
           "away_position_offset": "Zieht bei Abwesenheit diese Anzahl Prozentpunkte von berechneten Offenpositionen ab.",
           "sunset_offset": "Minuten, die im sonnengeführten Nachtmodus zur Sonnenuntergangsgrenze addiert werden. Negative Werte aktivieren die Nachtposition früher.",
           "sunrise_offset": "Minuten, die im sonnengeführten Nachtmodus zur Sonnenaufgangsgrenze addiert werden. Positive Werte halten die Nachtposition länger aktiv."
+        },
+        "sections": {
+          "expert_weight_settings": {
+            "name": "Einzelne Expertengewichte",
+            "description": "Diese fünf Werte ersetzen nur dann die Preset-Gewichte, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "weight_direct_exposure": "Gewicht: geometrische Exposition",
+              "weight_incidence": "Gewicht: Einfallswinkel",
+              "weight_glazing": "Gewicht: Glastransmission",
+              "weight_forecast_temperature": "Gewicht: Prognosetemperatur",
+              "weight_solar_radiation": "Gewicht: Solarstrahlung"
+            },
+            "data_description": {
+              "weight_direct_exposure": "Relative Bedeutung des sichtbaren, unverschatteten Glasanteils.",
+              "weight_incidence": "Relative Bedeutung des Einfallswinkels auf das Fenster.",
+              "weight_glazing": "Relative Bedeutung der winkelabhängigen Glastransmission.",
+              "weight_forecast_temperature": "Relative Bedeutung der Prognosetemperatur.",
+              "weight_solar_radiation": "Relative Bedeutung der einfallenden Solarstrahlung."
+            }
+          }
         },
         "title": "Hausprofil: Feinabstimmung",
         "description": "Diese Werte legen die normierte Regelmathematik offen. Haus-Presets sind vorzuziehen, solange kein gemessenes Verhalten gezielt korrigiert werden muss."

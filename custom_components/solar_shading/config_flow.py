@@ -15,6 +15,11 @@ from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import area_registry, floor_registry, selector
 
+try:
+    from homeassistant.data_entry_flow import section as flow_section
+except ImportError:  # Home Assistant before native form sections were introduced.
+    flow_section = None
+
 from .const import (
     CONF_AWAY_ENTITY,
     CONF_AWAY_POSITION_OFFSET,
@@ -1144,6 +1149,52 @@ HOUSE_HEAT_KEYS = (
     - HOUSE_NIGHT_KEYS
 )
 
+SECTION_MORNING_ACTION = "morning_action_settings"
+SECTION_EVENING_ACTION = "evening_action_settings"
+SECTION_POWER_LIMIT = "power_limit_settings"
+SECTION_AWAY_MODE = "away_mode_settings"
+SECTION_EXPERT_WEIGHTS = "expert_weight_settings"
+
+HOUSE_FORM_SECTIONS: dict[str, tuple[tuple[str, str, tuple[str, ...]], ...]] = {
+    "house_night": (
+        (
+            CONF_NIGHT_MORNING_ACTION_ENABLED,
+            SECTION_MORNING_ACTION,
+            (CONF_DEFAULT_HEIGHT,),
+        ),
+        (
+            CONF_NIGHT_EVENING_ACTION_ENABLED,
+            SECTION_EVENING_ACTION,
+            (CONF_SUNSET_POS,),
+        ),
+    ),
+    "house_heat": (
+        (
+            CONF_HEAT_POWER_LIMIT_ENABLED,
+            SECTION_POWER_LIMIT,
+            (CONF_MAX_TRANSMITTED_SOLAR_POWER,),
+        ),
+        (
+            CONF_ENABLE_AWAY_MODE,
+            SECTION_AWAY_MODE,
+            (CONF_AWAY_ENTITY,),
+        ),
+    ),
+    "house_expert": (
+        (
+            CONF_SHOW_EXPERT_WEIGHTS,
+            SECTION_EXPERT_WEIGHTS,
+            (
+                CONF_WEIGHT_DIRECT_EXPOSURE,
+                CONF_WEIGHT_INCIDENCE,
+                CONF_WEIGHT_GLAZING,
+                CONF_WEIGHT_FORECAST_TEMPERATURE,
+                CONF_WEIGHT_SOLAR_RADIATION,
+            ),
+        ),
+    ),
+}
+
 
 def _schema_subset(schema: vol.Schema, keys: set[str]) -> vol.Schema:
     """Return a schema containing only selected config keys."""
@@ -1153,6 +1204,71 @@ def _schema_subset(schema: vol.Schema, keys: set[str]) -> vol.Schema:
         if key in keys:
             selected[marker] = validator
     return vol.Schema(selected)
+
+
+def _sectioned_schema(
+    schema: vol.Schema,
+    groups: tuple[tuple[str, str, tuple[str, ...]], ...],
+) -> vol.Schema:
+    """Place dependent fields in always-expanded native HA sections."""
+    if flow_section is None or not groups:
+        return schema
+
+    fields = {
+        getattr(marker, "schema", marker): (marker, validator)
+        for marker, validator in schema.schema.items()
+    }
+    dependent_keys = {key for _, _, keys in groups for key in keys}
+    group_by_gate = {gate: (section_key, keys) for gate, section_key, keys in groups}
+    result: dict[Any, Any] = {}
+
+    for marker, validator in schema.schema.items():
+        key = getattr(marker, "schema", marker)
+        if key in dependent_keys:
+            continue
+        result[marker] = validator
+        if key not in group_by_gate:
+            continue
+        section_key, child_keys = group_by_gate[key]
+        child_schema = {
+            fields[child_key][0]: fields[child_key][1]
+            for child_key in child_keys
+            if child_key in fields
+        }
+        if child_schema:
+            result[vol.Required(section_key)] = flow_section(
+                vol.Schema(child_schema), {"collapsed": False}
+            )
+    return vol.Schema(result)
+
+
+def _flatten_section_values(
+    values: dict[str, Any],
+    groups: tuple[tuple[str, str, tuple[str, ...]], ...],
+) -> dict[str, Any]:
+    """Convert submitted two-tier form data back to flat stored options."""
+    flattened = dict(values)
+    for _, section_key, _ in groups:
+        nested = flattened.pop(section_key, None)
+        if isinstance(nested, dict):
+            flattened.update(nested)
+    return flattened
+
+
+def _nest_section_values(
+    values: dict[str, Any],
+    groups: tuple[tuple[str, str, tuple[str, ...]], ...],
+) -> dict[str, Any]:
+    """Shape flat stored options for Home Assistant's nested form sections."""
+    if flow_section is None:
+        return dict(values)
+    nested_values = dict(values)
+    for _, section_key, child_keys in groups:
+        section_values = {
+            key: nested_values.pop(key) for key in child_keys if key in nested_values
+        }
+        nested_values[section_key] = section_values
+    return nested_values
 
 
 LINKED_WINDOW_INITIAL_KEYS = {
@@ -2068,9 +2184,10 @@ class OptionsFlowHandler(OptionsFlow):
         user_input: dict[str, Any] | None,
     ) -> FlowResult:
         """Edit one understandable group of inherited house defaults."""
-        schema = _schema_subset(HOUSE_DEFAULT_OPTIONS, keys)
+        groups = HOUSE_FORM_SECTIONS.get(step_id, ())
+        schema = _sectioned_schema(_schema_subset(HOUSE_DEFAULT_OPTIONS, keys), groups)
         if user_input is not None:
-            values = dict(user_input)
+            values = _flatten_section_values(user_input, groups)
             if CONF_HORIZON_PROFILE in keys:
                 try:
                     values[CONF_HORIZON_PROFILE] = _validate_horizon_profile(
@@ -2080,7 +2197,9 @@ class OptionsFlowHandler(OptionsFlow):
                 except vol.Invalid:
                     return self.async_show_form(
                         step_id=step_id,
-                        data_schema=self.add_suggested_values_to_schema(schema, values),
+                        data_schema=self.add_suggested_values_to_schema(
+                            schema, _nest_section_values(values, groups)
+                        ),
                         errors={CONF_HORIZON_PROFILE: "invalid_horizon_profile"},
                     )
             if CONF_HOUSE_REFERENCE_AZIMUTH in values:
@@ -2099,7 +2218,9 @@ class OptionsFlowHandler(OptionsFlow):
             )
         return self.async_show_form(
             step_id=step_id,
-            data_schema=self.add_suggested_values_to_schema(schema, values),
+            data_schema=self.add_suggested_values_to_schema(
+                schema, _nest_section_values(values, groups)
+            ),
         )
 
     async def async_step_house_setup(
@@ -2130,24 +2251,27 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Edit expert house-level tuning values."""
+        groups = HOUSE_FORM_SECTIONS["house_expert"]
+        schema = _sectioned_schema(HOUSE_EXPERT_OPTIONS, groups)
         if user_input is not None:
-            errors = _validate_policy_input(user_input)
+            values = _flatten_section_values(user_input, groups)
+            errors = _validate_policy_input(values)
             if errors:
                 return self.async_show_form(
                     step_id="house_expert",
                     data_schema=self.add_suggested_values_to_schema(
-                        HOUSE_EXPERT_OPTIONS, user_input
+                        schema, _nest_section_values(values, groups)
                     ),
                     errors=errors,
                 )
             defaults = self._house_defaults()
-            defaults.update(user_input)
+            defaults.update(values)
             self.options[CONF_HOUSE_DEFAULTS] = defaults
             return await self._update_options()
         return self.async_show_form(
             step_id="house_expert",
             data_schema=self.add_suggested_values_to_schema(
-                HOUSE_EXPERT_OPTIONS, self._house_defaults()
+                schema, _nest_section_values(self._house_defaults(), groups)
             ),
         )
 

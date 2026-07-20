@@ -4,6 +4,8 @@ from unittest.mock import patch
 
 from custom_components.solar_shading.config_flow import (
     HOUSE_DEFAULT_OPTIONS,
+    HOUSE_EXPERT_OPTIONS,
+    HOUSE_FORM_SECTIONS,
     HOUSE_HEAT_KEYS,
     HOUSE_NIGHT_KEYS,
     HOUSE_SETUP_KEYS,
@@ -11,7 +13,11 @@ from custom_components.solar_shading.config_flow import (
     _area_options_for_floor,
     _facade_options,
     _floor_options,
+    _flatten_section_values,
     _migrate_retired_options,
+    _nest_section_values,
+    _schema_subset,
+    _sectioned_schema,
     _validate_policy_input,
 )
 from custom_components.solar_shading.migration import RETIRED_OPTION_KEYS
@@ -33,6 +39,11 @@ from custom_components.solar_shading.const import (
     CONF_HORIZON_PROFILE,
     CONF_HOUSE_DEFAULTS,
     CONF_HOUSE_REFERENCE_AZIMUTH,
+    CONF_HEAT_POWER_LIMIT_ENABLED,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
+    CONF_DEFAULT_HEIGHT,
+    CONF_SHOW_EXPERT_WEIGHTS,
+    CONF_WEIGHT_DIRECT_EXPOSURE,
     CONF_POLICY_PRESET,
     CONF_PROFILE_OVERRIDES,
     CONF_REVEAL_LEFT,
@@ -260,6 +271,52 @@ class HouseJourneySchemaTests(unittest.IsolatedAsyncioTestCase):
             ordered_keys.index(CONF_HORIZON_MODE),
             ordered_keys.index(CONF_HORIZON_PROFILE),
         )
+
+    def test_checkbox_dependencies_are_native_second_tier_sections(self):
+        fake_section = lambda schema, _options: schema
+        with patch(
+            "custom_components.solar_shading.config_flow.flow_section", fake_section
+        ):
+            night_schema = _sectioned_schema(
+                _schema_subset(HOUSE_DEFAULT_OPTIONS, HOUSE_NIGHT_KEYS),
+                HOUSE_FORM_SECTIONS["house_night"],
+            )
+            expert_schema = _sectioned_schema(
+                HOUSE_EXPERT_OPTIONS, HOUSE_FORM_SECTIONS["house_expert"]
+            )
+
+        night_keys = [
+            getattr(marker, "schema", marker) for marker in night_schema.schema
+        ]
+        expert_keys = [
+            getattr(marker, "schema", marker) for marker in expert_schema.schema
+        ]
+        self.assertEqual(
+            night_keys[night_keys.index(CONF_NIGHT_MORNING_ACTION_ENABLED) + 1],
+            "morning_action_settings",
+        )
+        self.assertNotIn(CONF_DEFAULT_HEIGHT, night_keys)
+        self.assertEqual(
+            expert_keys[expert_keys.index(CONF_SHOW_EXPERT_WEIGHTS) + 1],
+            "expert_weight_settings",
+        )
+        self.assertNotIn(CONF_WEIGHT_DIRECT_EXPOSURE, expert_keys)
+
+    def test_section_values_round_trip_without_changing_stored_keys(self):
+        groups = HOUSE_FORM_SECTIONS["house_heat"]
+        flat = {
+            CONF_HEAT_POWER_LIMIT_ENABLED: True,
+            CONF_MAX_TRANSMITTED_SOLAR_POWER: 225,
+        }
+        with patch(
+            "custom_components.solar_shading.config_flow.flow_section", object()
+        ):
+            nested = _nest_section_values(flat, groups)
+
+        self.assertEqual(
+            nested["power_limit_settings"][CONF_MAX_TRANSMITTED_SOLAR_POWER], 225
+        )
+        self.assertEqual(_flatten_section_values(nested, groups), flat)
 
     async def test_empty_bulk_assignment_does_not_block_house_menu(self):
         flow = OptionsFlowHandler.__new__(OptionsFlowHandler)

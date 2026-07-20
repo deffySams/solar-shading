@@ -602,6 +602,20 @@
         "data_description": {
           "night_evening_mode": "Determines when active solar regulation ends.", "night_start_time": "Used only for a fixed evening boundary.", "sunset_offset": "Example: 60 ends regulation one hour after sunset.", "night_evening_earliest_time": "Optional earliest solar boundary.", "night_evening_latest_time": "Optional latest solar boundary.", "night_evening_action_enabled": "Enabled moves to the night position; disabled keeps the current cover position.", "night_morning_mode": "Determines when active solar regulation begins.", "night_end_time": "Used only for a fixed morning boundary.", "sunrise_offset": "Positive values delay the start after sunrise.", "night_morning_earliest_time": "Optional earliest opening boundary.", "night_morning_latest_time": "Optional latest opening boundary.", "night_morning_action_enabled": "Enabled moves once to the day position; disabled skips the boundary movement.", "sunset_position": "Target for the enabled evening action.", "default_percentage": "Normal daytime fallback and enabled morning-action target."
         },
+        "sections": {
+          "morning_action_settings": {
+            "name": "Morning action settings",
+            "description": "This position is commanded only when the checkbox above is enabled.",
+            "data": {"default_percentage": "Day position (% open)"},
+            "data_description": {"default_percentage": "Morning-action target and normal daytime position. 100% is fully open."}
+          },
+          "evening_action_settings": {
+            "name": "Evening action settings",
+            "description": "This position is commanded only when the checkbox above is enabled.",
+            "data": {"sunset_position": "Evening/night position (% open)"},
+            "data_description": {"sunset_position": "Evening-action target and position during the night."}
+          }
+        },
         "title": "House profile: regulation time and boundary actions",
         "description": "Boundaries define when Solar Shading regulates. The checkboxes independently enable morning and evening movements."
       },
@@ -611,6 +625,20 @@
         },
         "data_description": {
           "weather_entity": "Used only for outside temperature and maxima today and tomorrow.", "use_forecast_max_temp_today": "Enables protection from the hot-day threshold.", "use_forecast_max_temp_tomorrow": "Strengthens active protection but does not enable it alone today.", "use_open_data_solar_radiation": "Uses Open-Meteo; a local sensor has priority for the current value.", "solar_radiation_entity": "Optional direct-irradiance value in W/m2.", "forecast_hot_day_threshold": "Forecast temperature from which protection may react.", "forecast_very_hot_day_threshold": "Forecast temperature for maximum influence.", "forecast_preemptive_start_time": "Blocks forecast-only action before this time.", "room_heat_protection_threshold": "A room sensor enables protection immediately at this value.", "policy_preset": "Common heat-protection behavior for the house.", "heat_protection_control_mode": "Scaling calculates variable targets; binary commands one fixed target above its threshold.", "binary_close_threshold_w_m2": "Power transmitted through glazing after geometry, incidence and transmission.", "binary_close_position": "Automatic target above the binary threshold.", "heat_power_limit_enabled": "Caps estimated room-side solar power in scaling mode.", "max_transmitted_solar_power_w_m2": "Maximum allowed solar power through one square meter of glazing.", "enable_away_mode": "Uses stricter targets while away.", "away_entity": "Source used to detect absence."
+        },
+        "sections": {
+          "power_limit_settings": {
+            "name": "Power limit settings",
+            "description": "This limit is applied only when the checkbox above is enabled.",
+            "data": {"max_transmitted_solar_power_w_m2": "Maximum transmitted solar power (W/m2 glass)"},
+            "data_description": {"max_transmitted_solar_power_w_m2": "Maximum allowed solar power through one square meter of glazing."}
+          },
+          "away_mode_settings": {
+            "name": "Away mode settings",
+            "description": "This source is evaluated only when the checkbox above is enabled.",
+            "data": {"away_entity": "Away entity"},
+            "data_description": {"away_entity": "Source used to detect absence."}
+          }
         },
         "title": "House profile: heat-protection rules",
         "description": "These rules apply throughout the house unless a room or window deliberately overrides them."
@@ -655,6 +683,26 @@
           "away_position_offset": "Subtracts this many percentage points from calculated open targets while away.",
           "sunset_offset": "Minutes added to the calculated sunset boundary in solar night mode. Negative values activate the night position earlier.",
           "sunrise_offset": "Minutes added to the calculated sunrise boundary in solar night mode. Positive values keep the night position active longer."
+        },
+        "sections": {
+          "expert_weight_settings": {
+            "name": "Individual expert weights",
+            "description": "These five values replace preset weights only when the checkbox above is enabled.",
+            "data": {
+              "weight_direct_exposure": "Weight: geometric exposure",
+              "weight_incidence": "Weight: incidence angle",
+              "weight_glazing": "Weight: glazing transmission",
+              "weight_forecast_temperature": "Weight: forecast temperature",
+              "weight_solar_radiation": "Weight: solar irradiance"
+            },
+            "data_description": {
+              "weight_direct_exposure": "Relative importance of visible, unshaded glass area.",
+              "weight_incidence": "Relative importance of the incidence angle.",
+              "weight_glazing": "Relative importance of angle-dependent glazing transmission.",
+              "weight_forecast_temperature": "Relative importance of forecast temperature.",
+              "weight_solar_radiation": "Relative importance of incoming solar irradiance."
+            }
+          }
         },
         "title": "House profile: expert tuning",
         "description": "These values expose the normalized policy mathematics. House presets are preferable unless a measured behavior needs deliberate correction."
