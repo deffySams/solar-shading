@@ -572,7 +572,7 @@
           <summary>Info</summary>
           <h1>Solar Shading Simulator</h1>
           <p>Der Simulator ist jetzt fuer echtes Feintuning gedacht: links die <strong>Einstellungen</strong>, in der Mitte <strong>Datum, Zeit, Solarstrahlung und Temperaturprognose</strong>, rechts die <strong>Ausgabe mit Piktogramm</strong>. Das Fenster bleibt beim Scrollen sichtbar.</p>
-          <p class="subtle">Wichtig: Die neue Tageslicht-Heuristik ist hier abgebildet. Innenraumtemperatur ist weiterhin noch nicht als eigener Score-Faktor drin. Import aus Home Assistant liest vorhandene <code>Solar Shading</code>-Fenster direkt aus den Sensor-Attributen.</p>
+          <p class="subtle">Die Raumtemperatur ist eine klare Freigabeschwelle: Ab dem eingestellten Wert darf der Hitzeschutz sofort reagieren. Darunter entscheidet die Temperaturprognose. Import aus Home Assistant liest vorhandene <code>Solar Shading</code>-Fenster direkt aus den Sensor-Attributen.</p>
         </details>
       </section>
 
@@ -582,7 +582,7 @@
           <div class="field">
             <label for="devicePreset"><span class="label-main">Beschattungssystem</span> <button class="info-btn" type="button" data-info="Diese Presets setzen sinnvolle Default-Werte fuer Innenrollo, Aussenrollo und Jalousien. Du kannst danach alle Felder weiter manuell feinjustieren.">i</button></label>
             <select id="devicePreset">
-              <option value="custom">custom</option>
+              <option value="custom">Benutzerdefiniert</option>
               <option value="indoor_roller" selected>Innenrollo</option>
               <option value="outdoor_roller">Aussenrollo</option>
               <option value="indoor_venetian">Innenjalousie</option>
@@ -779,7 +779,7 @@
                 <option value="triple_clear">triple_clear (Tsol 0.60 / Rsol 0.20)</option>
                 <option value="triple_low_e">triple_low_e (Tsol 0.42 / Rsol 0.32)</option>
                 <option value="solar_control">solar_control (Tsol 0.30 / Rsol 0.36)</option>
-                <option value="custom">custom</option>
+                <option value="custom">Benutzerdefiniert</option>
               </select>
             </div>
             <div class="soft-card inline-values" id="glassPresetInfo">
@@ -815,11 +815,11 @@
             <div class="field">
               <label for="policyPreset"><span class="label-main">Policy-Preset</span> <button class="info-btn" type="button" data-info="Die Presets verschieben Score, Schwellen und Zielpositionen in Richtung mehr Tageslicht oder mehr Hitzeschutz. Alle einzelnen Gewichte bleiben darunter trotzdem manuell anpassbar.">i</button></label>
               <select id="policyPreset">
-                <option value="daylight_first_single_aspect" selected>daylight_first_single_aspect</option>
-                <option value="daylight_first_multi_aspect">daylight_first_multi_aspect</option>
-                <option value="balanced">balanced</option>
-                <option value="cooling_first">cooling_first</option>
-                <option value="custom">custom</option>
+                <option value="daylight_first_single_aspect" selected>Tageslicht zuerst (eine Fassade)</option>
+                <option value="daylight_first_multi_aspect">Tageslicht zuerst (mehrere Fassaden)</option>
+                <option value="balanced">Ausgewogen</option>
+                <option value="cooling_first">Hitzeschutz zuerst</option>
+                <option value="custom">Benutzerdefiniert</option>
               </select>
             </div>
             <div class="field">
@@ -830,7 +830,7 @@
 
           <div class="checkbox-row">
             <input id="enableHeatGainPolicy" type="checkbox">
-            <label for="enableHeatGainPolicy"><span class="label-main">Waermeeintrags-Policy aktiv</span><button class="info-btn" type="button" data-info="Wenn aus, zeigt der Simulator nur die Basic-Position mit unserer physikalischen Daempfung. Wenn an, werden die Gewichte, Schwellen und Zielpositionen als zusaetzliche strengere Schicht angewendet.">i</button></label>
+            <label for="enableHeatGainPolicy"><span class="label-main">Hitzeschutzregel aktiv</span><button class="info-btn" type="button" data-info="Wenn aus, bleibt nur die geometrische Basisposition aktiv. Wenn an, begrenzen Preset, Temperaturfreigabe und Solarleistung die Offenposition.">i</button></label>
           </div>
           <div class="grid">
             <div class="field">
@@ -908,14 +908,14 @@
 
           <div class="grid">
             <div class="field">
-              <label>Partial close threshold</label>
+              <label>Expertenwert: Regelung beginnt ab Risikowert</label>
               <div class="range-row">
                 <input id="partialThresholdRange" type="range" min="0" max="1" step="0.01" value="0.35">
                 <input id="partialThreshold" type="number" min="0" max="1" step="0.01" value="0.35">
               </div>
             </div>
             <div class="field">
-              <label>Full close threshold</label>
+              <label>Expertenwert: Strenges Ziel ab Risikowert</label>
               <div class="range-row">
                 <input id="fullThresholdRange" type="range" min="0" max="1" step="0.01" value="0.65">
                 <input id="fullThreshold" type="number" min="0" max="1" step="0.01" value="0.65">
@@ -936,14 +936,14 @@
               </div>
             </div>
             <div class="field">
-              <label>Away score multiplier</label>
+              <label>Risiko-Multiplikator bei Abwesenheit</label>
               <div class="range-row">
                 <input id="awayScoreMultiplierRange" type="range" min="1" max="2.5" step="0.05" value="1.25">
                 <input id="awayScoreMultiplier" type="number" min="1" max="2.5" step="0.05" value="1.25">
               </div>
             </div>
             <div class="field">
-              <label>Away threshold reduction</label>
+              <label>Schwellenabsenkung bei Abwesenheit</label>
               <div class="range-row">
                 <input id="awayThresholdReductionRange" type="range" min="0" max="0.5" step="0.01" value="0.10">
                 <input id="awayThresholdReduction" type="number" min="0" max="0.5" step="0.01" value="0.10">
@@ -1148,7 +1148,7 @@
             </div>
           </div>
           <div class="checkbox-row">
-            <input id="useOpenDataSolarRadiation" type="checkbox">
+            <input id="useOpenDataSolarRadiation" type="checkbox" checked>
             <label for="useOpenDataSolarRadiation"><span class="label-main">Open-Meteo-Solarstrahlung nutzen</span><button class="info-btn" type="button" data-info="Nutzt direkte Solarstrahlung in W/m² vom Open-Meteo-Dienst. Wolken und Niederschlag sind bereits im gelieferten Strahlungswert enthalten.">i</button></label>
           </div>
         </details>
@@ -1665,12 +1665,12 @@
       "Weight: forecast clouds": "Expert: Gewicht der Forecast-Wolkendaempfung.",
       "Weight: forecast rain probability": "Expert: Gewicht der Forecast-Regenwahrscheinlichkeit.",
       "Weight: forecast rain amount": "Expert: Gewicht der Forecast-Regenmenge.",
-      "Partial close threshold": "Schwelle des multiplikativen Waermeeintrags-Scores, ab der die Policy teilweise strenger werden darf.",
-      "Full close threshold": "Schwelle des multiplikativen Waermeeintrags-Scores, ab der das strenge Ziel greifen darf.",
+      "Expertenwert: Regelung beginnt ab Risikowert": "Dimensionsloser Expertenwert, ab dem die stufenlose Regelung beginnt. Fuer die normale Einrichtung reicht das Preset.",
+      "Expertenwert: Strenges Ziel ab Risikowert": "Dimensionsloser Expertenwert, ab dem die strenge Zielposition erreicht ist.",
       "Teilziel (% offen)": "Offenposition bei mittlerem Waermeeintrag. 100 Prozent offen ist ganz offen, 0 Prozent offen ist geschlossen.",
       "Strenges Ziel (% offen)": "Offenposition bei hohem Waermeeintrag. Dieser Wert sollte kleiner oder gleich dem Teilziel sein.",
-      "Away score multiplier": "Expert: Multiplikator fuer den Policy-Score, wenn Away aktiv ist.",
-      "Away threshold reduction": "Expert: Senkt die Policy-Schwellen bei Abwesenheit.",
+      "Risiko-Multiplikator bei Abwesenheit": "Multipliziert den berechneten Risikowert, wenn Abwesenheit aktiv ist.",
+      "Schwellenabsenkung bei Abwesenheit": "Senkt beide Risikoschwellen bei Abwesenheit, damit der Hitzeschutz frueher reagiert.",
       "Away zusaetzlich schliessen": "Expert: Reduziert die erlaubte Offenposition bei Abwesenheit.",
       "Hot day close threshold": "Temperatur-Forecast, ab dem das Hot-Day-Offenlimit greifen darf. Es gilt erst ab Forecast-Startzeit und nicht nachts.",
       "Heiss-Tag-Ziel (% offen)": "Maximale Offenposition an heissen Tagen, sofern Hot-Day aktiv ist.",

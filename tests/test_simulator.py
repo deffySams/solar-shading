@@ -1,6 +1,7 @@
 """Tests for the browser simulator backend bridge."""
 
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 
 from custom_components.solar_shading.simulator import (
@@ -90,6 +91,19 @@ def _payload(**overrides):
 
 
 class SimulatorBackendTest(unittest.TestCase):
+    def test_browser_simulator_enables_solar_radiation_by_default(self):
+        html = (
+            Path(__file__).parents[1]
+            / "custom_components"
+            / "solar_shading"
+            / "www"
+            / "solar_shading_simulator.html"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            'id="useOpenDataSolarRadiation" type="checkbox" checked', html
+        )
+
     def test_simulator_endpoint_is_public_for_local_page(self):
         self.assertFalse(SolarShadingSimulationView.requires_auth)
 
