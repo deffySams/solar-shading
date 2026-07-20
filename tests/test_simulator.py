@@ -103,6 +103,7 @@ class SimulatorBackendTest(unittest.TestCase):
         self.assertIn(
             'id="useOpenDataSolarRadiation" type="checkbox" checked', html
         )
+        self.assertIn('id="enableHeatGainPolicy" type="checkbox" checked', html)
 
     def test_simulator_endpoint_is_public_for_local_page(self):
         self.assertFalse(SolarShadingSimulationView.requires_auth)
