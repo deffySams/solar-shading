@@ -1154,6 +1154,8 @@ SECTION_EVENING_ACTION = "evening_action_settings"
 SECTION_POWER_LIMIT = "power_limit_settings"
 SECTION_AWAY_MODE = "away_mode_settings"
 SECTION_EXPERT_WEIGHTS = "expert_weight_settings"
+SECTION_LOCAL_GEOMETRY = "local_geometry_settings"
+SECTION_LOCAL_HORIZON = "local_horizon_settings"
 
 HOUSE_FORM_SECTIONS: dict[str, tuple[tuple[str, str, tuple[str, ...]], ...]] = {
     "house_night": (
@@ -1284,29 +1286,60 @@ LINKED_WINDOW_INITIAL_KEYS = {
 
 LINKED_WINDOW_DETAIL_KEYS = {
     CONF_ENTITIES,
+    CONF_INVERSE_STATE,
+    CONF_USE_LOCAL_GEOMETRY,
+    CONF_USE_LOCAL_HORIZON,
+    CONF_USE_LOCAL_POLICY,
+}
+
+LOCAL_GEOMETRY_FORM_KEYS = {
+    CONF_GLASS_TYPE,
     CONF_COVER_LOCATION,
     CONF_HEIGHT_WIN,
     CONF_WINDOW_WIDTH,
-    CONF_INVERSE_STATE,
-}
-
-LOCAL_GEOMETRY_KEYS = {
-    CONF_GLASS_TYPE,
     CONF_FOV_LEFT,
     CONF_FOV_RIGHT,
     CONF_REVEAL_LEFT,
     CONF_REVEAL_RIGHT,
     CONF_REVEAL_TOP,
+}
+
+LOCAL_HORIZON_KEYS = {
     CONF_HORIZON_MODE,
     CONF_HORIZON_PROFILE,
 }
 
+LINKED_WINDOW_SECTIONS = (
+    (
+        CONF_USE_LOCAL_GEOMETRY,
+        SECTION_LOCAL_GEOMETRY,
+        (
+            CONF_GLASS_TYPE,
+            CONF_COVER_LOCATION,
+            CONF_HEIGHT_WIN,
+            CONF_WINDOW_WIDTH,
+            CONF_FOV_LEFT,
+            CONF_FOV_RIGHT,
+            CONF_REVEAL_LEFT,
+            CONF_REVEAL_RIGHT,
+            CONF_REVEAL_TOP,
+        ),
+    ),
+    (
+        CONF_USE_LOCAL_HORIZON,
+        SECTION_LOCAL_HORIZON,
+        (CONF_HORIZON_MODE, CONF_HORIZON_PROFILE),
+    ),
+)
+
 
 def _linked_initial_schema(schema: vol.Schema) -> vol.Schema:
-    """Return the short form used while creating a linked window."""
-    return _schema_subset(
+    """Return the linked-window form with explicit local override sections."""
+    selected = _schema_subset(
         schema,
         LINKED_WINDOW_INITIAL_KEYS
+        | LOCAL_GEOMETRY_FORM_KEYS
+        | LOCAL_HORIZON_KEYS
         | {
             CONF_LENGTH_AWNING,
             CONF_AWNING_ANGLE,
@@ -1315,15 +1348,16 @@ def _linked_initial_schema(schema: vol.Schema) -> vol.Schema:
             CONF_TILT_MODE,
         },
     )
+    return _sectioned_schema(selected, LINKED_WINDOW_SECTIONS)
 
 
-def _linked_detail_schema(schema: vol.Schema, values: dict[str, Any]) -> vol.Schema:
-    """Show inherited fields only when a local override has been enabled."""
-    keys = set(LINKED_WINDOW_DETAIL_KEYS)
-    if values.get(CONF_USE_LOCAL_GEOMETRY):
-        keys.update(LOCAL_GEOMETRY_KEYS)
-    elif values.get(CONF_USE_LOCAL_HORIZON):
-        keys.update({CONF_HORIZON_MODE, CONF_HORIZON_PROFILE})
+def _linked_detail_schema(schema: vol.Schema, _values: dict[str, Any]) -> vol.Schema:
+    """Show local overrides as persistent second-tier editor sections."""
+    keys = (
+        set(LINKED_WINDOW_DETAIL_KEYS)
+        | LOCAL_GEOMETRY_FORM_KEYS
+        | LOCAL_HORIZON_KEYS
+    )
     keys.update(
         {
             CONF_LENGTH_AWNING,
@@ -1333,7 +1367,7 @@ def _linked_detail_schema(schema: vol.Schema, values: dict[str, Any]) -> vol.Sch
             CONF_TILT_MODE,
         }
     )
-    return _schema_subset(schema, keys)
+    return _sectioned_schema(_schema_subset(schema, keys), LINKED_WINDOW_SECTIONS)
 
 
 def _conditional_policy_schema(values: dict[str, Any]) -> vol.Schema:
@@ -1689,6 +1723,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             else VERTICAL_OPTIONS
         )
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             geometry_errors = _validate_geometry_input(user_input)
             if geometry_errors:
                 return self.async_show_form(
@@ -1716,9 +1754,12 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
+        values = self.config
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="vertical",
-            data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._linked_description_placeholders(),
         )
 
@@ -1732,6 +1773,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             else HORIZONTAL_OPTIONS
         )
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             geometry_errors = _validate_geometry_input(user_input)
             if geometry_errors:
                 return self.async_show_form(
@@ -1759,9 +1804,12 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
+        values = self.config
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="horizontal",
-            data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._linked_description_placeholders(),
         )
 
@@ -1771,6 +1819,10 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         linked = bool(self.config.get(CONF_HOUSE_PROFILE_ENTRY_ID))
         schema = _linked_initial_schema(LINKED_TILT_OPTIONS) if linked else TILT_OPTIONS
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             geometry_errors = _validate_geometry_input(user_input)
             if geometry_errors:
                 return self.async_show_form(
@@ -1798,9 +1850,12 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             if self.config.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_automation()
+        values = self.config
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="tilt",
-            data_schema=self.add_suggested_values_to_schema(schema, self.config),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._linked_description_placeholders(),
         )
 
@@ -2998,6 +3053,10 @@ class OptionsFlowHandler(OptionsFlow):
             else VERTICAL_OPTIONS
         )
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             keys = [
                 CONF_MIN_ELEVATION,
                 CONF_MAX_ELEVATION,
@@ -3031,11 +3090,12 @@ class OptionsFlowHandler(OptionsFlow):
             if self.options.get(CONF_ENABLE_BLIND_SPOT, False):
                 return await self.async_step_blind_spot()
             return await self.async_step_weather()
+        values = user_input or self._window_form_values()
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="vertical",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self._window_form_values()
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._window_description_placeholders(),
         )
 
@@ -3049,6 +3109,10 @@ class OptionsFlowHandler(OptionsFlow):
             else HORIZONTAL_OPTIONS
         )
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             keys = [
                 CONF_MIN_ELEVATION,
                 CONF_MAX_ELEVATION,
@@ -3078,11 +3142,12 @@ class OptionsFlowHandler(OptionsFlow):
             if linked:
                 return await self._update_options()
             return await self.async_step_weather()
+        values = user_input or self._window_form_values()
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="horizontal",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self._window_form_values()
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._window_description_placeholders(),
         )
 
@@ -3096,6 +3161,10 @@ class OptionsFlowHandler(OptionsFlow):
             else TILT_OPTIONS
         )
         if user_input is not None:
+            if linked:
+                user_input = _flatten_section_values(
+                    user_input, LINKED_WINDOW_SECTIONS
+                )
             keys = [
                 CONF_MIN_ELEVATION,
                 CONF_MAX_ELEVATION,
@@ -3125,11 +3194,12 @@ class OptionsFlowHandler(OptionsFlow):
             if linked:
                 return await self._update_options()
             return await self.async_step_weather()
+        values = user_input or self._window_form_values()
+        if linked:
+            values = _nest_section_values(values, LINKED_WINDOW_SECTIONS)
         return self.async_show_form(
             step_id="tilt",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or self._window_form_values()
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, values),
             description_placeholders=self._window_description_placeholders(),
         )
 

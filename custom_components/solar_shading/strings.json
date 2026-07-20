@@ -143,7 +143,36 @@
           "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Vertical cover"
       },
       "weather": {
@@ -311,7 +340,36 @@
           "cover_location": "Exterior covers are modeled with 10% residual solar gain when closed; interior covers with 55%. The window remains fully transparent at 100% open.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Horizontal cover"
       },
       "tilt": {
@@ -393,7 +451,36 @@
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Tilted cover"
       },
       "blind_spot": {
@@ -995,7 +1082,36 @@
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Vertical cover"
       },
       "weather": {
@@ -1161,7 +1277,36 @@
           "glass_type": "Glazing preset used for reflection and transmission.",
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Horizontal cover"
       },
       "tilt": {
@@ -1241,7 +1386,36 @@
           "weather_entity": "Used only for outside temperature and today/tomorrow maximum temperature forecasts.",
           "distance_shaded_area": "Legacy base-geometry parameter from Adaptive Cover. It is less important for the new daylight-first heat-protection policy and will likely be removed later."
         },
-        "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+       "description": "Effective now: azimuth {effective_azimuth} degrees, glass {effective_glass}, window {effective_size}, reveals left/right/top {effective_reveals}, horizon reference {effective_horizon_mode}, cover {effective_cover_location}. These values come from the profile hierarchy unless a local override is enabled.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Local window geometry and glazing",
+            "description": "These values apply only when the checkbox above is enabled.",
+            "data": {
+              "glass_type": "Glazing type",
+              "cover_location": "Cover mounting location",
+              "window_height": "Window height",
+              "window_width": "Window width",
+              "fov_left": "Field of view left",
+              "fov_right": "Field of view right",
+              "reveal_left_depth": "Left reveal",
+              "reveal_right_depth": "Right reveal",
+              "reveal_top_depth": "Top reveal"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "This window's own horizon",
+            "description": "The effective inherited horizon is prefilled. It is stored and used as a window value only when the checkbox above is enabled.",
+            "data": {
+              "horizon_mode": "Horizon angle reference",
+              "horizon_profile": "Horizon profile"
+            },
+            "data_description": {
+              "horizon_mode": "Compass uses 0 to 359 degrees; window view uses 0 left, 90 ahead and 180 right.",
+              "horizon_profile": "JSON horizon for this window. Without a local override, the profile hierarchy remains effective."
+            }
+          }
+        },
         "title": "Tilted cover"
       },
       "blind_spot": {

@@ -143,7 +143,36 @@
           "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Vertikales Cover"
       },
       "weather": {
@@ -311,7 +340,36 @@
           "cover_location": "Außenliegend werden geschlossen 10 % Restwärmeeintrag modelliert, innenliegend 55 %. Bei 100 % offen bleibt das Fenster vollständig unbeschattet.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Horizontales Cover"
       },
       "tilt": {
@@ -393,7 +451,36 @@
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Lamellen-Cover"
       },
       "blind_spot": {
@@ -1079,7 +1166,36 @@
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Vertikales Cover"
       },
       "weather": {
@@ -1245,7 +1361,36 @@
           "glass_type": "Verglasungs-Preset fuer Reflexion und Transmission.",
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Horizontales Cover"
       },
       "tilt": {
@@ -1325,7 +1470,36 @@
           "weather_entity": "Wird nur fuer Aussentemperatur und Tagesmaximum heute/morgen verwendet.",
           "distance_shaded_area": "Legacy-Basisparameter aus Adaptive Cover. Fuer die neue tageslichtorientierte Waermeschutz-Policy ist er weniger wichtig und wird spaeter entfernt."
         },
-        "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+       "description": "Aktuell wirksam: Ausrichtung {effective_azimuth} Grad, Glas {effective_glass}, Fenster {effective_size}, Laibungen links/rechts/oben {effective_reveals}, Horizontbezug {effective_horizon_mode}, Sonnenschutz {effective_cover_location}. Diese Werte stammen aus der Profilhierarchie, solange keine lokale Abweichung aktiviert wird.",
+        "sections": {
+          "local_geometry_settings": {
+            "name": "Lokale Fenstergeometrie und Glas",
+            "description": "Diese Werte gelten nur, wenn die Checkbox darüber aktiv ist.",
+            "data": {
+              "glass_type": "Glasart",
+              "cover_location": "Montageort des Sonnenschutzes",
+              "window_height": "Fensterhöhe",
+              "window_width": "Fensterbreite",
+              "fov_left": "Sichtfeld links",
+              "fov_right": "Sichtfeld rechts",
+              "reveal_left_depth": "Laibung links",
+              "reveal_right_depth": "Laibung rechts",
+              "reveal_top_depth": "Laibung oben"
+            }
+          },
+          "local_horizon_settings": {
+            "name": "Eigener Horizont dieses Fensters",
+            "description": "Der aktuell geerbte Horizont ist vorbefüllt. Er wird nur mit aktiver Checkbox als Fensterwert gespeichert und verwendet.",
+            "data": {
+              "horizon_mode": "Winkelbezug des Horizonts",
+              "horizon_profile": "Horizontprofil"
+            },
+            "data_description": {
+              "horizon_mode": "Kompass nutzt 0 bis 359 Grad; Fenstersicht nutzt 0 links, 90 geradeaus und 180 rechts.",
+              "horizon_profile": "JSON-Horizont dieses Fensters. Ohne lokale Aktivierung bleibt der Wert aus der Profilhierarchie wirksam."
+            }
+          }
+        },
         "title": "Lamellen-Cover"
       },
       "blind_spot": {

@@ -9,11 +9,14 @@ from custom_components.solar_shading.config_flow import (
     HOUSE_HEAT_KEYS,
     HOUSE_NIGHT_KEYS,
     HOUSE_SETUP_KEYS,
+    LINKED_WINDOW_OPTIONS,
     OptionsFlowHandler,
     _area_options_for_floor,
     _facade_options,
     _floor_options,
     _flatten_section_values,
+    _linked_detail_schema,
+    _linked_initial_schema,
     _migrate_retired_options,
     _nest_section_values,
     _schema_subset,
@@ -38,12 +41,14 @@ from custom_components.solar_shading.const import (
     CONF_HORIZON_MODE,
     CONF_HORIZON_PROFILE,
     CONF_HOUSE_DEFAULTS,
+    CONF_HOUSE_PROFILE_ENTRY_ID,
     CONF_HOUSE_REFERENCE_AZIMUTH,
     CONF_HEAT_POWER_LIMIT_ENABLED,
     CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_DEFAULT_HEIGHT,
     CONF_SHOW_EXPERT_WEIGHTS,
     CONF_WEIGHT_DIRECT_EXPOSURE,
+    CONF_USE_LOCAL_HORIZON,
     CONF_POLICY_PRESET,
     CONF_PROFILE_OVERRIDES,
     CONF_REVEAL_LEFT,
@@ -65,6 +70,7 @@ from custom_components.solar_shading.const import (
     CONF_FORECAST_HOT_DAY_THRESHOLD,
     CONF_ROOM_HEAT_PROTECTION_THRESHOLD,
     CONF_ROOM_TEMPERATURE_ENTITY,
+    SensorType,
 )
 
 
@@ -317,6 +323,67 @@ class HouseJourneySchemaTests(unittest.IsolatedAsyncioTestCase):
             nested["power_limit_settings"][CONF_MAX_TRANSMITTED_SOLAR_POWER], 225
         )
         self.assertEqual(_flatten_section_values(nested, groups), flat)
+
+    def test_linked_window_editor_always_exposes_local_horizon(self):
+        fake_section = lambda schema, _options: schema
+        with patch(
+            "custom_components.solar_shading.config_flow.flow_section", fake_section
+        ):
+            schema = _linked_detail_schema(LINKED_WINDOW_OPTIONS, {})
+
+        keys = [getattr(marker, "schema", marker) for marker in schema.schema]
+        self.assertEqual(
+            keys[keys.index(CONF_USE_LOCAL_HORIZON) + 1],
+            "local_horizon_settings",
+        )
+        horizon_schema = next(
+            validator
+            for marker, validator in schema.schema.items()
+            if getattr(marker, "schema", marker) == "local_horizon_settings"
+        )
+        horizon_keys = [
+            getattr(marker, "schema", marker) for marker in horizon_schema.schema
+        ]
+        self.assertEqual(horizon_keys, [CONF_HORIZON_MODE, CONF_HORIZON_PROFILE])
+
+    def test_linked_window_creation_also_exposes_local_horizon(self):
+        fake_section = lambda schema, _options: schema
+        with patch(
+            "custom_components.solar_shading.config_flow.flow_section", fake_section
+        ):
+            schema = _linked_initial_schema(LINKED_WINDOW_OPTIONS)
+
+        keys = [getattr(marker, "schema", marker) for marker in schema.schema]
+        self.assertEqual(
+            keys[keys.index(CONF_USE_LOCAL_HORIZON) + 1],
+            "local_horizon_settings",
+        )
+
+    async def test_linked_window_horizon_submission_is_saved_flat(self):
+        flow = OptionsFlowHandler.__new__(OptionsFlowHandler)
+        flow.options = {
+            CONF_HOUSE_PROFILE_ENTRY_ID: "house",
+            CONF_USE_LOCAL_HORIZON: False,
+        }
+        flow.sensor_type = SensorType.BLIND
+        flow.optional_entities = OptionsFlowHandler.optional_entities.__get__(flow)
+        flow.async_create_entry = lambda **kwargs: kwargs
+
+        horizon = '[{"angle": 90, "lower_elevation": 12}]'
+        result = await flow.async_step_vertical(
+            {
+                CONF_USE_LOCAL_HORIZON: True,
+                "local_horizon_settings": {
+                    CONF_HORIZON_MODE: "compass",
+                    CONF_HORIZON_PROFILE: horizon,
+                },
+            }
+        )
+
+        self.assertTrue(result["data"][CONF_USE_LOCAL_HORIZON])
+        self.assertEqual(result["data"][CONF_HORIZON_MODE], "compass")
+        self.assertEqual(result["data"][CONF_HORIZON_PROFILE], horizon)
+        self.assertNotIn("local_horizon_settings", result["data"])
 
     async def test_empty_bulk_assignment_does_not_block_house_menu(self):
         flow = OptionsFlowHandler.__new__(OptionsFlowHandler)
