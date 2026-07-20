@@ -40,6 +40,8 @@ def _payload(**overrides):
         "coverLocation": "exterior",
         "nightStartTime": "22:00",
         "nightEndTime": "06:00",
+        "nightEveningActionEnabled": True,
+        "nightMorningActionEnabled": True,
         "fovLeft": 90,
         "fovRight": 90,
         "minElevation": 0,
@@ -100,9 +102,7 @@ class SimulatorBackendTest(unittest.TestCase):
             / "solar_shading_simulator.html"
         ).read_text(encoding="utf-8")
 
-        self.assertIn(
-            'id="useOpenDataSolarRadiation" type="checkbox" checked', html
-        )
+        self.assertIn('id="useOpenDataSolarRadiation" type="checkbox" checked', html)
         self.assertIn('id="enableHeatGainPolicy" type="checkbox" checked', html)
 
     def test_simulator_endpoint_is_public_for_local_page(self):
@@ -219,7 +219,24 @@ class SimulatorBackendTest(unittest.TestCase):
 
         self.assertEqual(result["open_position"], 35)
         self.assertTrue(result["attributes"]["sunset_valid"])
-        self.assertEqual(result["attributes"]["decision_reason"], "night_position")
+        self.assertEqual(result["attributes"]["decision_reason"], "evening_action")
+
+    def test_disabled_evening_action_does_not_force_night_position(self):
+        result = simulate_from_payload(
+            _Hass(),
+            _payload(
+                time="23:00",
+                sunsetPosition=25,
+                nightEveningActionEnabled=False,
+            ),
+        )
+
+        self.assertTrue(result["attributes"]["sunset_valid"])
+        self.assertEqual(result["open_position"], 100)
+        self.assertEqual(
+            result["attributes"]["decision_reason"],
+            "outside_regulation_no_action",
+        )
 
     def test_compass_horizon_uses_true_solar_azimuth(self):
         result = simulate_from_payload(

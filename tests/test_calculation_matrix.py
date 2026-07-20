@@ -437,6 +437,10 @@ class CalculationMatrixTests(unittest.TestCase):
         self.assertTrue(night.sunset_valid)
         self.assertEqual(NormalCoverState(night).get_state(), 75)
 
+        night.night_evening_action_enabled = False
+        self.assertEqual(NormalCoverState(night).get_state(), 100)
+        self.assertEqual(night.decision_reason, "outside_regulation_no_action")
+
     def test_sunset_boundary_supports_offset_and_earliest_clock(self):
         """A sunset boundary can be delayed and clamped to a local earliest time."""
         cover = make_cover(

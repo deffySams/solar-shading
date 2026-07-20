@@ -1278,7 +1278,11 @@ class AdaptiveGeneralCover(ABC):
     def decision_reason(self) -> str:
         """Return the primary reason for the current target position."""
         if self.sunset_valid:
-            return "night_position"
+            return (
+                "evening_action"
+                if getattr(self, "night_evening_action_enabled", True)
+                else "outside_regulation_no_action"
+            )
         if not self.valid:
             return "sun_outside_window"
         if not self.sun_within_horizon_profile:
@@ -1336,9 +1340,9 @@ class AdaptiveGeneralCover(ABC):
 
     @property
     def default(self) -> float:
-        """Change default position at sunset."""
+        """Return the daytime fallback or enabled evening action position."""
         default = self.h_def
-        if self.sunset_valid:
+        if self.sunset_valid and getattr(self, "night_evening_action_enabled", True):
             default = self.sunset_pos
         return default
 

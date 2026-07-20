@@ -590,29 +590,77 @@
             </select>
           </div>
             <div class="field">
-              <label for="defaultPosition"><span class="label-main">Default-Position (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert, wenn keine wirksame direkte Sonne relevant ist. 100 Prozent offen bedeutet ganz offen, 0 Prozent offen bedeutet geschlossen.">i</button></label>
+              <label for="coverLocation"><span class="label-main">Montageort Sonnenschutz</span> <button class="info-btn" type="button" data-info="Aussenliegend: geschlossen bleiben modellhaft 10 Prozent des unbeschatteten solaren Waermeeintrags. Innenliegend: 55 Prozent, weil die Strahlung bereits das Glas passiert hat und mehr Waerme im Raum verbleibt.">i</button></label>
+              <select id="coverLocation">
+                <option value="exterior">Aussenliegend</option>
+                <option value="interior" selected>Innenliegend</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="defaultPosition"><span class="label-main">Tagesposition / Morgenaktion (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert waehrend der Regelzeit und einmaliges Ziel am Morgen, wenn die Morgenaktion aktiviert ist.">i</button></label>
               <input id="defaultPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
             <div class="field">
-              <label for="sunsetPosition"><span class="label-main">Ruhe-/Nachtposition nach Zeit (% offen)</span> <button class="info-btn" type="button" data-info="Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergang/Sonnenaufgang plus Offset bestimmen, wann diese Ruheposition gilt.">i</button></label>
+              <label for="sunsetPosition"><span class="label-main">Abend-/Nachtposition (% offen)</span> <button class="info-btn" type="button" data-info="Ziel am Ende der Regelzeit und waehrend der Nacht, wenn die Abendaktion aktiviert ist.">i</button></label>
               <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
-            <div class="field">
-              <label for="nightMode"><span class="label-main">Nachtsteuerung</span> <button class="info-btn" type="button" data-info="Zeitgefuehrt verwendet die festen Uhrzeiten unten. Sonnengefuehrt verwendet Sonnenuntergang und Sonnenaufgang. In beiden Modi wird waehrend der Nacht die Ruhe-/Nachtposition angefahren.">i</button></label>
-              <select id="nightMode">
-                <option value="time" selected>Zeitgefuehrt</option>
-                <option value="solar">Sonnengefuehrt</option>
-              </select>
-            </div>
-            <div id="nightTimePanel" class="grid">
+            <div class="grid">
               <div class="field">
-                <label for="nightStartTime">Nacht beginnt</label>
+                <label for="nightEveningMode"><span class="label-main">Regelung endet abends</span> <button class="info-btn" type="button" data-info="Beendet die aktive Solarregelung zu einer festen Uhrzeit oder relativ zum Sonnenuntergang.">i</button></label>
+                <select id="nightEveningMode">
+                  <option value="sunset" selected>Sonnenuntergang plus Versatz</option>
+                  <option value="fixed">Feste Uhrzeit</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="nightStartTime">Feste Schliesszeit am Abend</label>
                 <input id="nightStartTime" type="time" value="22:00">
               </div>
               <div class="field">
-                <label for="nightEndTime">Nacht endet</label>
-                <input id="nightEndTime" type="time" value="06:00">
+                <label for="sunsetOffset">Minuten nach Sonnenuntergang</label>
+                <input id="sunsetOffset" type="number" step="1" value="60">
               </div>
+              <div class="field">
+                <label for="nightEveningEarliestTime">Abends nicht frueher als</label>
+                <input id="nightEveningEarliestTime" type="time">
+              </div>
+              <div class="field">
+                <label for="nightEveningLatestTime">Abends nicht spaeter als</label>
+                <input id="nightEveningLatestTime" type="time">
+              </div>
+            </div>
+            <div class="checkbox-row">
+              <input id="nightEveningActionEnabled" type="checkbox" checked>
+              <label for="nightEveningActionEnabled"><span class="label-main">Bei Regelende Abend-/Nachtposition anfahren</span><button class="info-btn" type="button" data-info="Aus bedeutet: Nach Ende der Regelzeit keine automatische Fahrt ausloesen und die aktuelle Coverposition beibehalten.">i</button></label>
+            </div>
+            <div class="grid">
+              <div class="field">
+                <label for="nightMorningMode"><span class="label-main">Regelung beginnt morgens</span> <button class="info-btn" type="button" data-info="Startet die aktive Solarregelung zu einer festen Uhrzeit oder relativ zum Sonnenaufgang.">i</button></label>
+                <select id="nightMorningMode">
+                  <option value="fixed" selected>Feste Uhrzeit</option>
+                  <option value="sunrise">Sonnenaufgang plus Versatz</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="nightEndTime">Feste Oeffnungszeit am Morgen</label>
+                <input id="nightEndTime" type="time" value="08:00">
+              </div>
+              <div class="field">
+                <label for="sunriseOffset">Minuten nach Sonnenaufgang</label>
+                <input id="sunriseOffset" type="number" step="1" value="0">
+              </div>
+              <div class="field">
+                <label for="nightMorningEarliestTime">Morgens nicht frueher als</label>
+                <input id="nightMorningEarliestTime" type="time">
+              </div>
+              <div class="field">
+                <label for="nightMorningLatestTime">Morgens nicht spaeter als</label>
+                <input id="nightMorningLatestTime" type="time">
+              </div>
+            </div>
+            <div class="checkbox-row">
+              <input id="nightMorningActionEnabled" type="checkbox" checked>
+              <label for="nightMorningActionEnabled"><span class="label-main">Bei Regelbeginn Tagesposition anfahren</span><button class="info-btn" type="button" data-info="Aus bedeutet: Beim Morgen-Trigger keine einmalige Fahrt ausloesen. Danach darf die normale Solarregelung weiterhin auf neue Bedingungen reagieren.">i</button></label>
             </div>
           </div>
         <div class="cta-row">
@@ -820,10 +868,6 @@
             <label for="awayActive"><span class="label-main">Away from home aktiv</span><button class="info-btn" type="button" data-info="Abwesenheit faehrt die Policy strenger: Score rauf, Schwellen runter und Zielpositionen weiter zu.">i</button></label>
           </div>
           <div class="checkbox-row">
-            <input id="hotDayCloseEnabled" type="checkbox">
-            <label for="hotDayCloseEnabled"><span class="label-main">Ab heissem Tag Oeffnung begrenzen</span><button class="info-btn" type="button" data-info="Wenn der Tages-Forecast ueber dem Schwellwert liegt und direkte Sonne auf das Fenster faellt, wird eine maximale Offenposition erzwungen. Sobald keine direkte Sonne mehr auf dem Fenster ist, greift dieses Limit nicht.">i</button></label>
-          </div>
-          <div class="checkbox-row">
             <input id="heatPowerLimitEnabled" type="checkbox">
             <label for="heatPowerLimitEnabled"><span class="label-main">W/m2-Limit pro Glasflaeche aktiv</span><button class="info-btn" type="button" data-info="Rechnet den geschaetzten solaren Waermeeintrag in W/m2. Wenn es draussen warm genug ist, wird die Offenposition so gedeckelt, dass maximal der eingestellte W/m2-Wert durch die offene Glasflaeche kommt.">i</button></label>
           </div>
@@ -918,34 +962,6 @@
               <div class="range-row">
                 <input id="awayPositionOffsetRange" type="range" min="0" max="30" step="1" value="10">
                 <input id="awayPositionOffset" type="number" min="0" max="30" step="1" value="10">
-              </div>
-            </div>
-            <div class="field">
-              <label>Hot day close threshold</label>
-              <div class="range-row">
-                <input id="hotDayCloseThresholdRange" type="range" min="20" max="40" step="0.5" value="28">
-                <input id="hotDayCloseThreshold" type="number" min="20" max="40" step="0.5" value="28">
-              </div>
-            </div>
-            <div class="field">
-              <label>Heiss-Tag-Ziel (% offen)</label>
-              <div class="range-row">
-                <input id="hotDayClosePositionRange" type="range" min="0" max="100" step="1" value="20">
-                <input id="hotDayClosePosition" type="number" min="0" max="100" step="1" value="20">
-              </div>
-            </div>
-            <div class="field">
-              <label>Sehr-heiss-Ziel (% offen)</label>
-              <div class="range-row">
-                <input id="veryHotDayClosePositionRange" type="range" min="0" max="100" step="1" value="10">
-                <input id="veryHotDayClosePosition" type="number" min="0" max="100" step="1" value="10">
-              </div>
-            </div>
-            <div class="field">
-              <label>Watt-Limit ab Aussentemperatur</label>
-              <div class="range-row">
-                <input id="heatPowerTempThresholdRange" type="range" min="-10" max="45" step="0.5" value="24">
-                <input id="heatPowerTempThreshold" type="number" min="-20" max="50" step="0.5" value="24">
               </div>
             </div>
             <div class="field">
@@ -1118,10 +1134,24 @@
               </div>
             </div>
             <div class="field">
-              <label><span class="label-main">Aussentemperatur jetzt in C</span> <button class="info-btn" type="button" data-info="Wird fuer das Watt-Limit genutzt: unterhalb der Schwelle bleibt der harte Watt-Deckel aus, auch wenn Sonne sichtbar ist.">i</button></label>
+              <label><span class="label-main">Aussentemperatur jetzt in C</span> <button class="info-btn" type="button" data-info="Unterhalb der Kaeltesperre bleibt Hitzeschutz aus, damit im Winter solare Waerme genutzt werden kann.">i</button></label>
               <div class="range-row">
                 <input id="outsideTempRange" type="range" min="-10" max="45" step="0.5" value="25">
                 <input id="outsideTemp" type="number" min="-20" max="50" step="0.5" value="25">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Raumtemperatur jetzt in C</span> <button class="info-btn" type="button" data-info="Erreicht der Raum die eingestellte Sofort-Schwelle, wird Hitzeschutz auch bei einer zu kuehlen Tagesprognose freigegeben.">i</button></label>
+              <div class="range-row">
+                <input id="roomTemperatureRange" type="range" min="10" max="35" step="0.5" value="22">
+                <input id="roomTemperature" type="number" min="0" max="50" step="0.5" value="22">
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="label-main">Hitzeschutz sofort ab Raumtemperatur</span> <button class="info-btn" type="button" data-info="Hausweite Komfortschwelle. Ab diesem gemessenen Raumwert reagiert die Regelung sofort; der Sensor wird im Raumprofil festgelegt.">i</button></label>
+              <div class="range-row">
+                <input id="roomHeatProtectionThresholdRange" type="range" min="15" max="35" step="0.5" value="24">
+                <input id="roomHeatProtectionThreshold" type="number" min="15" max="35" step="0.5" value="24">
               </div>
             </div>
           </div>
@@ -1139,7 +1169,7 @@
           </div>
           <div class="checkbox-row">
             <input id="useTomorrowMax" type="checkbox">
-            <label for="useTomorrowMax"><span class="label-main">Morgiges Tmax nutzen</span><button class="info-btn" type="button" data-info="Kann helfen, wenn du schon abends oder frueh morgens fuer den naechsten Tag konservativ denken willst.">i</button></label>
+            <label for="useTomorrowMax"><span class="label-main">Morgiges Tmax fuer Verstaerkung nutzen</span><button class="info-btn" type="button" data-info="Morgen allein aktiviert heute keinen Hitzeschutz. Der Wert kann eine bereits durch heutigen Forecast oder Raumtemperatur aktive Regelung konservativer machen.">i</button></label>
           </div>
           <div class="grid">
             <div class="field">
@@ -1233,7 +1263,8 @@
               <div class="metric"><div class="name">Solarstrahlung</div><div class="val" id="solarRadiationCell"></div></div>
               <div class="metric"><div class="name">Normierte Solarstrahlung</div><div class="val" id="incomingSolarRadiationFactorCell"></div></div>
               <div class="metric"><div class="name">Effektiver Solar-Gain</div><div class="val" id="effectiveGainCell"></div></div>
-              <div class="metric"><div class="name">Durchgelassene Solarleistung</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Solarleistung ohne Cover</div><div class="val" id="heatPowerCell"></div></div>
+              <div class="metric"><div class="name">Solarleistung mit berechnetem Cover</div><div class="val" id="coveredHeatPowerCell"></div></div>
               <div class="metric"><div class="name">Solarleistungs-Limit</div><div class="val" id="heatPowerLimitCell"></div></div>
               <div class="metric"><div class="name">Forecast heute</div><div class="val" id="forecastTodayCell"></div></div>
               <div class="metric"><div class="name">Forecast-Risiko</div><div class="val" id="forecastRiskCell"></div></div>
@@ -1242,7 +1273,7 @@
               <div class="metric"><div class="name">Raw score</div><div class="val" id="rawScoreCell"></div></div>
               <div class="metric"><div class="name">Basisposition offen</div><div class="val" id="basePositionCell"></div></div>
               <div class="metric"><div class="name">Policy-Ziel offen</div><div class="val" id="policyTargetCell"></div></div>
-              <div class="metric"><div class="name">Hot-day override</div><div class="val" id="hotDayOverrideCell"></div></div>
+              <div class="metric"><div class="name">Hitzeschutz-Aktivierung</div><div class="val" id="hotDayOverrideCell"></div></div>
               <div class="metric"><div class="name">Finale Offenposition</div><div class="val" id="finalPositionCell"></div></div>
               <div class="metric"><div class="name">Berechnungsquelle</div><div class="val" id="calculationSourceCell"></div></div>
             </div>
@@ -1331,6 +1362,7 @@
     const DEVICE_PRESETS = {
       custom: {},
       indoor_roller: {
+        coverLocation: "interior",
         defaultPosition: 100,
         partialPosition: 70,
         fullPosition: 30,
@@ -1342,6 +1374,7 @@
         weightSolarRadiation: 1.0
       },
       outdoor_roller: {
+        coverLocation: "exterior",
         defaultPosition: 100,
         partialPosition: 55,
         fullPosition: 20,
@@ -1353,6 +1386,7 @@
         weightSolarRadiation: 1.2
       },
       indoor_venetian: {
+        coverLocation: "interior",
         defaultPosition: 100,
         partialPosition: 75,
         fullPosition: 45,
@@ -1364,6 +1398,7 @@
         weightSolarRadiation: 0.9
       },
       outdoor_venetian: {
+        coverLocation: "exterior",
         defaultPosition: 100,
         partialPosition: 65,
         fullPosition: 30,
@@ -1382,6 +1417,8 @@
       ["solarRadiationRange", "solarRadiation"],
       ["solarReferenceRange", "solarReference"],
       ["outsideTempRange", "outsideTemp"],
+      ["roomTemperatureRange", "roomTemperature"],
+      ["roomHeatProtectionThresholdRange", "roomHeatProtectionThreshold"],
       ["forecastSolarMaxRange", "forecastSolarMax"],
       ["forecastInfluenceRange", "forecastInfluence"],
       ["weightDirectRange", "weightDirect"],
@@ -1396,22 +1433,21 @@
       ["awayScoreMultiplierRange", "awayScoreMultiplier"],
       ["awayThresholdReductionRange", "awayThresholdReduction"],
       ["awayPositionOffsetRange", "awayPositionOffset"],
-      ["hotDayCloseThresholdRange", "hotDayCloseThreshold"],
-      ["hotDayClosePositionRange", "hotDayClosePosition"],
-      ["veryHotDayClosePositionRange", "veryHotDayClosePosition"],
-      ["heatPowerTempThresholdRange", "heatPowerTempThreshold"],
       ["heatProtectionMinOutsideTempRange", "heatProtectionMinOutsideTemp"],
       ["maxTransmittedSolarPowerRange", "maxTransmittedSolarPower"]
     ];
 
     const inputIds = [
       "dayOfYearRange", "timeRange", "latitude", "longitude", "windowAzimuth",
-      "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime",
+      "defaultPosition", "sunsetPosition", "coverLocation",
+      "nightEveningMode", "nightStartTime", "sunsetOffset", "nightEveningEarliestTime", "nightEveningLatestTime",
+      "nightEveningActionEnabled", "nightMorningMode", "nightEndTime", "sunriseOffset", "nightMorningEarliestTime", "nightMorningLatestTime", "nightMorningActionEnabled",
       "fovLeft", "fovRight", "minElevation", "maxElevation",
       "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
       "revealTop", "horizonMode", "horizonProfile",
-      "solarRadiation", "solarReference", "outsideTemp",
+      "solarRadiation", "solarReference", "outsideTemp", "roomTemperature",
+      "roomHeatProtectionThreshold",
       "forecastTodayMax", "forecastTomorrowMax", "forecastSolarMax", "hotDayThreshold",
       "veryHotThreshold", "forecastInfluence", "policyPreset", "preemptiveStart",
       "weightDirect", "weightIncidence", "weightGlazing",
@@ -1422,8 +1458,7 @@
       "useTomorrowMax", "useOpenDataSolarRadiation", "enableHeatGainPolicy",
       "additionalWindows", "awayActive", "devicePreset", "showExpertWeights",
       "heatProtectionControlMode", "binaryCloseThreshold", "binaryClosePosition",
-      "hotDayCloseEnabled", "hotDayCloseThreshold", "hotDayClosePosition",
-      "veryHotDayClosePosition", "heatPowerLimitEnabled", "heatPowerTempThreshold",
+      "heatPowerLimitEnabled",
       "heatProtectionMinOutsideTemp", "maxTransmittedSolarPower"
     ];
 
@@ -1431,16 +1466,17 @@
     const PRESET_SCOPE_IDS = {
       all: inputIds,
       global: [
-        "devicePreset", "defaultPosition", "sunsetPosition", "nightMode", "nightStartTime", "nightEndTime", "glassType",
+        "devicePreset", "defaultPosition", "sunsetPosition", "coverLocation", "nightEveningMode", "nightStartTime", "sunsetOffset",
+        "nightEveningEarliestTime", "nightEveningLatestTime", "nightEveningActionEnabled", "nightMorningMode", "nightEndTime", "sunriseOffset",
+        "nightMorningEarliestTime", "nightMorningLatestTime", "nightMorningActionEnabled", "glassType",
         "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
         "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
         "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
         "enableHeatGainPolicy", "policyPreset", "additionalWindows", "awayActive",
         "heatProtectionControlMode", "binaryCloseThreshold", "binaryClosePosition",
         "awayScoreMultiplier", "awayThresholdReduction", "awayPositionOffset",
-        "showExpertWeights", "hotDayCloseEnabled",
-        "hotDayCloseThreshold", "hotDayClosePosition", "veryHotDayClosePosition",
-        "heatPowerLimitEnabled", "heatPowerTempThreshold",
+        "showExpertWeights", "roomHeatProtectionThreshold",
+        "heatPowerLimitEnabled",
         "heatProtectionMinOutsideTemp", "maxTransmittedSolarPower",
         "weightDirect", "weightIncidence", "weightGlazing",
         "weightSolarRadiation", "weightForecastTemp",
@@ -1786,10 +1822,6 @@
         "hidden",
         document.getElementById("heatProtectionControlMode").value !== "binary"
       );
-      document.getElementById("nightTimePanel").classList.toggle(
-        "hidden",
-        document.getElementById("nightMode").value !== "time"
-      );
     }
 
     function haApiBaseUrl() {
@@ -1861,9 +1893,19 @@
       overwrite("windowAzimuth", attrs.azimuth_window);
       overwrite("defaultPosition", attrs.default);
       overwrite("sunsetPosition", attrs.sunset_default);
-      overwrite("nightMode", attrs.night_mode);
+      overwrite("coverLocation", attrs.cover_location);
+      overwrite("nightEveningMode", attrs.night_evening_mode);
+      overwrite("nightMorningMode", attrs.night_morning_mode);
+      overwrite("nightEveningActionEnabled", attrs.night_evening_action_enabled);
+      overwrite("nightMorningActionEnabled", attrs.night_morning_action_enabled);
       overwrite("nightStartTime", attrs.night_start_time ? String(attrs.night_start_time).slice(0, 5) : null);
       overwrite("nightEndTime", attrs.night_end_time ? String(attrs.night_end_time).slice(0, 5) : null);
+      overwrite("sunsetOffset", attrs.sunset_offset);
+      overwrite("sunriseOffset", attrs.sunrise_offset);
+      overwrite("nightEveningEarliestTime", attrs.night_evening_earliest_time ? String(attrs.night_evening_earliest_time).slice(0, 5) : null);
+      overwrite("nightEveningLatestTime", attrs.night_evening_latest_time ? String(attrs.night_evening_latest_time).slice(0, 5) : null);
+      overwrite("nightMorningEarliestTime", attrs.night_morning_earliest_time ? String(attrs.night_morning_earliest_time).slice(0, 5) : null);
+      overwrite("nightMorningLatestTime", attrs.night_morning_latest_time ? String(attrs.night_morning_latest_time).slice(0, 5) : null);
       overwrite("fovLeft", attrs.fov_left_deg ?? attrs.field_of_view?.[0]);
       overwrite("fovRight", attrs.fov_right_deg ?? attrs.field_of_view?.[1]);
       overwrite("minElevation", attrs.min_elevation_deg);
@@ -1882,6 +1924,8 @@
       overwrite("solarRadiation", attrs.solar_radiation_value_w_m2 ?? attrs.open_data_current_direct_normal_irradiance_w_m2 ?? attrs.open_data_current_shortwave_radiation_w_m2);
       overwrite("solarReference", attrs.solar_radiation_reference_w_m2);
       overwrite("outsideTemp", attrs.heat_power_outside_temperature ?? attrs.weather_temperature ?? attrs.forecast_today_max_temp);
+      overwrite("roomTemperature", attrs.room_temperature);
+      overwrite("roomHeatProtectionThreshold", attrs.room_heat_protection_threshold);
       overwrite("forecastSolarMax", attrs.open_data_today_max_direct_normal_irradiance_w_m2);
       overwrite("hotDayThreshold", attrs.forecast_hot_day_threshold);
       overwrite("veryHotThreshold", attrs.forecast_very_hot_day_threshold);
@@ -1901,12 +1945,7 @@
       overwrite("awayScoreMultiplier", attrs.heat_gain_policy_away_score_multiplier);
       overwrite("awayThresholdReduction", attrs.heat_gain_policy_away_threshold_reduction);
       overwrite("awayPositionOffset", attrs.heat_gain_policy_away_position_offset);
-      overwrite("hotDayCloseEnabled", attrs.heat_gain_policy_hot_day_close_enabled);
-      overwrite("hotDayCloseThreshold", attrs.heat_gain_policy_hot_day_close_threshold);
-      overwrite("hotDayClosePosition", attrs.heat_gain_policy_hot_day_close_position);
-      overwrite("veryHotDayClosePosition", attrs.heat_gain_policy_very_hot_day_close_position);
       overwrite("heatPowerLimitEnabled", attrs.heat_power_limit_enabled);
-      overwrite("heatPowerTempThreshold", attrs.heat_power_outside_temp_threshold);
       overwrite("heatProtectionMinOutsideTemp", attrs.heat_protection_min_outside_temp);
       overwrite("maxTransmittedSolarPower", attrs.max_transmitted_solar_power_w_m2);
       overwrite("weightDirect", attrs.heat_gain_policy_weight_direct_exposure);
@@ -2233,9 +2272,19 @@
         windowAzimuth: parseNumber("windowAzimuth"),
         defaultPosition: parseNumber("defaultPosition"),
         sunsetPosition: parseNumber("sunsetPosition"),
-        nightMode: document.getElementById("nightMode").value,
+        coverLocation: document.getElementById("coverLocation").value,
+        nightEveningMode: document.getElementById("nightEveningMode").value,
+        nightEveningActionEnabled: parseBool("nightEveningActionEnabled"),
         nightStartTime: document.getElementById("nightStartTime").value || "22:00",
-        nightEndTime: document.getElementById("nightEndTime").value || "06:00",
+        sunsetOffset: parseNumber("sunsetOffset"),
+        nightEveningEarliestTime: document.getElementById("nightEveningEarliestTime").value || null,
+        nightEveningLatestTime: document.getElementById("nightEveningLatestTime").value || null,
+        nightMorningMode: document.getElementById("nightMorningMode").value,
+        nightMorningActionEnabled: parseBool("nightMorningActionEnabled"),
+        nightEndTime: document.getElementById("nightEndTime").value || "08:00",
+        sunriseOffset: parseNumber("sunriseOffset"),
+        nightMorningEarliestTime: document.getElementById("nightMorningEarliestTime").value || null,
+        nightMorningLatestTime: document.getElementById("nightMorningLatestTime").value || null,
         fovLeft: parseNumber("fovLeft"),
         fovRight: parseNumber("fovRight"),
         minElevation: parseNumber("minElevation"),
@@ -2256,6 +2305,8 @@
         solarRadiation: parseNumber("solarRadiation"),
         solarReference: parseNumber("solarReference"),
         outsideTemp: parseNumber("outsideTemp"),
+        roomTemperature: parseNumber("roomTemperature"),
+        roomHeatProtectionThreshold: parseNumber("roomHeatProtectionThreshold"),
         forecastTodayMax: parseNumber("forecastTodayMax"),
         forecastTomorrowMax: parseNumber("forecastTomorrowMax"),
         forecastSolarMax: parseNumber("forecastSolarMax"),
@@ -2286,12 +2337,7 @@
         additionalWindows: parseBool("additionalWindows"),
         awayActive: parseBool("awayActive"),
         showExpertWeights: parseBool("showExpertWeights"),
-        hotDayCloseEnabled: parseBool("hotDayCloseEnabled"),
-        hotDayCloseThreshold: parseNumber("hotDayCloseThreshold"),
-        hotDayClosePosition: parseNumber("hotDayClosePosition"),
-        veryHotDayClosePosition: parseNumber("veryHotDayClosePosition"),
         heatPowerLimitEnabled: parseBool("heatPowerLimitEnabled"),
-        heatPowerTempThreshold: parseNumber("heatPowerTempThreshold"),
         heatProtectionMinOutsideTemp: parseNumber("heatProtectionMinOutsideTemp"),
         maxTransmittedSolarPower: parseNumber("maxTransmittedSolarPower")
       };
@@ -2842,20 +2888,72 @@
       return currentMinutes >= startMinutes;
     }
 
-    function isNightModeActive(state, sun) {
-      if (state.nightMode !== "time") {
-        return sun.elevation <= 0;
+    function timeToMinutes(value) {
+      const [hoursRaw, minutesRaw] = String(value || "00:00").split(":");
+      return Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
+    }
+
+    function clampSolarBoundary(value, earliest, latest) {
+      let result = clamp(value, 0, 1439);
+      if (earliest) result = Math.max(result, timeToMinutes(earliest));
+      if (latest) result = Math.min(result, timeToMinutes(latest));
+      return result;
+    }
+
+    function solarDayBoundaries(state) {
+      let sunrise = null;
+      let sunset = null;
+      let previousElevation = solarPosition(
+        state.year, state.month, state.day, "00:00", state.latitude, state.longitude
+      ).elevation;
+      for (let minute = 5; minute < 1440; minute += 5) {
+        const elevation = solarPosition(
+          state.year, state.month, state.day, formatTime(minute), state.latitude, state.longitude
+        ).elevation;
+        if (sunrise === null && previousElevation <= 0 && elevation > 0) sunrise = minute;
+        if (previousElevation > 0 && elevation <= 0) sunset = minute;
+        previousElevation = elevation;
       }
-      const toMinutes = (value) => {
-        const [hoursRaw, minutesRaw] = String(value || "00:00").split(":");
-        return Number(hoursRaw || 0) * 60 + Number(minutesRaw || 0);
-      };
-      const current = toMinutes(state.time);
-      const start = toMinutes(state.nightStartTime);
-      const end = toMinutes(state.nightEndTime);
+      return { sunrise, sunset };
+    }
+
+    function isNightModeActive(state) {
+      const solar = solarDayBoundaries(state);
+      const current = timeToMinutes(state.time);
+      const start = state.nightEveningMode === "sunset" && solar.sunset !== null
+        ? clampSolarBoundary(
+            solar.sunset + state.sunsetOffset,
+            state.nightEveningEarliestTime,
+            state.nightEveningLatestTime
+          )
+        : timeToMinutes(state.nightStartTime);
+      const end = state.nightMorningMode === "sunrise" && solar.sunrise !== null
+        ? clampSolarBoundary(
+            solar.sunrise + state.sunriseOffset,
+            state.nightMorningEarliestTime,
+            state.nightMorningLatestTime
+          )
+        : timeToMinutes(state.nightEndTime);
       return start <= end
         ? current >= start && current < end
         : current >= start || current < end;
+    }
+
+    function closedCoverResidualFactor(location) {
+      return location === "interior" ? 0.55 : 0.10;
+    }
+
+    function coverTransmissionFactor(openPosition, location) {
+      const residual = closedCoverResidualFactor(location);
+      return residual + (1 - residual) * clamp(openPosition, 0, 100) / 100;
+    }
+
+    function maximumOpenPositionForLimit(uncoveredPower, limit, location) {
+      if (!Number.isFinite(uncoveredPower) || uncoveredPower <= 0 || uncoveredPower <= limit) return null;
+      const residual = closedCoverResidualFactor(location);
+      const requiredFactor = limit / uncoveredPower;
+      if (requiredFactor <= residual) return 0;
+      return Math.round(clamp((requiredFactor - residual) / (1 - residual) * 100, 0, 100));
     }
 
     function round(value, digits = 3) {
@@ -3119,8 +3217,10 @@
       setText(
         "nightModeCell",
         attrs.sunset_valid
-          ? `aktiv (${attrs.night_mode}) -> ${open} % offen`
-          : `aus (${attrs.night_mode})`
+          ? (attrs.night_evening_action_enabled
+              ? `Regelzeit beendet -> Abendaktion ${open} % offen`
+              : "Regelzeit beendet -> keine automatische Fahrt")
+          : `Regelzeit aktiv; Morgenaktion ${attrs.night_morning_action_enabled ? "an" : "aus"}`
       );
       setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
       setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
@@ -3134,6 +3234,9 @@
       setText("heatPowerCell", attrs.transmitted_solar_power_w_m2 === null
         ? "kein Strahlungswert"
         : `${round(attrs.transmitted_solar_power_w_m2, 1)} W/m2${attrs.transmitted_solar_power_w === null ? "" : ` / ${round(attrs.transmitted_solar_power_w, 0)} W Fenster`} (HA Python)`);
+      setText("coveredHeatPowerCell", attrs.solar_power_with_target_cover_w_per_window === null
+        ? "kein Strahlungswert"
+        : `${round(attrs.solar_power_with_target_cover_w_per_window, 0)} W bei ${open} % offen (${attrs.cover_location === "interior" ? "innen" : "aussen"}, geschlossen ${round(Number(attrs.closed_cover_residual_factor) * 100, 0)} % Rest)`);
       setText("heatPowerLimitCell", attrs.heat_power_limited_open_position === null
         ? `kein Deckel (${attrs.heat_power_limit_trigger})`
         : `deckt auf max. ${attrs.heat_power_limited_open_position} % offen (${attrs.heat_power_limit_trigger})`);
@@ -3142,9 +3245,9 @@
       setText("weightedScoreCell", round(attrs.heat_gain_policy_weighted_score, 3));
       setText("rawScoreCell", round(attrs.heat_gain_policy_raw_score, 3));
       setText("policyTargetCell", attrs.heat_gain_policy_target_position === null ? "-" : `${attrs.heat_gain_policy_target_position} % offen`);
-      setText("hotDayOverrideCell", attrs.heat_gain_policy_hot_day_override_active
-        ? `${attrs.heat_gain_policy_very_hot_day_override_active ? "sehr heiss" : "heiss"} -> max. ${attrs.heat_gain_policy_active_hot_day_close_position} % offen`
-        : "aus");
+      setText("hotDayOverrideCell", attrs.heat_protection_activation_active
+        ? `${attrs.heat_protection_activation_reason}; Raum ${round(attrs.room_temperature, 1)} C / Schwelle ${round(attrs.room_heat_protection_threshold, 1)} C`
+        : `aus (${attrs.heat_protection_activation_reason || "inactive"})`);
       setText("policyScoreValue", round(attrs.heat_gain_policy_score, 2));
       const pill = document.getElementById("policyLevelPill");
       pill.textContent = level;
@@ -3240,31 +3343,37 @@
           state.useTodayMax ? temperatureRisk(state.forecastTodayMax, state.hotDayThreshold, state.veryHotThreshold) : 0,
           state.useTomorrowMax ? temperatureRisk(state.forecastTomorrowMax, state.hotDayThreshold, state.veryHotThreshold) : 0
         );
-        const temperatureGateSignal = Math.max(
-          Number.isFinite(state.forecastTodayMax) ? state.forecastTodayMax : Number.NEGATIVE_INFINITY,
-          state.useTomorrowMax && Number.isFinite(state.forecastTomorrowMax) ? state.forecastTomorrowMax : Number.NEGATIVE_INFINITY
-        );
+        const temperatureGateSignal = Number.isFinite(state.forecastTodayMax)
+          ? state.forecastTodayMax
+          : Number.NEGATIVE_INFINITY;
         const coldLockoutTemp = state.heatProtectionMinOutsideTemp;
         const heatProtectionCurrentTemperatureAllowed = !Number.isFinite(state.outsideTemp)
           || !Number.isFinite(coldLockoutTemp)
           || state.outsideTemp >= coldLockoutTemp;
-        const heatProtectionTemperatureAllowed = heatProtectionCurrentTemperatureAllowed && (!Number.isFinite(temperatureGateSignal)
-          || !Number.isFinite(state.hotDayThreshold)
-          || temperatureGateSignal >= state.hotDayThreshold);
+        const forecastPreemptiveActive = isAfterPreemptiveStart(sun.date, state.preemptiveStart);
+        const forecastHotDayActive = forecastPreemptiveActive
+          && state.useTodayMax
+          && Number.isFinite(temperatureGateSignal)
+          && Number.isFinite(state.hotDayThreshold)
+          && temperatureGateSignal >= state.hotDayThreshold;
+        const roomTemperatureHeatActive = Number.isFinite(state.roomTemperature)
+          && Number.isFinite(state.roomHeatProtectionThreshold)
+          && state.roomTemperature >= state.roomHeatProtectionThreshold;
+        const heatProtectionTemperatureAllowed = heatProtectionCurrentTemperatureAllowed
+          && (forecastHotDayActive || roomTemperatureHeatActive);
+        const heatProtectionActivationReason = !heatProtectionCurrentTemperatureAllowed
+          ? "cold_lockout"
+          : forecastHotDayActive && roomTemperatureHeatActive
+            ? "forecast_hot_and_room_temperature"
+            : roomTemperatureHeatActive
+              ? "room_temperature"
+              : forecastHotDayActive
+                ? "forecast_hot"
+                : "inactive";
         const forecastSolarRadiationRisk = state.useOpenDataSolarRadiation
           ? solarRadiationFactor(state.forecastSolarMax, true, state.solarReference)
           : 1;
-        const forecastPreemptiveActive = isAfterPreemptiveStart(sun.date, state.preemptiveStart);
-        const heatPowerTemperatureGateActive = !Number.isFinite(state.heatPowerTempThreshold)
-          || (Number.isFinite(state.outsideTemp) && state.outsideTemp >= state.heatPowerTempThreshold)
-          || (
-            heatProtectionCurrentTemperatureAllowed
-            &&
-            forecastPreemptiveActive
-            && Number.isFinite(temperatureGateSignal)
-            && Number.isFinite(state.hotDayThreshold)
-            && temperatureGateSignal >= state.hotDayThreshold
-          );
+        const heatPowerTemperatureGateActive = heatProtectionTemperatureAllowed;
         const heatPowerLimitTrigger = !state.heatPowerLimitEnabled
           ? "aus"
           : !effectiveSunOnWindow
@@ -3273,10 +3382,10 @@
               ? "kein Solarleistungs-Limit"
               : !heatProtectionCurrentTemperatureAllowed
                 ? "Kälte-Sperre"
-              : !heatPowerTemperatureGateActive
-                ? "unter Temperatur-/Forecast-Gate"
-                : Number.isFinite(state.outsideTemp) && Number.isFinite(state.heatPowerTempThreshold) && state.outsideTemp >= state.heatPowerTempThreshold
-                  ? "Aussentemperatur"
+                : !heatPowerTemperatureGateActive
+                ? "Hitzeschutz nicht aktiviert"
+                : roomTemperatureHeatActive
+                  ? "Raumtemperatur"
                   : Number.isFinite(temperatureGateSignal) && Number.isFinite(state.veryHotThreshold) && temperatureGateSignal >= state.veryHotThreshold
                     ? "Very-Hot-Forecast"
                     : Number.isFinite(temperatureGateSignal) && Number.isFinite(state.hotDayThreshold) && temperatureGateSignal >= state.hotDayThreshold
@@ -3290,7 +3399,11 @@
           && state.maxTransmittedSolarPower > 0
           && heatPowerTemperatureGateActive;
         const heatPowerLimitedOpenPosition = heatPowerLimitActive && transmittedSolarPowerWm2 > state.maxTransmittedSolarPower
-          ? Math.round(clamp((state.maxTransmittedSolarPower / transmittedSolarPowerWm2) * 100, 0, 100))
+          ? maximumOpenPositionForLimit(
+              transmittedSolarPowerWm2,
+              state.maxTransmittedSolarPower,
+              state.coverLocation
+            )
           : null;
         const forecastRisk = forecastPreemptiveActive
           ? clamp(
@@ -3378,22 +3491,7 @@
             }
           : scalingPolicyResult;
 
-        const hotDaySignal = Math.max(
-          state.useTodayMax ? state.forecastTodayMax : Number.NEGATIVE_INFINITY,
-          state.useTomorrowMax ? state.forecastTomorrowMax : Number.NEGATIVE_INFINITY
-        );
-        const hotDayOverrideActive = state.hotDayCloseEnabled
-          && forecastPreemptiveActive
-          && heatProtectionCurrentTemperatureAllowed
-          && effectiveSunOnWindow
-          && Number.isFinite(hotDaySignal)
-          && hotDaySignal >= state.hotDayCloseThreshold;
-        const veryHotDayOverrideActive = hotDayOverrideActive
-          && Number.isFinite(state.veryHotThreshold)
-          && hotDaySignal >= state.veryHotThreshold;
-        const activeHotDayClosePosition = hotDayOverrideActive
-          ? (veryHotDayOverrideActive ? state.veryHotDayClosePosition : state.hotDayClosePosition)
-          : null;
+        const hotDaySignal = temperatureGateSignal;
 
         const cosGamma = Math.cos(deg2rad(gamma));
         const baseVerticalClosure = effectiveSunOnWindow && cosGamma > 0
@@ -3406,18 +3504,6 @@
 
         let effectivePolicyTarget = policyResult.target;
         let effectivePolicyLevel = policyResult.level;
-        if (activeHotDayClosePosition !== null) {
-          effectivePolicyTarget = Math.min(effectivePolicyTarget ?? 100, activeHotDayClosePosition);
-          if (veryHotDayOverrideActive) {
-            effectivePolicyLevel = "veryhotday";
-          } else if (
-            effectivePolicyLevel === "none"
-            || effectivePolicyLevel === "partial"
-            || activeHotDayClosePosition < (policyResult.target ?? 100)
-          ) {
-            effectivePolicyLevel = "hotday";
-          }
-        }
         if (heatPowerLimitedOpenPosition !== null) {
           effectivePolicyTarget = Math.min(effectivePolicyTarget ?? 100, heatPowerLimitedOpenPosition);
           if (heatPowerLimitedOpenPosition < (policyResult.target ?? 100)) {
@@ -3429,7 +3515,7 @@
         const daylightOpen = effectiveSunOnWindow
           ? Math.round(clamp(Math.min(baseVerticalPosition, effectivePolicyTarget ?? 100), 0, 100))
           : Math.round(clamp(noSunFallback, 0, 100));
-        const finalOpen = nightModeActive
+        const finalOpen = nightModeActive && state.nightEveningActionEnabled
           ? Math.round(clamp(state.sunsetPosition, 0, 100))
           : daylightOpen;
         const finalClosure = Math.round(clamp(100 - finalOpen, 0, 100));
@@ -3443,7 +3529,14 @@
         pill.className = `pill ${effectivePolicyLevel}`;
 
         setText("dateCell", `${sun.date.toLocaleDateString("de-DE")} ${state.time}`);
-        setText("nightModeCell", nightModeActive ? `aktiv -> ${state.sunsetPosition} % offen` : "aus");
+        setText(
+          "nightModeCell",
+          nightModeActive
+            ? (state.nightEveningActionEnabled
+                ? `Regelzeit beendet -> Abendaktion ${state.sunsetPosition} % offen`
+                : "Regelzeit beendet -> keine automatische Fahrt")
+            : `Regelzeit aktiv; Morgenaktion ${state.nightMorningActionEnabled ? "an" : "aus"}`
+        );
         setText("solarAzimuthCell", `${round(sun.azimuth, 1)} deg`);
         setText("solarElevationCell", `${round(sun.elevation, 1)} deg`);
         setText("gammaCell", `${round(gamma, 1)} deg`);
@@ -3469,6 +3562,9 @@
         setText("heatPowerCell", transmittedSolarPowerWm2 === null
           ? "kein Strahlungswert"
           : `${round(transmittedSolarPowerWm2, 1)} W/m2${transmittedSolarPowerW === null ? "" : ` / ${round(transmittedSolarPowerW, 0)} W Fenster`}`);
+        setText("coveredHeatPowerCell", transmittedSolarPowerW === null
+          ? "kein Strahlungswert"
+          : `${round(transmittedSolarPowerW * coverTransmissionFactor(open, state.coverLocation), 0)} W bei ${open} % offen (${state.coverLocation === "interior" ? "innen" : "aussen"}, geschlossen ${round(closedCoverResidualFactor(state.coverLocation) * 100, 0)} % Rest)`);
         setText("heatPowerLimitCell", state.heatPowerLimitEnabled
           ? (heatPowerLimitedOpenPosition === null
             ? `aktiviert, aktuell kein Deckel (${heatPowerLimitTrigger}, ${round(transmittedSolarPowerWm2, 0)} W/m2, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2)`
@@ -3490,9 +3586,9 @@
           : "aus");
         setText(
           "hotDayOverrideCell",
-          hotDayOverrideActive
-            ? `${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} -> max. ${activeHotDayClosePosition} % offen`
-            : "aus"
+          heatProtectionTemperatureAllowed
+            ? `${heatProtectionActivationReason}; Raum ${round(state.roomTemperature, 1)} C / Schwelle ${round(state.roomHeatProtectionThreshold, 1)} C`
+            : `aus (${heatProtectionActivationReason})`
         );
         setText("finalPositionCell", `${finalOpen} % offen / ${finalClosure} % geschlossen`);
         const decisionReason = !state.enableHeatGainPolicy
@@ -3508,13 +3604,11 @@
               : policyResult.level === "full"
                 ? `Score ${round(awayAdjusted.score, 3)} ist >= Full-Schwelle ${round(temperatureAdjusted.thresholds.full, 3)}.`
                 : `Score ${round(awayAdjusted.score, 3)} liegt zwischen Partial ${round(temperatureAdjusted.thresholds.partial, 3)} und Full ${round(temperatureAdjusted.thresholds.full, 3)}.`;
-        const hotDayLine = hotDayOverrideActive
-          ? `Hot-Day-Override: ${veryHotDayOverrideActive ? "sehr heiss" : "heiss"} begrenzt zusaetzlich auf max. ${activeHotDayClosePosition} % offen.`
-          : "Hot-Day-Override: aus oder nicht getriggert.";
+        const hotDayLine = `Hitzeschutz-Aktivierung: ${heatProtectionActivationReason}.`;
         const heatPowerLine = heatPowerLimitedOpenPosition !== null
           ? `Solarleistungs-Limit: ${round(transmittedSolarPowerWm2, 0)} W/m2 durchgelassen, Limit ${round(state.maxTransmittedSolarPower, 0)} W/m2 -> max. ${heatPowerLimitedOpenPosition} % offen.`
           : state.heatPowerLimitEnabled
-            ? `Solarleistungs-Limit: kein Eingriff; Temp ${round(state.outsideTemp, 1)} C, Schwelle ${round(state.heatPowerTempThreshold, 1)} C, Leistung ${round(transmittedSolarPowerWm2, 0)} W/m2.`
+            ? `Solarleistungs-Limit: kein Eingriff; Aktivierung ${heatProtectionActivationReason}, Leistung ${round(transmittedSolarPowerWm2, 0)} W/m2.`
             : "Solarleistungs-Limit: aus.";
         const temperatureBand = !heatProtectionTemperatureAllowed
           ? "below_hot"

@@ -99,11 +99,13 @@ from .const import (
     CONF_MIN_ELEVATION,
     CONF_MIN_POSITION,
     CONF_NIGHT_END_TIME,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
     CONF_NIGHT_EVENING_EARLIEST_TIME,
     CONF_NIGHT_EVENING_LATEST_TIME,
     CONF_NIGHT_EVENING_MODE,
     CONF_NIGHT_MODE,
     CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_NIGHT_MORNING_LATEST_TIME,
     CONF_NIGHT_MORNING_MODE,
     CONF_NIGHT_START_TIME,
@@ -149,7 +151,7 @@ from .overview import (
     configuration_warnings,
     derive_window_status,
 )
-from .profiles import resolve_effective_options
+from .profiles import boundary_action_position, resolve_effective_options
 from .solar_radiation import async_fetch_open_meteo_solar_summary
 
 LEGACY_MAX_TRANSMITTED_SOLAR_POWER = "heat_power_max_watts"
@@ -214,6 +216,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         self.cover_state_change = False
         self.first_refresh = False
         self.timed_refresh = False
+        self._night_active: bool | None = None
         self.state_change_data: StateChangedData | None = None
         self.manager = AdaptiveCoverManager(self.manual_duration, self.logger)
         self.wait_for_target = {}
@@ -375,17 +378,31 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         ):
             await self.async_timed_end_time()
 
-        # Handle types of changes
-        if self.state_change:
-            await self.async_handle_state_change(state, options)
+        normal_cover = self.normal_cover_state.cover
+        night_active = normal_cover.sunset_valid
+        boundary_changed = (
+            self._night_active is not None and self._night_active != night_active
+        )
+        boundary_action = boundary_action_position(
+            self._night_active, night_active, options
+        )
+        self._night_active = night_active
+
+        # Cover feedback is independent of whether a time boundary triggers an action.
         if self.cover_state_change:
             await self.async_handle_cover_state_change(state)
-        if self.first_refresh:
-            await self.async_handle_first_refresh(state, options)
-        if self.timed_refresh:
-            await self.async_handle_timed_refresh(options)
+        if boundary_changed:
+            if boundary_action is not None:
+                await self.async_handle_boundary_action(boundary_action)
+            self.state_change = False
+        else:
+            if self.state_change:
+                await self.async_handle_state_change(state, options)
+            if self.first_refresh:
+                await self.async_handle_first_refresh(state, options)
+            if self.timed_refresh:
+                await self.async_handle_timed_refresh(options)
 
-        normal_cover = self.normal_cover_state.cover
         # Run the solar_times method in a separate thread
         if (
             self.first_refresh
@@ -511,6 +528,13 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
                 "configuration_sources": self.profile_resolution.source_by_key,
                 "default": options.get(CONF_DEFAULT_HEIGHT),
                 "sunset_default": options.get(CONF_SUNSET_POS),
+                "night_evening_action_enabled": options.get(
+                    CONF_NIGHT_EVENING_ACTION_ENABLED, True
+                ),
+                "night_morning_action_enabled": options.get(
+                    CONF_NIGHT_MORNING_ACTION_ENABLED, True
+                ),
+                "regulation_time_window_active": not normal_cover.sunset_valid,
                 "sunset_offset": options.get(CONF_SUNSET_OFFSET),
                 "facade_name": options.get(CONF_FACADE_NAME),
                 "floor_name": options.get(CONF_FLOOR_NAME),
@@ -949,7 +973,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
 
     async def async_handle_state_change(self, state: int, options):
         """Handle state change from tracked entities."""
-        if self.control_toggle:
+        if self.control_toggle and self._regulation_action_allowed():
             for cover in self.entities:
                 await self.async_handle_call_service(cover, state, options)
         else:
@@ -973,7 +997,7 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
 
     async def async_handle_first_refresh(self, state: int, options):
         """Handle first refresh."""
-        if self.control_toggle:
+        if self.control_toggle and self._regulation_action_allowed():
             for cover in self.entities:
                 if (
                     self.check_adaptive_time
@@ -1010,12 +1034,26 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
     async def async_handle_call_service(self, entity, state: int, options):
         """Handle call service."""
         if (
-            self.check_adaptive_time
+            self._regulation_action_allowed()
+            and self.check_adaptive_time
             and self.check_position_delta(entity, state, options)
             and self.check_time_delta(entity)
             and not self.manager.is_cover_manual(entity)
         ):
             await self.async_set_position(entity, state)
+
+    def _regulation_action_allowed(self) -> bool:
+        """Return whether normal automation may issue a movement now."""
+        return not self.normal_cover_state.cover.sunset_valid
+
+    async def async_handle_boundary_action(self, position: int) -> None:
+        """Issue one configured movement when the regulation window changes."""
+        if not self.control_toggle:
+            return
+        target = inverse_state(position) if self._inverse_state else position
+        for cover in self.entities:
+            if not self.manager.is_cover_manual(cover):
+                await self.async_set_manual_position(cover, target)
 
     async def async_set_position(self, entity, state: int):
         """Call service to set cover position."""
@@ -1115,6 +1153,12 @@ class AdaptiveDataUpdateCoordinator(DataUpdateCoordinator[AdaptiveCoverData]):
         )
         cover_data.night_morning_latest_time = options.get(
             CONF_NIGHT_MORNING_LATEST_TIME
+        )
+        cover_data.night_evening_action_enabled = options.get(
+            CONF_NIGHT_EVENING_ACTION_ENABLED, True
+        )
+        cover_data.night_morning_action_enabled = options.get(
+            CONF_NIGHT_MORNING_ACTION_ENABLED, True
         )
         cover_data.cover_location = options.get(CONF_COVER_LOCATION, "exterior")
         cover_data.heat_protection_control_mode = options.get(

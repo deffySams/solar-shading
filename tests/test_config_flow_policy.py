@@ -39,6 +39,7 @@ from custom_components.solar_shading.const import (
     CONF_ROOM_NAME,
     CONF_ROOM_PROFILES,
     ENTRY_TYPE_WINDOW,
+    ENTRY_TYPE_HOUSE,
     CONF_BINARY_CLOSE_POSITION,
     CONF_BINARY_CLOSE_THRESHOLD,
     CONF_PARTIAL_CLOSE_THRESHOLD,
@@ -193,7 +194,7 @@ class FloorRoomSelectionTests(unittest.TestCase):
         async_get.assert_not_called()
 
 
-class HouseJourneySchemaTests(unittest.TestCase):
+class HouseJourneySchemaTests(unittest.IsolatedAsyncioTestCase):
     def test_house_default_pages_are_complete_and_non_overlapping(self):
         all_keys = {
             getattr(marker, "schema", marker) for marker in HOUSE_DEFAULT_OPTIONS.schema
@@ -209,6 +210,21 @@ class HouseJourneySchemaTests(unittest.TestCase):
         self.assertLess(len(HOUSE_SETUP_KEYS), len(all_keys))
         self.assertLess(len(HOUSE_NIGHT_KEYS), len(all_keys))
         self.assertLess(len(HOUSE_HEAT_KEYS), len(all_keys))
+
+    async def test_empty_bulk_assignment_does_not_block_house_menu(self):
+        flow = OptionsFlowHandler.__new__(OptionsFlowHandler)
+        flow.entry_type = ENTRY_TYPE_HOUSE
+        flow.hass = SimpleNamespace(
+            config_entries=SimpleNamespace(async_entries=lambda _domain: [])
+        )
+        flow.async_show_menu = lambda **kwargs: kwargs
+
+        result = await flow.async_step_init()
+
+        self.assertNotIn("house_bulk_assignment", result["menu_options"])
+        self.assertIn("house_floors", result["menu_options"])
+        self.assertIn("house_rooms", result["menu_options"])
+        self.assertIn("house_room_facades", result["menu_options"])
 
 
 class BulkAssignmentJourneyTests(unittest.IsolatedAsyncioTestCase):

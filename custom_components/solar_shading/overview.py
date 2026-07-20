@@ -30,6 +30,7 @@ WINDOW_STATUS_OPTIONS = (
     "control_disabled",
     "manual_override",
     "night_position",
+    "outside_regulation",
     "cold_lockout",
     "no_direct_sun",
     "heat_protection_inactive",
@@ -78,8 +79,10 @@ def derive_window_status(
         return "control_disabled"
     if manual_override:
         return "manual_override"
-    if decision_reason == "night_position":
+    if decision_reason == "evening_action":
         return "night_position"
+    if decision_reason == "outside_regulation_no_action":
+        return "outside_regulation"
     if activation_reason == "cold_lockout":
         return "cold_lockout"
     if not direct_sun_valid:

@@ -50,6 +50,20 @@ class OverviewTests(unittest.TestCase):
         )
         self.assertEqual(status, "power_limited")
 
+    def test_outside_regulation_without_action_has_distinct_status(self):
+        status = derive_window_status(
+            target_position=100,
+            decision_reason="outside_regulation_no_action",
+            activation_reason="inactive",
+            direct_sun_valid=False,
+            control_enabled=True,
+            manual_override=False,
+            cover_available=True,
+            configuration_warnings=[],
+        )
+
+        self.assertEqual(status, "outside_regulation")
+
     def test_warnings_report_partial_cover_availability(self):
         warnings = configuration_warnings(
             {

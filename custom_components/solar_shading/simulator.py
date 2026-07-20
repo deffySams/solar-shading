@@ -267,6 +267,12 @@ def simulate_from_payload(
     cover.night_evening_latest_time = values.get("nightEveningLatestTime")
     cover.night_morning_earliest_time = values.get("nightMorningEarliestTime")
     cover.night_morning_latest_time = values.get("nightMorningLatestTime")
+    cover.night_evening_action_enabled = _bool(
+        values, "nightEveningActionEnabled", True
+    )
+    cover.night_morning_action_enabled = _bool(
+        values, "nightMorningActionEnabled", True
+    )
     cover.cover_location = values.get("coverLocation") or "exterior"
     cover.heat_protection_control_mode = (
         values.get("heatProtectionControlMode") or "scaling"
@@ -344,6 +350,9 @@ def simulate_from_payload(
         "binary_heat_protection_active": cover.binary_heat_protection_active,
         "forecast_preemptive_active": cover.forecast_preemptive_active,
         "sunset_valid": cover.sunset_valid,
+        "regulation_time_window_active": not cover.sunset_valid,
+        "night_evening_action_enabled": cover.night_evening_action_enabled,
+        "night_morning_action_enabled": cover.night_morning_action_enabled,
         "direct_sun_valid": cover.direct_sun_valid,
         "horizon_mode": cover.horizon_mode,
         "night_mode": cover.night_mode,

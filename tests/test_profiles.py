@@ -5,6 +5,7 @@ import unittest
 from custom_components.solar_shading.const import (
     CONF_AZIMUTH,
     CONF_ENTITIES,
+    CONF_DEFAULT_HEIGHT,
     CONF_FACADE_NAME,
     CONF_FACADE_OFFSET,
     CONF_FACADE_PROFILES,
@@ -15,6 +16,8 @@ from custom_components.solar_shading.const import (
     CONF_HOUSE_DEFAULTS,
     CONF_HOUSE_PROFILE_ENTRY_ID,
     CONF_HOUSE_REFERENCE_AZIMUTH,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_POLICY_PRESET,
     CONF_PROFILE_OVERRIDES,
     CONF_REVEAL_LEFT,
@@ -23,6 +26,7 @@ from custom_components.solar_shading.const import (
     CONF_ROOM_NAME,
     CONF_ROOM_PROFILES,
     CONF_ROOM_TEMPERATURE_ENTITY,
+    CONF_SUNSET_POS,
     CONF_USE_LOCAL_GEOMETRY,
     CONF_USE_LOCAL_HORIZON,
     CONF_USE_LOCAL_POLICY,
@@ -31,12 +35,30 @@ from custom_components.solar_shading.const import (
 )
 from custom_components.solar_shading.profiles import (
     apply_bulk_profile_assignment,
+    boundary_action_position,
     resolve_profile_options,
     room_facade_key,
 )
 
 
 class ProfileResolutionTests(unittest.TestCase):
+    def test_boundary_actions_are_independently_optional(self):
+        options = {
+            CONF_DEFAULT_HEIGHT: 85,
+            CONF_SUNSET_POS: 15,
+            CONF_NIGHT_EVENING_ACTION_ENABLED: True,
+            CONF_NIGHT_MORNING_ACTION_ENABLED: True,
+        }
+
+        self.assertEqual(boundary_action_position(False, True, options), 15)
+        self.assertEqual(boundary_action_position(True, False, options), 85)
+        self.assertIsNone(boundary_action_position(None, True, options))
+
+        options[CONF_NIGHT_EVENING_ACTION_ENABLED] = False
+        options[CONF_NIGHT_MORNING_ACTION_ENABLED] = False
+        self.assertIsNone(boundary_action_position(False, True, options))
+        self.assertIsNone(boundary_action_position(True, False, options))
+
     def test_bulk_assignment_keeps_physical_window_details(self):
         original = {
             CONF_ENTITIES: ["cover.a", "cover.b"],
@@ -117,9 +139,7 @@ class ProfileResolutionTests(unittest.TestCase):
 
     def test_window_horizon_only_overrides_when_enabled(self):
         house = {CONF_HOUSE_DEFAULTS: {CONF_HORIZON_PROFILE: "house"}}
-        inherited = resolve_profile_options(
-            {CONF_HORIZON_PROFILE: "window"}, house
-        )
+        inherited = resolve_profile_options({CONF_HORIZON_PROFILE: "window"}, house)
         local = resolve_profile_options(
             {
                 CONF_HORIZON_PROFILE: "window",

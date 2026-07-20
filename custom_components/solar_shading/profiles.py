@@ -72,11 +72,13 @@ from .const import (
     CONF_MIN_ELEVATION,
     CONF_MIN_POSITION,
     CONF_NIGHT_END_TIME,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
     CONF_NIGHT_EVENING_EARLIEST_TIME,
     CONF_NIGHT_EVENING_LATEST_TIME,
     CONF_NIGHT_EVENING_MODE,
     CONF_NIGHT_MODE,
     CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_NIGHT_MORNING_LATEST_TIME,
     CONF_NIGHT_MORNING_MODE,
     CONF_NIGHT_START_TIME,
@@ -144,7 +146,9 @@ HOUSE_RULE_KEYS = {
     CONF_NIGHT_START_TIME,
     CONF_NIGHT_END_TIME,
     CONF_NIGHT_EVENING_MODE,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
     CONF_NIGHT_MORNING_MODE,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_NIGHT_EVENING_EARLIEST_TIME,
     CONF_NIGHT_EVENING_LATEST_TIME,
     CONF_NIGHT_MORNING_EARLIEST_TIME,
@@ -262,6 +266,8 @@ def built_in_house_defaults() -> dict[str, Any]:
         CONF_NIGHT_END_TIME: "08:00:00",
         CONF_NIGHT_EVENING_MODE: NIGHT_EVENING_SUNSET,
         CONF_NIGHT_MORNING_MODE: NIGHT_MORNING_FIXED,
+        CONF_NIGHT_EVENING_ACTION_ENABLED: True,
+        CONF_NIGHT_MORNING_ACTION_ENABLED: True,
         CONF_NIGHT_EVENING_EARLIEST_TIME: None,
         CONF_NIGHT_EVENING_LATEST_TIME: None,
         CONF_NIGHT_MORNING_EARLIEST_TIME: None,
@@ -312,6 +318,23 @@ def built_in_house_defaults() -> dict[str, Any]:
         CONF_MANUAL_OVERRIDE_RESET: False,
         CONF_MANUAL_IGNORE_INTERMEDIATE: False,
     }
+
+
+def boundary_action_position(
+    previous_night_active: bool | None,
+    night_active: bool,
+    options: dict[str, Any],
+) -> int | None:
+    """Return the one-time movement configured for a time-window transition."""
+    if previous_night_active is None or previous_night_active == night_active:
+        return None
+    if night_active:
+        if not options.get(CONF_NIGHT_EVENING_ACTION_ENABLED, True):
+            return None
+        return int(options.get(CONF_SUNSET_POS, 100))
+    if not options.get(CONF_NIGHT_MORNING_ACTION_ENABLED, True):
+        return None
+    return int(options.get(CONF_DEFAULT_HEIGHT, 100))
 
 
 def default_house_profile_options() -> dict[str, Any]:

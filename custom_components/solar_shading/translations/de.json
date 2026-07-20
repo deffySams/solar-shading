@@ -457,14 +457,14 @@
           "blind_spot": "Blindenbereich einrichten",
           "interp": "Bereichsanpassung",
           "house_setup": "Hausprofil: Achse, Fenster und Geometrie",
-          "house_night": "Hausprofil: Morgen und Abend",
+          "house_night": "Hausprofil: Regelzeit und Randaktionen",
           "house_heat": "Hausprofil: Hitzeschutz-Regeln",
           "house_expert": "Hausprofil: Feinabstimmung",
           "house_facades": "Fassadenprofile",
           "house_floors": "Stockwerksprofile",
           "house_rooms": "Raumprofile",
           "house_room_facades": "Raumfassadenprofile",
-          "house_bulk_assignment": "Fenster & Bereiche: zuordnen und bearbeiten"
+          "house_bulk_assignment": "Mehrere Fenster zuordnen"
         }
       },
       "assignment": {
@@ -513,11 +513,13 @@
           "horizon_profile": "Standard-Horizontprofil",
           "default_percentage": "Standardposition am Tag (% offen)",
           "night_evening_mode": "Abendgrenze",
+          "night_evening_action_enabled": "Bei Regelende Abend-/Nachtposition anfahren",
           "night_start_time": "Feste Schließzeit am Abend",
           "sunset_offset": "Minuten nach Sonnenuntergang",
           "night_evening_earliest_time": "Abends nicht früher als",
           "night_evening_latest_time": "Abends nicht später als",
           "night_morning_mode": "Morgengrenze",
+          "night_morning_action_enabled": "Bei Regelbeginn Tagesposition anfahren",
           "night_end_time": "Feste Öffnungszeit am Morgen",
           "sunrise_offset": "Minuten nach Sonnenaufgang",
           "night_morning_earliest_time": "Morgens nicht früher als",
@@ -627,23 +629,27 @@
           "sunrise_offset": "Minuten nach Sonnenaufgang",
           "night_morning_earliest_time": "Morgens nicht früher als",
           "night_morning_latest_time": "Morgens nicht später als",
-          "sunset_position": "Nachtposition (% offen)"
+          "sunset_position": "Abend-/Nachtposition (% offen)",
+          "default_percentage": "Tagesposition / Morgenaktion (% offen)"
         },
         "data_description": {
-          "night_evening_mode": "Feste Uhrzeit oder Sonnenuntergang plus Versatz.",
+          "night_evening_mode": "Bestimmt, wann die aktive Solarregelung am Abend endet.",
+          "night_evening_action_enabled": "Aktiv: Abend-/Nachtposition anfahren. Inaktiv: keine Fahrt auslösen und die aktuelle Coverposition beibehalten.",
           "night_start_time": "Wird nur bei fester Abendgrenze verwendet.",
           "sunset_offset": "Beispiel: 60 aktiviert die Nachtposition eine Stunde nach Sonnenuntergang.",
           "night_evening_earliest_time": "Optionale früheste Grenze bei Sonnenführung.",
           "night_evening_latest_time": "Optionale späteste Grenze bei Sonnenführung.",
-          "night_morning_mode": "Feste Uhrzeit oder Sonnenaufgang plus Versatz.",
+          "night_morning_mode": "Bestimmt, wann die aktive Solarregelung am Morgen beginnt.",
+          "night_morning_action_enabled": "Aktiv: Beim Morgen-Trigger einmal die Tagesposition anfahren. Inaktiv: keine Grenzfahrt; spätere Solaränderungen dürfen weiterhin regeln.",
           "night_end_time": "Wird nur bei fester Morgengrenze verwendet.",
           "sunrise_offset": "Positive Werte halten die Nachtposition nach Sonnenaufgang länger aktiv.",
           "night_morning_earliest_time": "Optionale früheste Öffnungsgrenze.",
           "night_morning_latest_time": "Optionale späteste Öffnungsgrenze.",
-          "sunset_position": "Position außerhalb des Tagesintervalls; 100 % bleibt offen."
+          "sunset_position": "Ziel der aktivierten Abendaktion und Position während der Nacht.",
+          "default_percentage": "Normale Tagesposition und Ziel der aktivierten Morgenaktion."
         },
-        "title": "Hausprofil: Morgen und Abend",
-        "description": "Morgen- und Abendgrenze werden unabhängig eingestellt."
+        "title": "Hausprofil: Regelzeit und Randaktionen",
+        "description": "Die Grenzen bestimmen, wann Solar Shading regelt. Die beiden Tickboxen bestimmen getrennt, ob am Morgen oder Abend tatsächlich gefahren wird."
       },
       "house_heat": {
         "data": {
@@ -740,8 +746,8 @@
           "bulk_window_entries": "Wähle alle Solar-Shading-Fenstergruppen, die zur gleichen Raumwand gehören. Jede Gruppe kann bereits ein oder mehrere Cover enthalten.",
           "floor_name": "Im nächsten Schritt erscheinen nur Home-Assistant-Räume, die diesem Stockwerk zugeordnet sind."
         },
-        "title": "Fenster & Bereiche: Fenster und Stockwerk wählen",
-        "description": "Dies ist der zentrale Editor für Stockwerk, Raum und Raumfassade. Im nächsten Schritt wird die Hierarchie erstellt oder aktualisiert und allen gewählten Fenstern zugeordnet."
+        "title": "Mehrere Fenster: Fenster und Stockwerk wählen",
+        "description": "Optionales Werkzeug zum gemeinsamen Zuordnen vorhandener Fenster. Stockwerk, Raum und Raumfassade lassen sich auch direkt im Hausprofil bearbeiten."
       },
       "house_bulk_assignment_details": {
         "data": {
@@ -752,7 +758,7 @@
           "room_name": "Alle ausgewählten Fenstergruppen werden diesem Raum zugeordnet.",
           "facade_name": "Vorhandene Fassade auswählen oder eine neue Bezeichnung eingeben."
         },
-        "title": "Fenster & Bereiche: Raum und Fassade wählen",
+        "title": "Mehrere Fenster: Raum und Fassade wählen",
         "description": "Im nächsten Schritt werden vorhandene Regeln und Geometriewerte geladen."
       },
       "house_bulk_assignment_settings": {
@@ -790,7 +796,7 @@
           "fov_right": "Sichtbarer Winkel rechts von der Fensternormalen für alle gewählten Fenster.",
           "bulk_reset_local_overrides": "Empfohlen: entfernt lokale Geometrie-, Horizont- und Regelschalter sowie lokale Regelabweichungen, damit spätere Änderungen am Hausprofil alle ausgewählten Fenster erreichen. Cover-Entitäten und exakte Fenstermaße bleiben erhalten."
         },
-        "title": "Fenster & Bereiche: Regeln und optionale Geometrie",
+        "title": "Mehrere Fenster: Regeln und optionale Geometrie",
         "description": "Vorhandene Werte sind vorbefüllt. Ohne Geometrie-Override bleiben spätere Änderungen am Haus- oder Fassadenprofil wirksam."
       },
       "house_facades": {

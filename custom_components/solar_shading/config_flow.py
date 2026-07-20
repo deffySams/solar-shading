@@ -90,11 +90,13 @@ from .const import (
     CONF_MIN_POSITION,
     CONF_MODE,
     CONF_NIGHT_END_TIME,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
     CONF_NIGHT_EVENING_EARLIEST_TIME,
     CONF_NIGHT_EVENING_LATEST_TIME,
     CONF_NIGHT_EVENING_MODE,
     CONF_NIGHT_MODE,
     CONF_NIGHT_MORNING_EARLIEST_TIME,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_NIGHT_MORNING_LATEST_TIME,
     CONF_NIGHT_MORNING_MODE,
     CONF_NIGHT_START_TIME,
@@ -853,6 +855,9 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_NIGHT_EVENING_EARLIEST_TIME): selector.TimeSelector(),
         vol.Optional(CONF_NIGHT_EVENING_LATEST_TIME): selector.TimeSelector(),
+        vol.Optional(
+            CONF_NIGHT_EVENING_ACTION_ENABLED, default=True
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_NIGHT_MORNING_MODE, default="fixed"): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=NIGHT_MORNING_MODE_OPTIONS,
@@ -865,6 +870,9 @@ HOUSE_DEFAULT_OPTIONS = vol.Schema(
         ),
         vol.Optional(CONF_NIGHT_MORNING_EARLIEST_TIME): selector.TimeSelector(),
         vol.Optional(CONF_NIGHT_MORNING_LATEST_TIME): selector.TimeSelector(),
+        vol.Optional(
+            CONF_NIGHT_MORNING_ACTION_ENABLED, default=True
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_SUNSET_POS, default=100): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 min=0, max=100, step=1, mode="slider", unit_of_measurement="%"
@@ -1046,21 +1054,23 @@ HOUSE_SETUP_KEYS = {
     CONF_REVEAL_TOP,
     CONF_HORIZON_MODE,
     CONF_HORIZON_PROFILE,
-    CONF_DEFAULT_HEIGHT,
 }
 
 HOUSE_NIGHT_KEYS = {
     CONF_NIGHT_EVENING_MODE,
+    CONF_NIGHT_EVENING_ACTION_ENABLED,
     CONF_NIGHT_START_TIME,
     CONF_SUNSET_OFFSET,
     CONF_NIGHT_EVENING_EARLIEST_TIME,
     CONF_NIGHT_EVENING_LATEST_TIME,
     CONF_NIGHT_MORNING_MODE,
+    CONF_NIGHT_MORNING_ACTION_ENABLED,
     CONF_NIGHT_END_TIME,
     CONF_SUNRISE_OFFSET,
     CONF_NIGHT_MORNING_EARLIEST_TIME,
     CONF_NIGHT_MORNING_LATEST_TIME,
     CONF_SUNSET_POS,
+    CONF_DEFAULT_HEIGHT,
 }
 
 HOUSE_HEAT_KEYS = (
@@ -1914,16 +1924,21 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if self.entry_type == ENTRY_TYPE_HOUSE:
+            menu_options = [
+                "house_setup",
+                "house_night",
+                "house_heat",
+                "house_facades",
+                "house_floors",
+                "house_rooms",
+                "house_room_facades",
+                "house_expert",
+            ]
+            if _template_entry_options(self.hass):
+                menu_options.append("house_bulk_assignment")
             return self.async_show_menu(
                 step_id="init",
-                menu_options=[
-                    "house_bulk_assignment",
-                    "house_setup",
-                    "house_night",
-                    "house_heat",
-                    "house_facades",
-                    "house_expert",
-                ],
+                menu_options=menu_options,
             )
 
         linked = bool(self.options.get(CONF_HOUSE_PROFILE_ENTRY_ID))

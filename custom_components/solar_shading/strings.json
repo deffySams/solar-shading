@@ -457,14 +457,14 @@
           "blind_spot": "Setup Blindspot",
           "interp": "Range Adjustment",
           "house_setup": "House profile: axis, windows and geometry",
-          "house_night": "House profile: morning and evening",
+          "house_night": "House profile: regulation time and boundary actions",
           "house_heat": "House profile: heat-protection rules",
           "house_expert": "House profile: expert tuning",
           "house_facades": "Facade profiles",
           "house_floors": "Floor profiles",
           "house_rooms": "Room profiles",
           "house_room_facades": "Room-facade profiles",
-          "house_bulk_assignment": "Windows & areas: assign and edit"
+          "house_bulk_assignment": "Assign multiple windows"
         }
       },
       "assignment": {
@@ -597,13 +597,13 @@
       },
       "house_night": {
         "data": {
-          "night_evening_mode": "Evening boundary", "night_start_time": "Fixed evening closing time", "sunset_offset": "Minutes after sunset", "night_evening_earliest_time": "Evening: not earlier than", "night_evening_latest_time": "Evening: not later than", "night_morning_mode": "Morning boundary", "night_end_time": "Fixed morning opening time", "sunrise_offset": "Minutes after sunrise", "night_morning_earliest_time": "Morning: not earlier than", "night_morning_latest_time": "Morning: not later than", "sunset_position": "Night position (% open)"
+          "night_evening_mode": "Regulation ends in the evening", "night_start_time": "Fixed evening time", "sunset_offset": "Minutes after sunset", "night_evening_earliest_time": "Evening: not earlier than", "night_evening_latest_time": "Evening: not later than", "night_evening_action_enabled": "Move to evening/night position when regulation ends", "night_morning_mode": "Regulation begins in the morning", "night_end_time": "Fixed morning time", "sunrise_offset": "Minutes after sunrise", "night_morning_earliest_time": "Morning: not earlier than", "night_morning_latest_time": "Morning: not later than", "night_morning_action_enabled": "Move to day position when regulation begins", "sunset_position": "Evening/night position (% open)", "default_percentage": "Day position / morning action (% open)"
         },
         "data_description": {
-          "night_evening_mode": "Fixed time or sunset plus offset.", "night_start_time": "Used only for a fixed evening boundary.", "sunset_offset": "Example: 60 activates night position one hour after sunset.", "night_evening_earliest_time": "Optional earliest solar boundary.", "night_evening_latest_time": "Optional latest solar boundary.", "night_morning_mode": "Fixed time or sunrise plus offset.", "night_end_time": "Used only for a fixed morning boundary.", "sunrise_offset": "Positive values keep night position active after sunrise.", "night_morning_earliest_time": "Optional earliest opening boundary.", "night_morning_latest_time": "Optional latest opening boundary.", "sunset_position": "Position outside daytime; 100% remains open."
+          "night_evening_mode": "Determines when active solar regulation ends.", "night_start_time": "Used only for a fixed evening boundary.", "sunset_offset": "Example: 60 ends regulation one hour after sunset.", "night_evening_earliest_time": "Optional earliest solar boundary.", "night_evening_latest_time": "Optional latest solar boundary.", "night_evening_action_enabled": "Enabled moves to the night position; disabled keeps the current cover position.", "night_morning_mode": "Determines when active solar regulation begins.", "night_end_time": "Used only for a fixed morning boundary.", "sunrise_offset": "Positive values delay the start after sunrise.", "night_morning_earliest_time": "Optional earliest opening boundary.", "night_morning_latest_time": "Optional latest opening boundary.", "night_morning_action_enabled": "Enabled moves once to the day position; disabled skips the boundary movement.", "sunset_position": "Target for the enabled evening action.", "default_percentage": "Normal daytime fallback and enabled morning-action target."
         },
-        "title": "House profile: morning and evening",
-        "description": "Morning and evening boundaries are configured independently."
+        "title": "House profile: regulation time and boundary actions",
+        "description": "Boundaries define when Solar Shading regulates. The checkboxes independently enable morning and evening movements."
       },
       "house_heat": {
         "data": {
@@ -668,8 +668,8 @@
           "bulk_window_entries": "Select every existing Solar Shading window group that belongs to the same room wall. Each group may already contain one or more covers.",
           "floor_name": "The next step lists only Home Assistant rooms assigned to this floor."
         },
-        "title": "Windows & areas: select windows and floor",
-        "description": "This is the central editor for floor, room and room-facade settings. The next step creates or updates the hierarchy and assigns all selected windows."
+        "title": "Multiple windows: select windows and floor",
+        "description": "Optional tool for assigning existing windows together. Floors, rooms and room facades can also be edited directly in the house profile."
       },
       "house_bulk_assignment_details": {
         "data": {
@@ -680,7 +680,7 @@
           "room_name": "All selected window groups are assigned to this room.",
           "facade_name": "Select an existing facade or enter a new name."
         },
-        "title": "Windows & areas: select room and facade",
+        "title": "Multiple windows: select room and facade",
         "description": "The next step loads existing rules and geometry."
       },
       "house_bulk_assignment_settings": {
@@ -718,7 +718,7 @@
           "fov_right": "Visible angle right of the window normal shared by the selected windows.",
           "bulk_reset_local_overrides": "Recommended: removes local geometry, horizon and policy switches plus local rule overrides, so later house-profile changes reach every selected window. Cover entities and exact window dimensions are retained."
         },
-        "title": "Windows & areas: rules and optional geometry",
+        "title": "Multiple windows: rules and optional geometry",
         "description": "Existing values are prefilled. Without a geometry override, future house and facade changes remain inherited."
       },
       "house_facades": {

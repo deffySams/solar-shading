@@ -597,16 +597,16 @@
               </select>
             </div>
             <div class="field">
-              <label for="defaultPosition"><span class="label-main">Default-Position (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert, wenn keine wirksame direkte Sonne relevant ist. 100 Prozent offen bedeutet ganz offen, 0 Prozent offen bedeutet geschlossen.">i</button></label>
+              <label for="defaultPosition"><span class="label-main">Tagesposition / Morgenaktion (% offen)</span> <button class="info-btn" type="button" data-info="Fallback-Wert waehrend der Regelzeit und einmaliges Ziel am Morgen, wenn die Morgenaktion aktiviert ist.">i</button></label>
               <input id="defaultPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
             <div class="field">
-              <label for="sunsetPosition"><span class="label-main">Ruhe-/Nachtposition nach Zeit (% offen)</span> <button class="info-btn" type="button" data-info="Position ausserhalb des aktiven Zeit-/Sonnenfensters. Sonnenuntergang/Sonnenaufgang plus Offset bestimmen, wann diese Ruheposition gilt.">i</button></label>
+              <label for="sunsetPosition"><span class="label-main">Abend-/Nachtposition (% offen)</span> <button class="info-btn" type="button" data-info="Ziel am Ende der Regelzeit und waehrend der Nacht, wenn die Abendaktion aktiviert ist.">i</button></label>
               <input id="sunsetPosition" type="number" min="0" max="100" step="1" value="100">
             </div>
             <div class="grid">
               <div class="field">
-                <label for="nightEveningMode"><span class="label-main">Abendgrenze</span> <button class="info-btn" type="button" data-info="Aktiviert die Nachtposition entweder zu einer festen Uhrzeit oder relativ zum Sonnenuntergang.">i</button></label>
+                <label for="nightEveningMode"><span class="label-main">Regelung endet abends</span> <button class="info-btn" type="button" data-info="Beendet die aktive Solarregelung zu einer festen Uhrzeit oder relativ zum Sonnenuntergang.">i</button></label>
                 <select id="nightEveningMode">
                   <option value="sunset" selected>Sonnenuntergang plus Versatz</option>
                   <option value="fixed">Feste Uhrzeit</option>
@@ -629,9 +629,13 @@
                 <input id="nightEveningLatestTime" type="time">
               </div>
             </div>
+            <div class="checkbox-row">
+              <input id="nightEveningActionEnabled" type="checkbox" checked>
+              <label for="nightEveningActionEnabled"><span class="label-main">Bei Regelende Abend-/Nachtposition anfahren</span><button class="info-btn" type="button" data-info="Aus bedeutet: Nach Ende der Regelzeit keine automatische Fahrt ausloesen und die aktuelle Coverposition beibehalten.">i</button></label>
+            </div>
             <div class="grid">
               <div class="field">
-                <label for="nightMorningMode"><span class="label-main">Morgengrenze</span> <button class="info-btn" type="button" data-info="Beendet die Nachtposition entweder zu einer festen Uhrzeit oder relativ zum Sonnenaufgang.">i</button></label>
+                <label for="nightMorningMode"><span class="label-main">Regelung beginnt morgens</span> <button class="info-btn" type="button" data-info="Startet die aktive Solarregelung zu einer festen Uhrzeit oder relativ zum Sonnenaufgang.">i</button></label>
                 <select id="nightMorningMode">
                   <option value="fixed" selected>Feste Uhrzeit</option>
                   <option value="sunrise">Sonnenaufgang plus Versatz</option>
@@ -653,6 +657,10 @@
                 <label for="nightMorningLatestTime">Morgens nicht spaeter als</label>
                 <input id="nightMorningLatestTime" type="time">
               </div>
+            </div>
+            <div class="checkbox-row">
+              <input id="nightMorningActionEnabled" type="checkbox" checked>
+              <label for="nightMorningActionEnabled"><span class="label-main">Bei Regelbeginn Tagesposition anfahren</span><button class="info-btn" type="button" data-info="Aus bedeutet: Beim Morgen-Trigger keine einmalige Fahrt ausloesen. Danach darf die normale Solarregelung weiterhin auf neue Bedingungen reagieren.">i</button></label>
             </div>
           </div>
         <div class="cta-row">
@@ -1433,7 +1441,7 @@
       "dayOfYearRange", "timeRange", "latitude", "longitude", "windowAzimuth",
       "defaultPosition", "sunsetPosition", "coverLocation",
       "nightEveningMode", "nightStartTime", "sunsetOffset", "nightEveningEarliestTime", "nightEveningLatestTime",
-      "nightMorningMode", "nightEndTime", "sunriseOffset", "nightMorningEarliestTime", "nightMorningLatestTime",
+      "nightEveningActionEnabled", "nightMorningMode", "nightEndTime", "sunriseOffset", "nightMorningEarliestTime", "nightMorningLatestTime", "nightMorningActionEnabled",
       "fovLeft", "fovRight", "minElevation", "maxElevation",
       "windowHeight", "windowWidth", "distance", "glassType", "customVisibleT",
       "customSolarT", "customVisibleR", "customSolarR", "revealLeft", "revealRight",
@@ -1459,8 +1467,8 @@
       all: inputIds,
       global: [
         "devicePreset", "defaultPosition", "sunsetPosition", "coverLocation", "nightEveningMode", "nightStartTime", "sunsetOffset",
-        "nightEveningEarliestTime", "nightEveningLatestTime", "nightMorningMode", "nightEndTime", "sunriseOffset",
-        "nightMorningEarliestTime", "nightMorningLatestTime", "glassType",
+        "nightEveningEarliestTime", "nightEveningLatestTime", "nightEveningActionEnabled", "nightMorningMode", "nightEndTime", "sunriseOffset",
+        "nightMorningEarliestTime", "nightMorningLatestTime", "nightMorningActionEnabled", "glassType",
         "customVisibleT", "customSolarT", "customVisibleR", "customSolarR",
         "useTodayMax", "useTomorrowMax", "useOpenDataSolarRadiation",
         "hotDayThreshold", "veryHotThreshold", "forecastInfluence", "preemptiveStart",
@@ -1888,6 +1896,8 @@
       overwrite("coverLocation", attrs.cover_location);
       overwrite("nightEveningMode", attrs.night_evening_mode);
       overwrite("nightMorningMode", attrs.night_morning_mode);
+      overwrite("nightEveningActionEnabled", attrs.night_evening_action_enabled);
+      overwrite("nightMorningActionEnabled", attrs.night_morning_action_enabled);
       overwrite("nightStartTime", attrs.night_start_time ? String(attrs.night_start_time).slice(0, 5) : null);
       overwrite("nightEndTime", attrs.night_end_time ? String(attrs.night_end_time).slice(0, 5) : null);
       overwrite("sunsetOffset", attrs.sunset_offset);
@@ -2264,11 +2274,13 @@
         sunsetPosition: parseNumber("sunsetPosition"),
         coverLocation: document.getElementById("coverLocation").value,
         nightEveningMode: document.getElementById("nightEveningMode").value,
+        nightEveningActionEnabled: parseBool("nightEveningActionEnabled"),
         nightStartTime: document.getElementById("nightStartTime").value || "22:00",
         sunsetOffset: parseNumber("sunsetOffset"),
         nightEveningEarliestTime: document.getElementById("nightEveningEarliestTime").value || null,
         nightEveningLatestTime: document.getElementById("nightEveningLatestTime").value || null,
         nightMorningMode: document.getElementById("nightMorningMode").value,
+        nightMorningActionEnabled: parseBool("nightMorningActionEnabled"),
         nightEndTime: document.getElementById("nightEndTime").value || "08:00",
         sunriseOffset: parseNumber("sunriseOffset"),
         nightMorningEarliestTime: document.getElementById("nightMorningEarliestTime").value || null,
@@ -3205,8 +3217,10 @@
       setText(
         "nightModeCell",
         attrs.sunset_valid
-          ? `aktiv (abends ${attrs.night_evening_mode}, morgens ${attrs.night_morning_mode}) -> ${open} % offen`
-          : `aus (abends ${attrs.night_evening_mode}, morgens ${attrs.night_morning_mode})`
+          ? (attrs.night_evening_action_enabled
+              ? `Regelzeit beendet -> Abendaktion ${open} % offen`
+              : "Regelzeit beendet -> keine automatische Fahrt")
+          : `Regelzeit aktiv; Morgenaktion ${attrs.night_morning_action_enabled ? "an" : "aus"}`
       );
       setText("localAngleCell", `${round(attrs.local_solar_angle, 1)} deg`);
       setText("horizonCell", `lower ${round(attrs.effective_lower_horizon_elevation, 1)} deg / upper ${round(attrs.effective_upper_horizon_elevation, 1)} deg / ${attrs.sun_within_horizon_profile ? "sichtbar" : "blockiert"}`);
@@ -3501,7 +3515,7 @@
         const daylightOpen = effectiveSunOnWindow
           ? Math.round(clamp(Math.min(baseVerticalPosition, effectivePolicyTarget ?? 100), 0, 100))
           : Math.round(clamp(noSunFallback, 0, 100));
-        const finalOpen = nightModeActive
+        const finalOpen = nightModeActive && state.nightEveningActionEnabled
           ? Math.round(clamp(state.sunsetPosition, 0, 100))
           : daylightOpen;
         const finalClosure = Math.round(clamp(100 - finalOpen, 0, 100));
@@ -3515,7 +3529,14 @@
         pill.className = `pill ${effectivePolicyLevel}`;
 
         setText("dateCell", `${sun.date.toLocaleDateString("de-DE")} ${state.time}`);
-        setText("nightModeCell", nightModeActive ? `aktiv -> ${state.sunsetPosition} % offen` : "aus");
+        setText(
+          "nightModeCell",
+          nightModeActive
+            ? (state.nightEveningActionEnabled
+                ? `Regelzeit beendet -> Abendaktion ${state.sunsetPosition} % offen`
+                : "Regelzeit beendet -> keine automatische Fahrt")
+            : `Regelzeit aktiv; Morgenaktion ${state.nightMorningActionEnabled ? "an" : "aus"}`
+        );
         setText("solarAzimuthCell", `${round(sun.azimuth, 1)} deg`);
         setText("solarElevationCell", `${round(sun.elevation, 1)} deg`);
         setText("gammaCell", `${round(gamma, 1)} deg`);
